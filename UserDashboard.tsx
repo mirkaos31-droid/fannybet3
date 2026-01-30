@@ -91,9 +91,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     return (
         <>
             {showProfile && (
-                <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/90 backdrop-blur-sm">
-                    <div className="min-h-screen flex items-start justify-center pt-24 pb-24">
-                        <ProfileView user={user} onClose={() => setShowProfile(false)} onLogout={onLogout} />
+                <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/95 backdrop-blur-md">
+                    <div className="min-h-screen flex items-start justify-center pt-32 pb-24 md:pt-40">
+                        <ProfileView
+                            user={user}
+                            onClose={() => setShowProfile(false)}
+                            onLogout={onLogout}
+                            onProfileUpdate={onBalanceUpdate}
+                        />
                     </div>
                 </div>
             )}
