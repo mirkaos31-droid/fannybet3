@@ -74,31 +74,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
         {
             label: 'Vittorie 1X2',
             value: user?.wins1x2 || 0,
-            icon: <Trophy className="text-black" size={18} />,
+            icon: <Trophy className="text-black" size={24} />,
             color: 'bg-gradient-to-br from-brand-gold to-yellow-600 shadow-brand-gold/20'
         },
         {
             label: 'Survival',
             value: user?.winsSurvival || 0,
-            icon: <Skull className="text-white" size={18} />,
+            icon: <Skull className="text-white" size={24} />,
             color: 'bg-gradient-to-br from-red-600 to-red-900 shadow-red-600/20'
         },
         {
             label: 'Livello',
             value: currentLevel,
-            icon: <Activity className="text-black" size={18} />,
+            icon: <Activity className="text-black" size={24} />,
             color: 'bg-gradient-to-br from-brand-purple to-purple-900 shadow-brand-purple/20'
         },
         {
             label: 'Precisione',
             value: `${user?.predictionAccuracy || 0}%`,
-            icon: <Target className="text-black" size={18} />,
+            icon: <Target className="text-black" size={24} />,
             color: 'bg-gradient-to-br from-brand-teal to-teal-800 shadow-brand-teal/20'
         },
     ];
 
     return (
-        <div className="relative animate-fade-in px-4 max-w-4xl mx-auto pt-4 pb-20 min-h-screen">
+        <div className="relative animate-fade-in px-4 max-w-4xl mx-auto pt-10 pb-20 min-h-screen">
             {/* Deep Blue Gradient Background */}
             <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#020617]">
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-purple/5 via-blue-900/10 to-[#020617]"></div>
@@ -170,13 +170,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
             {/* Stats Grid - Reduced Size & More Color */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
                 {stats.map((stat, idx) => (
-                    <div key={idx} className={`${stat.color} p-4 md:p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
+                    <div key={idx} className={`${stat.color} p-5 md:p-8 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="mb-2 p-2 rounded-xl bg-white/20 backdrop-blur-sm shadow-inner group-hover:rotate-12 transition-transform">
+                        <div className="mb-3 md:mb-4 p-3 md:p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-inner group-hover:rotate-12 transition-transform">
                             {stat.icon}
                         </div>
-                        <span className="text-[8px] font-black uppercase tracking-widest text-black/60 mb-0.5">{stat.label}</span>
-                        <span className="text-xl md:text-2xl font-mono font-black text-white drop-shadow-sm">{stat.value}</span>
+                        <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-black/60 mb-1">{stat.label}</span>
+                        <span className="text-2xl md:text-4xl font-mono font-black text-white drop-shadow-sm">{stat.value}</span>
                     </div>
                 ))}
             </div>

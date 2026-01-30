@@ -91,9 +91,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     return (
         <>
             {showProfile && (
-                <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/90 backdrop-blur-sm">
-                    <div className="min-h-screen flex items-start justify-center pt-24 pb-24">
-                        <ProfileView user={user} onClose={() => setShowProfile(false)} onLogout={onLogout} />
+                <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/95 backdrop-blur-md">
+                    <div className="min-h-screen flex items-start justify-center pt-32 pb-24 md:pt-40">
+                        <ProfileView
+                            user={user}
+                            onClose={() => setShowProfile(false)}
+                            onLogout={onLogout}
+                            onProfileUpdate={onBalanceUpdate}
+                        />
                     </div>
                 </div>
             )}
@@ -121,9 +126,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
                 {/* Requested Hero Section - ONLY ON HOME */}
                 {view === 'HOME' && (
-                    <div className="relative pt-24 pb-8 md:pt-32 md:pb-20 text-center animate-fade-in px-2">
+                    <div className="relative pt-44 pb-8 md:pt-48 md:pb-20 text-center animate-fade-in px-2">
                         <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.5em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
-                        <h1 className="text-7xl sm:text-9xl md:text-[18rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
+                        <h1 className="text-8xl sm:text-[10rem] md:text-[22rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
                             FANNY<br className="md:hidden" /> BET
                         </h1>
 
