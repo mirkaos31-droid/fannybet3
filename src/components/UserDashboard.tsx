@@ -121,9 +121,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
                 {/* Requested Hero Section - ONLY ON HOME */}
                 {view === 'HOME' && (
-                    <div className="relative py-2 md:py-16 text-center animate-fade-in px-2">
-                        <p className="text-gray-500 font-mono text-[7px] md:text-sm uppercase tracking-[0.4em] mb-0.5 md:mb-2 opacity-60">benvenuto su</p>
-                        <h1 className="text-5xl sm:text-7xl md:text-[13.2rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
+                    <div className="relative pt-24 pb-8 md:pt-32 md:pb-20 text-center animate-fade-in px-2">
+                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.5em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
+                        <h1 className="text-7xl sm:text-9xl md:text-[18rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
                             FANNY<br className="md:hidden" /> BET
                         </h1>
 
