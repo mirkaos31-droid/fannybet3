@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { gameService } from '../services/gameService';
-import type { SurvivalSeason, SurvivalPlayer, Matchday } from '../types';
+import type { SurvivalSeason, SurvivalPlayer } from '../types';
 
 export const SurvivalAdminPanel: React.FC = () => {
     const [season, setSeason] = useState<SurvivalSeason | null>(null);
