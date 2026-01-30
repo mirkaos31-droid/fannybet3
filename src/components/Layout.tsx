@@ -17,17 +17,17 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
 
             {/* Mobile Header (Brand Infused & Functional) */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black/80 backdrop-blur-xl border-b border-white/10 h-20 flex items-center justify-between px-4">
+            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,20px)] h-[calc(5rem+env(safe-area-inset-top,20px))] shadow-2xl">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
                         {user?.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-xl" />
+                            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
                         ) : (
-                            <span className="text-xl">✨</span>
+                            <span className="text-2xl">✨</span>
                         )}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xs font-display font-black text-white italic truncate max-w-[100px] uppercase">
+                        <span className="text-sm font-display font-black text-white italic truncate max-w-[120px] uppercase">
                             {user?.username || 'GUEST'}
                         </span>
                     </div>
@@ -75,8 +75,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 </div>
 
                 <div className="flex-1 px-4 py-6 md:py-20 flex flex-col items-center justify-center text-center">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 animate-pulse-slow">
-                        <span className="text-2xl md:text-3xl text-brand-orange">🛡️</span>
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 animate-pulse-slow">
+                        <span className="text-4xl md:text-5xl text-brand-orange">🛡️</span>
                     </div>
                     <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.4em] mb-2">Core Protocol</p>
                     <p className="text-[11px] text-gray-500 italic px-3 leading-relaxed opacity-60">Seleziona una categoria per visualizzare i mercati attivi.</p>
@@ -105,18 +105,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col p-2 md:p-6 space-y-2 md:space-y-6 max-h-screen pt-20 md:pt-6 overflow-hidden">
                 {/* Top Header (Desktop Only) */}
-                <header className="hidden md:flex liquid-glass px-6 md:px-10 py-5 items-center justify-between border-white/5 h-20 md:h-24 shadow-2xl">
+                <header className="hidden md:flex liquid-glass px-6 md:px-10 py-5 items-center justify-between border-white/5 h-24 md:h-28 shadow-2xl">
                     <div className="flex items-center gap-3 md:gap-5 min-w-0">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner flex-shrink-0 overflow-hidden">
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner flex-shrink-0 overflow-hidden">
                             {user?.avatarUrl ? (
                                 <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-xl md:text-2xl animate-glow">✨</span>
+                                <span className="text-2xl md:text-3xl animate-glow">✨</span>
                             )}
                         </div>
                         <div className="min-w-0">
                             <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mb-1">Authenticated As</p>
-                            <h2 className="text-lg md:text-2xl font-display font-black tracking-tight text-white/90 truncate">{user?.username || 'GUEST_USER'}</h2>
+                            <h2 className="text-xl md:text-3xl font-display font-black tracking-tight text-white/90 truncate">{user?.username || 'GUEST_USER'}</h2>
                         </div>
                     </div>
 

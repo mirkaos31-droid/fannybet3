@@ -147,18 +147,18 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                 <div className="text-center relative z-10">
                     <div className="flex flex-col items-center justify-center mb-2">
                         <div className="flex items-baseline gap-3">
-                            <h2 className="text-4xl sm:text-6xl md:text-8xl font-display font-black italic text-red-600 tracking-tighter drop-shadow-[0_0_25px_rgba(220,38,38,0.6)] leading-none">
+                            <h2 className="text-5xl sm:text-7xl md:text-[9.5rem] font-display font-black italic text-red-600 tracking-tighter drop-shadow-[0_0_35px_rgba(220,38,38,0.7)] leading-none">
                                 ARENA
                             </h2>
-                            <span className="text-sm md:text-xl font-black text-red-500/80 uppercase tracking-widest italic flex flex-col items-start leading-none">
-                                <span className="text-[10px] opacity-40 not-italic tracking-[0.2em] mb-1">PROTOCOL</span>
+                            <span className="text-base md:text-2xl font-black text-red-500/80 uppercase tracking-widest italic flex flex-col items-start leading-none gap-1">
+                                <span className="text-xs opacity-40 not-italic tracking-[0.3em] mb-1">PROTOCOL</span>
                                 ROUND {players.length > 0 ? Math.max(...players.map(p => p.usedTeams.length)) + 1 : 1}
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-center">
-                        <div className="text-xl md:text-2xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-[#fef08a] via-[#eab308] to-[#713f12] drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] italic">
+                    <div className="flex flex-col items-center mt-2 md:mt-4">
+                        <div className="text-2xl md:text-5xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-[#fef08a] via-[#eab308] to-[#713f12] drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] italic">
                             FT KILL: {ftKill}
                         </div>
                         <div className="text-[7px] font-black text-red-900 uppercase tracking-[0.4em] opacity-40 mt-[-4px] mb-4">

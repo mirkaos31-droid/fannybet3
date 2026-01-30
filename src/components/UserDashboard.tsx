@@ -123,7 +123,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {view === 'HOME' && (
                     <div className="relative py-2 md:py-16 text-center animate-fade-in px-2">
                         <p className="text-gray-500 font-mono text-[7px] md:text-sm uppercase tracking-[0.4em] mb-0.5 md:mb-2 opacity-60">benvenuto su</p>
-                        <h1 className="text-4xl sm:text-6xl md:text-[11rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
+                        <h1 className="text-5xl sm:text-7xl md:text-[13.2rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
                             FANNY<br className="md:hidden" /> BET
                         </h1>
 
@@ -150,14 +150,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {/* Optimized Stats (Affiancate su mobile) - ONLY ON HOME */}
                 {view === 'HOME' && (
                     <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-12 px-2 md:px-0 max-w-5xl mx-auto">
-                        <div className="glass-card card-gold !py-1.5 md:!py-4 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(255,204,0,0.2)] hover:shadow-[0_0_60px_rgba(255,204,0,0.4)] transition-all duration-500 hover:scale-105">
+                        <div className="glass-card card-gold !py-2 md:!py-5 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(255,204,0,0.2)] hover:shadow-[0_0_60px_rgba(255,204,0,0.4)] transition-all duration-500 hover:scale-105">
                             <span className="text-brand-gold text-[7px] md:text-[12px] tracking-[0.6em] font-black uppercase mb-0.5 block opacity-90">MONTE PREMI</span>
                             <div className="text-xl md:text-5xl font-mono font-black text-brand-gold drop-shadow-[0_0_20px_rgba(255,204,0,0.6)]">
                                 {potDisplay}<span className="text-[7px] md:text-lg opacity-40 ml-1">FTK</span>
                             </div>
                         </div>
 
-                        <div className="glass-card card-diamond !py-1.5 md:!py-4 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(185,242,255,0.2)] hover:shadow-[0_0_60px_rgba(185,242,255,0.4)] transition-all duration-500 hover:scale-105">
+                        <div className="glass-card card-diamond !py-2 md:!py-5 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(185,242,255,0.2)] hover:shadow-[0_0_60px_rgba(185,242,255,0.4)] transition-all duration-500 hover:scale-105">
                             {/* Diamond Facet sparkle effects handled by CSS after */}
                             <span className="text-white text-[7px] md:text-[12px] tracking-[0.6em] font-black uppercase mb-0.5 block opacity-70 relative z-10">SUPER JACKPOT</span>
                             <div className="text-xl md:text-5xl font-mono font-black text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.7)] relative z-10">
@@ -184,74 +184,75 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
 
-                {/* Navigation Cards */}
+                {/* Navigation Cards - Redesigned Asymmetric Grid */}
                 {view === 'HOME' && (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 md:gap-6 animate-fade-in px-1 md:px-0 pb-10">
+                    <div className="grid grid-cols-4 gap-3 md:gap-8 animate-fade-in px-2 md:px-0 pb-16 items-start">
+                        {/* 1x2 MODE (LEFT LONG) */}
                         <button
                             onClick={() => setView('BETTING')}
-                            className="glass-card card-acid-green group h-32 sm:h-64 md:h-96 flex flex-col justify-center items-center text-center relative overflow-hidden touch-target"
+                            className="glass-card card-acid-green col-span-2 row-span-2 group h-[26rem] sm:h-[45rem] md:h-[62rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-slow hover:rotate-1 w-full"
                         >
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#bfff00]/5 blur-[60px] rounded-full group-hover:bg-[#bfff00]/10 transition-all duration-700"></div>
-                            <div className="mb-1 md:mb-2 group-hover:scale-110 transition-transform duration-500">
-                                <Zap size={32} className="text-acid-glow md:w-12 md:h-12" strokeWidth={2.5} />
+                            <div className="mb-2 group-hover:scale-110 transition-transform duration-500">
+                                <Zap size={40} className="text-acid-glow md:w-20 md:h-20" strokeWidth={2.5} />
                             </div>
-                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">1x2 Mode</h3>
-                            <p className="text-gray-600 text-[5px] sm:text-[7px] md:text-[9px] mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#bfff00] transition-colors">Gioca.</p>
+                            <h3 className="text-sm sm:text-2xl md:text-5xl font-black italic tracking-tighter text-white/90 uppercase">1x2 Mode</h3>
+                            <p className="text-gray-600 text-[7px] sm:text-xs md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-[#bfff00] transition-colors">Gioca ora.</p>
                         </button>
 
-                        <button
-                            onClick={() => setView('SPY')}
-                            className="glass-card card-bright-yellow group h-32 sm:h-64 md:h-96 flex flex-col justify-center items-center text-center relative overflow-hidden touch-target"
-                        >
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ffee00]/5 blur-[60px] rounded-full group-hover:bg-[#ffee00]/10 transition-all duration-700"></div>
-                            <div className="mb-1 md:mb-2 group-hover:scale-110 transition-transform duration-500">
-                                <Eye size={32} className="text-[#ffee00] md:w-12 md:h-12" strokeWidth={2.5} />
-                            </div>
-                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">I fannies</h3>
-                            <p className="text-gray-600 text-[5px] sm:text-[7px] md:text-[9px] mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#ffee00] transition-colors">esplora.</p>
-                        </button>
-
-                        <button
-                            onClick={() => setView('LEADERBOARD')}
-                            className="glass-card card-purple group h-32 sm:h-64 md:h-96 flex flex-col justify-center items-center text-center relative overflow-hidden touch-target"
-                        >
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#9d00ff]/5 blur-[60px] rounded-full group-hover:bg-[#9d00ff]/10 transition-all duration-700"></div>
-                            <div className="mb-1 md:mb-2 group-hover:scale-110 transition-transform duration-500">
-                                <Trophy size={32} className="text-brand-purple md:w-12 md:h-12" strokeWidth={2.5} />
-                            </div>
-                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Classifiche</h3>
-                            <p className="text-gray-600 text-[5px] sm:text-[7px] md:text-[9px] mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#9d00ff] transition-colors">controlla.</p>
-                        </button>
-
+                        {/* SURVIVAL MODE (TOP RIGHT) */}
                         <button
                             onClick={() => setView('SURVIVAL')}
-                            className="glass-card card-bright-red group h-32 sm:h-64 md:h-96 flex flex-col justify-center items-center text-center relative overflow-hidden touch-target"
+                            className="glass-card card-bright-red col-span-2 group h-[13.5rem] sm:h-[24rem] md:h-[34rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float [animation-delay:1s] hover:-rotate-1 w-full"
                         >
                             {survivalStatus === 'ALIVE' && (
-                                <div className="absolute top-1 right-1 z-10 px-1 py-0.5 rounded bg-red-500 text-black text-[5px] font-black animate-pulse">
+                                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded bg-red-500 text-black text-[8px] font-black animate-pulse">
                                     IN VITA
                                 </div>
                             )}
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ff2200]/5 blur-[60px] rounded-full group-hover:bg-[#ff2200]/10 transition-all duration-700"></div>
-                            <div className="mb-1 md:mb-2 group-hover:scale-110 transition-transform duration-500">
-                                <Skull size={32} className="text-[#ff2200] md:w-12 md:h-12" strokeWidth={2.5} />
+                            <div className="mb-1 md:mb-4 group-hover:scale-110 transition-transform duration-500">
+                                <Skull size={32} className="text-[#ff2200] md:w-16 md:h-16" strokeWidth={2.5} />
                             </div>
-                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Survival mode</h3>
-                            <p className="text-gray-600 text-[5px] sm:text-[7px] md:text-[9px] mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#ff2200] transition-colors">entra nell'arena.</p>
+                            <h3 className="text-[12px] sm:text-xl md:text-3xl font-black italic tracking-tighter text-white/90 uppercase">Survival</h3>
+                            <p className="text-gray-600 text-[6px] sm:text-[9px] md:text-xs mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#ff2200] transition-colors">entra nell'arena.</p>
                         </button>
 
+                        {/* I FANNIES (MID RIGHT LEFT) */}
+                        <button
+                            onClick={() => setView('SPY')}
+                            className="glass-card card-bright-yellow col-span-1 group h-[11.5rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-fast [animation-delay:0.5s] hover:rotate-1 w-full"
+                        >
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ffee00]/5 blur-[60px] rounded-full group-hover:bg-[#ffee00]/10 transition-all duration-700"></div>
+                            <div className="mb-0.5 md:mb-2 group-hover:scale-110 transition-transform duration-500">
+                                <Eye size={24} className="text-[#ffee00] md:w-12 md:h-12" strokeWidth={2.5} />
+                            </div>
+                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Fannies</h3>
+                        </button>
+
+                        {/* CLASSIFICHE (MID RIGHT RIGHT) - SWAPPED FROM SFIDE */}
+                        <button
+                            onClick={() => setView('LEADERBOARD')}
+                            className="glass-card card-purple col-span-1 group h-[11.5rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-slow [animation-delay:1s] hover:rotate-1 w-full"
+                        >
+                            <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-brand-purple/5 to-transparent"></div>
+                            <div className="mb-0.5 md:mb-2 group-hover:scale-110 transition-transform duration-500 relative z-10">
+                                <Trophy size={24} className="text-brand-purple md:w-12 md:h-12" strokeWidth={2.5} />
+                            </div>
+                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase relative z-10">Classifiche</h3>
+                        </button>
+
+                        {/* SFIDE (BOTTOM FULL) - SWAPPED FROM CLASSIFICHE */}
                         <button
                             onClick={() => setView('DUEL_ARENA')}
-                            className="glass-card card-bronze col-span-2 lg:col-span-1 group h-24 sm:h-64 md:h-96 flex flex-row lg:flex-col justify-center items-center text-center relative overflow-hidden touch-target"
+                            className="glass-card card-bronze col-span-4 group h-[16.5rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-slow [animation-delay:2s] hover:scale-[1.01] w-full"
                         >
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#b45309]/5 blur-[60px] rounded-full group-hover:bg-[#b45309]/10 transition-all duration-700"></div>
-                            <div className="mr-4 lg:mr-0 lg:mb-2 group-hover:scale-110 transition-transform duration-500">
-                                <Swords size={32} className="text-[#b45309] md:w-12 md:h-12" strokeWidth={2.5} />
+                            <div className="mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500">
+                                <Swords size={40} className="text-[#b45309] md:w-20 md:h-20" strokeWidth={2.5} />
                             </div>
-                            <div className="text-left lg:text-center">
-                                <h3 className="text-sm sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Sfide</h3>
-                                <p className="text-gray-600 text-[6px] sm:text-[7px] md:text-[9px] mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#b45309] transition-colors">sfida tutti.</p>
-                            </div>
+                            <h3 className="text-xl sm:text-4xl md:text-7xl font-black italic tracking-tighter text-white/90 uppercase">Sfide</h3>
+                            <p className="text-gray-600 text-[8px] sm:text-sm md:text-base mt-1 uppercase tracking-[0.3em] font-black group-hover:text-[#b45309] transition-colors">il muro della gloria.</p>
                         </button>
                     </div>
                 )}
