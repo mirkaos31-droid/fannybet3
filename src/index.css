@@ -100,6 +100,8 @@
       background-position: 200% center;
     }
   }
+
+
 }
 
 @layer base {
@@ -312,6 +314,79 @@
     opacity: 0.5;
     filter: blur(45px);
   }
+
+  /* Duel win overlay styles */
+  .duel-win-overlay {
+    width: 100%;
+    max-width: 640px;
+    pointer-events: none;
+    transform: translateZ(0);
+    animation: popIn 600ms cubic-bezier(.2,.9,.2,1) both;
+  }
+
+  .duel-win-overlay .trophy-pop {
+    animation: trophyPop 900ms cubic-bezier(.2,.9,.2,1) both;
+    transform-origin: center;
+    filter: drop-shadow(0 0 30px rgba(255,204,0,0.6));
+  }
+
+  @keyframes trophyPop {
+    0% {
+      transform: scale(0.6) translateY(12px) rotate(-8deg);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.14) translateY(-8px) rotate(6deg);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  .confetti {
+    position: absolute;
+    top: -10%;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: confettiFall 1800ms cubic-bezier(.16,.9,.2,1) forwards;
+    will-change: transform, opacity;
+    transform-origin: center;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg) scaleY(1); opacity: 1; }
+    100% { transform: translateY(300px) rotate(720deg) scaleY(0.95); opacity: 0; }
+  }
+
+  .confetti-container {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .confetti {
+    position: absolute;
+    top: -10%;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: confettiFall 1800ms cubic-bezier(.16,.9,.2,1) forwards;
+    will-change: transform, opacity;
+    transform-origin: center;
+  }
+
+  .confetti-0 { background: #ffcc00; }
+  .confetti-1 { background: #ff6a00; }
+  .confetti-2 { background: #9d00ff; }
+  .confetti-3 { background: #00ffcc; }
+  .confetti-4 { background: #bfff00; }
+  .confetti-5 { background: #b45309; }
 
   .card-acid-green {
     border-color: rgba(191, 255, 0, 0.7);

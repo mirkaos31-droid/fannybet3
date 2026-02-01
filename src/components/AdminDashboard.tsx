@@ -26,7 +26,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
             const tzOffset = date.getTimezoneOffset() * 60000;
             const localISODate = new Date(date.getTime() - tzOffset).toISOString();
             return localISODate.slice(0, 16);
-        } catch (e) {
+        } catch {
             return isoString.slice(0, 16);
         }
     };
@@ -141,18 +141,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                         <input
                                             type="datetime-local"
                                             value={formatForInput(matchday.deadline)}
-                                            onChange={(e) => {
+                                            onChange={async (e) => {
                                                 const val = e.target.value;
                                                 const localDate = new Date(val);
                                                 const isoDate = localDate.toISOString();
                                                 setMatchday({ ...matchday, deadline: isoDate });
-                                                gameService.updateDeadline(isoDate);
+                                                await gameService.updateDeadline(isoDate);
+                                                const md = await gameService.getMatchday();
+                                                setMatchday(md);
                                             }}
                                             className="bg-black/50 border border-white/10 rounded-xl px-5 py-3 w-full text-white font-black text-lg outline-none focus:border-[#dfff00] focus:shadow-[0_0_15px_rgba(223,255,0,0.2)] transition-all cursor-pointer"
                                         />
                                         <div className="absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none text-2xl opacity-50">📅</div>
                                     </div>
                                     <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest text-white">Sincronizzazione orario attiva</p>
+
+                                    <div className="mt-3 flex items-center gap-3">
+                                        {matchday.betsLocked ? (
+                                            <>
+                                                <span className="px-3 py-1 rounded-full bg-red-600 text-black font-black text-[10px] uppercase">Scommesse CHIUSE</span>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!confirm('Sbloccare le scommesse per questa giornata?')) return;
+                                                        const res = await gameService.setBetLock(false);
+                                                        if (res && res.success) {
+                                                            const md = await gameService.getMatchday();
+                                                            setMatchday(md);
+                                                            alert('Scommesse sbloccate.');
+                                                        } else {
+                                                            alert('Errore: ' + (res?.message || 'Operazione fallita'));
+                                                        }
+                                                    }}
+                                                    className="px-3 py-2 rounded-xl bg-amber-600 text-black font-black uppercase text-xs tracking-widest hover:bg-amber-500 transition-all"
+                                                >
+                                                    Sblocca Inserimenti
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <span className="px-3 py-1 rounded-full bg-green-600 text-black font-black text-[10px] uppercase">Scommesse APERTE</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

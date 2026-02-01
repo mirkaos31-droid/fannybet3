@@ -62,6 +62,9 @@ export interface Matchday {
 
     status: 'OPEN' | 'CLOSED' | 'ARCHIVED';
     deadline: string; // ISO Date
+
+    // Betting control
+    betsLocked?: boolean;
 }
 
 export interface Bet {

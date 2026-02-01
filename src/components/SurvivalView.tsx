@@ -48,7 +48,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
         setSeason(data.season);
         setPlayers(data.players);
         setInitLoading(false);
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         const init = async () => {
@@ -89,7 +89,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
     };
 
     // Team Colors Helper (Simplified to Steel Grey as requested)
-    const getTeamStyle = (_team: string) => {
+    const getTeamStyle = () => {
         return 'bg-slate-800/40 border-slate-500/30 text-slate-100 hover:bg-slate-700/60 hover:border-slate-400/50';
     };
 
@@ -240,7 +240,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                                                 key={team}
                                                 onClick={() => handlePick(team)}
                                                 disabled={loading}
-                                                className={`group relative overflow-hidden border-2 p-3 rounded-xl transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center shadow-lg ${getTeamStyle(team)}`}
+                                                className={`group relative overflow-hidden border-2 p-3 rounded-xl transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center shadow-lg ${getTeamStyle()}`}
                                             >
                                                 <span className="text-sm font-black italic uppercase tracking-tight relative z-10">{team}</span>
                                             </button>

@@ -122,7 +122,7 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
                                                 <span className="text-[8px] font-black text-brand-gold/80 uppercase whitespace-nowrap mt-0.5">acc. {accuracy}%</span>
                                             </div>
                                             <span className="text-[6px] font-mono text-gray-500 uppercase tracking-widest mt-0.5">
-                                                {new Date(bet.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {new Date(bet.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })}
                                             </span>
                                         </div>
                                     </div>

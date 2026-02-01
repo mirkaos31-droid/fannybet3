@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { gameService } from '../services/gameService';
 import type { Matchday, Bet, User, ViewMode } from '../types';
 import { BettingInterface } from './BettingInterface';
@@ -12,6 +12,7 @@ import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
 import { Zap, Eye, Trophy, Skull, Swords } from 'lucide-react';
 import { DuelArenaView } from './DuelArenaView';
+import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 
 interface UserDashboardProps {
     user: User | null;
@@ -28,7 +29,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
 
-    const loadData = async () => {
+    const [loading, setLoading] = useState(true);
+
+    const loadData = useCallback(async () => {
+        setLoading(true);
         const md = await gameService.getMatchday();
         setMatchday(md);
         if (user) {
@@ -39,11 +43,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
             const me = players.find(p => p.username === user.username);
             if (me) setSurvivalStatus(me.status);
         }
-    };
+        setLoading(false);
+    }, [user]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
-    }, [user, view]); // Reload when view changes too (to refresh bets)
+    }, [loadData, view]); // Reload when view changes too (to refresh bets)
 
     useEffect(() => {
         if (view === 'SPY') {
@@ -58,6 +64,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
         loadData();
         if (onBalanceUpdate) onBalanceUpdate();
     };
+
+    if (loading && view === 'HOME') {
+        return <DashboardSkeleton />;
+    }
 
     if (!matchday && view === 'BETTING') {
         return (
@@ -126,9 +136,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
                 {/* Requested Hero Section - ONLY ON HOME */}
                 {view === 'HOME' && (
-                    <div className="relative pt-44 pb-8 md:pt-48 md:pb-20 text-center animate-fade-in px-2">
-                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.5em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
-                        <h1 className="text-8xl sm:text-[10rem] md:text-[22rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
+                    <div className="relative pt-[6.4rem] pb-6 md:pt-[7.2rem] md:pb-16 text-center animate-fade-in px-2">
+                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.6em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
+                        <h1 className="!text-[5.2rem] sm:!text-[9.1rem] md:!text-[19.5rem] font-display font-black italic tracking-tighter leading-[0.72] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_120px_rgba(157,0,255,0.9)] transform-gpu scale-[1.02] md:scale-[1.05]">
                             FANNY<br className="md:hidden" /> BET
                         </h1>
 
@@ -155,10 +165,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {/* Optimized Stats (Affiancate su mobile) - ONLY ON HOME */}
                 {view === 'HOME' && (
                     <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-12 px-2 md:px-0 max-w-5xl mx-auto">
-                        <div className="glass-card card-gold !py-2 md:!py-5 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(255,204,0,0.2)] hover:shadow-[0_0_60px_rgba(255,204,0,0.4)] transition-all duration-500 hover:scale-105">
-                            <span className="text-brand-gold text-[7px] md:text-[12px] tracking-[0.6em] font-black uppercase mb-0.5 block opacity-90">MONTE PREMI</span>
-                            <div className="text-xl md:text-5xl font-mono font-black text-brand-gold drop-shadow-[0_0_20px_rgba(255,204,0,0.6)]">
-                                {potDisplay}<span className="text-[7px] md:text-lg opacity-40 ml-1">FTK</span>
+                        <div className="glass-card card-gold !py-3 md:!py-7 px-2 md:px-16 text-center relative overflow-hidden group shadow-[0_0_48px_rgba(255,204,0,0.25)] hover:shadow-[0_0_80px_rgba(255,204,0,0.5)] transition-all duration-500 hover:scale-105">
+                            <span className="text-brand-gold text-[8px] md:text-[14px] tracking-[0.6em] font-black uppercase mb-0.5 block opacity-95">MONTE PREMI</span>
+                            <div className="text-2xl md:text-6xl font-mono font-black text-brand-gold drop-shadow-[0_0_28px_rgba(255,204,0,0.7)]">
+                                {potDisplay}<span className="text-[8px] md:text-xl opacity-40 ml-1">FTK</span>
                             </div>
                         </div>
 

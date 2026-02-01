@@ -1,6 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { gameService } from '../services/gameService';
+import { supabase } from '../supabaseClient';
 import type { Duel } from '../types';
+
+interface SupabasePayload {
+    new?: {
+        results?: (string | null)[];
+    };
+}
+
+const computeScore = (predictions: string[] | undefined, results: (string | null)[] | undefined) => {
+    if (!predictions || !results) return 0;
+    let s = 0;
+    predictions.forEach((p, i) => {
+        if (results[i] && results[i] === p) s++;
+    });
+    return s;
+};
 
 export const DuelArenaView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'ACTIVE' | 'FIND' | 'GLOBAL'>('ACTIVE');
@@ -10,26 +26,97 @@ export const DuelArenaView: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [showRules, setShowRules] = useState(false);
 
+    // Live update: keep a ref to latest duels and recompute scores on matchday updates
+    const duelsRef = useRef<Duel[]>(duels);
+    useEffect(() => { duelsRef.current = duels; }, [duels]);
+
+
+
+    const refreshDuelScores = useCallback(async (results: (string | null)[] | undefined) => {
+        if (!results) return;
+        const current = duelsRef.current || [];
+        if (current.length === 0) return;
+
+        const updated = await Promise.all(current.map(async (d) => {
+            if (d.status !== 'ACCEPTED') return d;
+            const betC = await gameService.getUserBet(d.challenger.username);
+            const betO = await gameService.getUserBet(d.opponent.username);
+            const cScore = betC ? computeScore(betC.predictions, results) : 0;
+            const oScore = betO ? computeScore(betO.predictions, results) : 0;
+            const newScores = { challenger_score: cScore, opponent_score: oScore };
+
+            // Persist only if changed to avoid spamming DB
+            if (!d.scores || d.scores.challenger_score !== newScores.challenger_score || d.scores.opponent_score !== newScores.opponent_score) {
+                // Fire-and-forget persistence (optimistic UI)
+                gameService.updateDuelScores(d.id, newScores).catch(err => console.error('Failed saving duel scores', err));
+                return { ...d, scores: newScores };
+            }
+
+            return d;
+        }));
+
+        setDuels(updated);
+    }, []);
+
+    const loadDuels = useCallback(async () => {
+        const d = await gameService.getMyDuels();
+        setDuels(d);
+        // compute initial scores after loading
+        const md = await gameService.getMatchday();
+        if (md) await refreshDuelScores(md.results);
+    }, [refreshDuelScores]);
+
+    const loadOpponents = useCallback(async () => {
+        const opp = await gameService.getChallengeableUsers();
+        setOpponents(opp);
+    }, []);
+
+    const loadGlobalDuels = useCallback(async () => {
+        const d = await gameService.getAllDuels();
+        setGlobalDuels(d);
+    }, []);
+
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadDuels();
         loadOpponents();
         loadGlobalDuels();
-    }, []);
+    }, [loadDuels, loadOpponents, loadGlobalDuels]);
 
-    const loadGlobalDuels = async () => {
-        const d = await gameService.getAllDuels();
-        setGlobalDuels(d);
-    };
+    // Subscribe to matchday updates (results changes) and refresh duel scores live
+    useEffect(() => {
+        let subscription: ReturnType<typeof supabase.channel> | null = null;
+        let mounted = true;
 
-    const loadDuels = async () => {
-        const d = await gameService.getMyDuels();
-        setDuels(d);
-    };
+        const setup = async () => {
+            const md = await gameService.getMatchday();
+            if (!md) return;
 
-    const loadOpponents = async () => {
-        const opp = await gameService.getChallengeableUsers();
-        setOpponents(opp);
-    };
+            // initial compute
+            await refreshDuelScores(md.results);
+
+            subscription = supabase
+                .channel(`matchday-${md.id}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matchdays', filter: `id=eq.${md.id}` }, (payload: SupabasePayload) => {
+                    if (!mounted) return;
+                    const newResults = payload.new?.results;
+                    if (newResults) {
+                        refreshDuelScores(newResults);
+                    }
+                })
+                .subscribe();
+        };
+
+        setup();
+
+        return () => {
+            mounted = false;
+            if (subscription) {
+                try { supabase.removeChannel(subscription); } catch { /* ignore */ }
+            }
+        };
+    }, [refreshDuelScores]);
+
 
     const handleChallenge = async (opponentId: string, username: string) => {
         if (!confirm(`Vuoi sfidare ${username} in una battaglia 1vs1?`)) return;
@@ -261,12 +348,57 @@ export const DuelArenaView: React.FC = () => {
 
 // Sub-component for Cards
 const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: string, accept: boolean) => void }> = ({ duel, isPending, onRespond }) => {
-    // Determine if I am challenger or opponent? (Simplified: we show basic info)
-    // In a real app we'd highlight "ME" vs "THEM". 
-    // Assuming the user viewing this is one of them.
+    // Small win animation when a duel becomes COMPLETED with a declared winner
+    const [showWinAnim, setShowWinAnim] = useState(false);
+    const prevStatusRef = useRef<string | undefined>(duel.status);
+
+    useEffect(() => {
+        if (prevStatusRef.current !== duel.status) {
+            if (duel.status === 'COMPLETED' && duel.winnerId) {
+                // Trigger small celebratory animation
+                setTimeout(() => {
+                    setShowWinAnim(true);
+                    document.body.classList.add('bronze-arena');
+
+                    // Hide after animation
+                    const t = setTimeout(() => {
+                        setShowWinAnim(false);
+                        document.body.classList.remove('bronze-arena');
+                    }, 6500);
+
+                    return () => clearTimeout(t);
+                }, 0);
+            }
+            prevStatusRef.current = duel.status;
+        }
+    }, [duel.status, duel.winnerId]);
+
+    const winnerName = duel.winnerId === duel.challenger.id ? duel.challenger.username : duel.winnerId === duel.opponent.id ? duel.opponent.username : 'Vincitore';
 
     return (
         <div className={`relative bg-black rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 ${isPending ? 'border-amber-500/50' : 'border-amber-700/30'} overflow-hidden group hover:border-amber-600 transition-colors`}>
+            {/* WIN OVERLAY */}
+            {showWinAnim && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                    <div className="duel-win-overlay flex flex-col items-center justify-center text-center">
+                        <div className="trophy-pop text-amber-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-300 drop-shadow-[0_0_20px_rgba(255,204,0,0.6)]">
+                                <path d="M8 21h8"></path>
+                                <path d="M9 17h6v-3a6 6 0 0 0 6-6V3H3v5a6 6 0 0 0 6 6v3z"></path>
+                                <circle cx="12" cy="7" r="3"></circle>
+                            </svg>
+                        </div>
+                        <div className="mt-4 text-amber-300 font-black text-lg md:text-2xl uppercase">{winnerName} <span className="text-white">vince!</span></div>
+
+                        <div className="confetti-container absolute inset-0 pointer-events-none">
+                            {Array.from({ length: 20 }).map((_, i) => (
+                                <span key={i} className={`confetti confetti-${i % 6}`} style={{ left: `${(i * 5) % 100}%`, animationDelay: `${(i % 6) * 0.08}s` }} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* VS Badge */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                 <div className="bg-black border-2 border-amber-700 rounded-full w-12 h-12 flex items-center justify-center text-amber-600 font-black italic text-xl shadow-xl group-hover:scale-110 transition-transform">
@@ -314,8 +446,15 @@ const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: str
                         </button>
                     </div>
                 ) : (
-                    <div className="text-xs font-bold uppercase tracking-widest text-amber-700/80">
-                        {duel.status === 'COMPLETED' ? 'Terminata' : 'In Corso...'}
+                    <div className="flex items-center gap-3">
+                        {duel.status === 'COMPLETED' ? (
+                            <div className="text-xs font-bold uppercase tracking-widest text-amber-700/80">Terminata</div>
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                <span className="inline-block bg-amber-600 text-black text-[10px] font-black uppercase px-2 py-1 rounded animate-pulse">LIVE</span>
+                                <div className="text-xs font-bold uppercase tracking-widest text-amber-700/80">In Corso...</div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

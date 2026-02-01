@@ -160,16 +160,73 @@ $$;
 DROP FUNCTION IF EXISTS public.close_survival_season(BIGINT);
 CREATE OR REPLACE FUNCTION public.close_survival_season(p_season_id BIGINT)
 RETURNS json LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_winner_id UUID;
+  v_winner_username TEXT;
+  v_prize_pool NUMERIC;
+  v_alive_count INTEGER;
 BEGIN
   IF NOT public.is_admin() THEN
     RETURN json_build_object('success', false, 'message', 'Unauthorized');
   END IF;
 
+  -- Get season prize pool
+  SELECT prize_pool INTO v_prize_pool 
+  FROM public.survival_seasons 
+  WHERE id = p_season_id;
+
+  IF v_prize_pool IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Stagione non trovata');
+  END IF;
+
+  -- Count alive players
+  SELECT COUNT(*) INTO v_alive_count
+  FROM public.survival_players
+  WHERE season_id = p_season_id AND status = 'ALIVE';
+
+  -- Must have exactly 1 survivor to close
+  IF v_alive_count = 0 THEN
+    RETURN json_build_object('success', false, 'message', 'Nessun sopravvissuto! Impossibile chiudere.');
+  END IF;
+
+  IF v_alive_count > 1 THEN
+    RETURN json_build_object('success', false, 'message', 'Ci sono ancora ' || v_alive_count || ' sopravvissuti. Continua il torneo!');
+  END IF;
+
+  -- Get the winner (the only ALIVE player)
+  SELECT user_id INTO v_winner_id
+  FROM public.survival_players
+  WHERE season_id = p_season_id AND status = 'ALIVE'
+  LIMIT 1;
+
+  -- Get winner username
+  SELECT username INTO v_winner_username
+  FROM public.profiles
+  WHERE id = v_winner_id;
+
+  -- Transfer prize to winner's wallet
+  UPDATE public.profiles
+  SET tokens = tokens + v_prize_pool,
+      wins_survival = wins_survival + 1,
+      total_tokens_won = total_tokens_won + v_prize_pool
+  WHERE id = v_winner_id;
+
+  -- Set winner status
+  UPDATE public.survival_players
+  SET status = 'WINNER'
+  WHERE season_id = p_season_id AND user_id = v_winner_id;
+
+  -- Close the season
   UPDATE public.survival_seasons 
   SET is_active = false, status = 'COMPLETED' 
   WHERE id = p_season_id;
 
-  RETURN json_build_object('success', true, 'message', 'Stagione conclusa');
+  RETURN json_build_object(
+    'success', true, 
+    'message', '🏆 VITTORIA! ' || v_winner_username || ' ha vinto ' || v_prize_pool || ' FTK!',
+    'winner', v_winner_username,
+    'prize', v_prize_pool
+  );
 END;
 $$;
 

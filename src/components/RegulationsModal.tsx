@@ -51,6 +51,8 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                             <li>Non puoi scegliere la stessa squadra più di una volta per stagione.</li>
                             <li>L'ultimo sopravvissuto vince l'intero bottino accumulato.</li>
                             <li>Bonus: Ogni eliminato aggiunge 2 FTK al premio finale.</li>
+                            <li className="text-amber-400"><span className="font-black">IMPORTANTE:</span> Una volta iniziato il torneo, nessun nuovo utente può iscriversi fino alla conclusione.</li>
+                            <li className="text-green-400">Il premio viene <span className="font-black">automaticamente trasferito</span> al wallet del vincitore alla chiusura della stagione.</li>
                         </ul>
                     </section>
 
@@ -108,7 +110,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
 
                     <section className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 mt-8">
                         <p className="text-[10px] text-gray-600 uppercase tracking-widest text-center">
-                            Ultimo aggiornamento: 30 Gennaio 2026 • Versione 2.0
+                            Ultimo aggiornamento: 1 Febbraio 2026 • Versione 2.1
                         </p>
                     </section>
 
