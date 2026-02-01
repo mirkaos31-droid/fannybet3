@@ -97,7 +97,7 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
                     displayedBets.map((bet) => {
                         const accuracy = getAccuracy(bet.predictions, activeMatchday.results);
                         return (
-                            <div key={bet.id} className="glass-card !bg-black/40 border-2 border-brand-gold/20 hover:border-brand-gold/40 transition-all group overflow-hidden relative min-h-[14rem] md:min-h-[18rem] !py-8 md:!py-10 px-5">
+                            <div key={bet.id} className="glass-card !bg-black/40 border-2 border-brand-gold/20 hover:border-brand-gold/40 transition-all group overflow-hidden relative">
                                 {/* Level Tag - Top Right Prominent */}
                                 <div className="absolute top-0 right-0 bg-brand-gold px-4 py-1 skew-x-[-15deg] translate-x-2 -translate-y-1 shadow-[0_0_15px_rgba(255,204,0,0.3)] z-10">
                                     <div className="skew-x-[15deg] font-display font-black text-xs text-black uppercase tracking-tighter">

@@ -9,18 +9,7 @@ export const DuelArenaView: React.FC = () => {
     const [opponents, setOpponents] = useState<{ id: string, username: string, avatarUrl?: string }[]>([]);
     const [loading, setLoading] = useState(false);
     const [showRules, setShowRules] = useState(false);
-    // Drag state for simple reordering
-    const [draggedId, setDraggedId] = useState<string | null>(null);
 
-    const moveDuel = (fromId: string, toId: string) => {
-        const idxFrom = duels.findIndex(d => d.id === fromId);
-        const idxTo = duels.findIndex(d => d.id === toId);
-        if (idxFrom === -1 || idxTo === -1) return;
-        const newDuels = [...duels];
-        const [item] = newDuels.splice(idxFrom, 1);
-        newDuels.splice(idxTo, 0, item);
-        setDuels(newDuels);
-    };
     useEffect(() => {
         loadDuels();
         loadOpponents();
@@ -277,14 +266,7 @@ const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: str
     // Assuming the user viewing this is one of them.
 
     return (
-        <div
-            draggable
-            onDragStart={(e) => { setDraggedId(duel.id); e.dataTransfer.effectAllowed = 'move'; }}
-            onDragEnd={() => setDraggedId(null)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => { e.preventDefault(); if (draggedId) moveDuel(draggedId, duel.id); setDraggedId(null); }}
-            className={`relative bg-black rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 ${isPending ? 'border-amber-500/50' : 'border-amber-700/30'} overflow-hidden group hover:border-amber-600 transition-colors cursor-grab`}
-        >
+        <div className={`relative bg-black rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 ${isPending ? 'border-amber-500/50' : 'border-amber-700/30'} overflow-hidden group hover:border-amber-600 transition-colors`}>
             {/* VS Badge */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                 <div className="bg-black border-2 border-amber-700 rounded-full w-12 h-12 flex items-center justify-center text-amber-600 font-black italic text-xl shadow-xl group-hover:scale-110 transition-transform">

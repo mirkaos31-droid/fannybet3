@@ -11,7 +11,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState(''); // Only for signup
-    const [autoConfirm, setAutoConfirm] = useState(false); // If true, use server-side auto-confirm signup (requires no_confirm_signup function)
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
@@ -29,9 +28,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 if (user) onLogin(user);
             } else {
                 if (!username.trim()) throw new Error("Username richiesto");
-                const { user, error } = autoConfirm
-                    ? await gameService.signUpNoConfirm(username, email, password)
-                    : await gameService.signUp(username, email, password);
+                const { user, error } = await gameService.signUp(username, email, password);
                 if (error) throw new Error(error);
                 if (user) {
                     setTempUser(user);
@@ -114,19 +111,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 onChange={e => setUsername(e.target.value)}
                                 className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-700 focus:outline-none focus:border-brand-orange transition-colors"
                             />
-
-                            <div className="mt-3 flex items-center space-x-2">
-                                <input
-                                    id="autoConfirm"
-                                    type="checkbox"
-                                    checked={autoConfirm}
-                                    onChange={e => setAutoConfirm(e.target.checked)}
-                                    className="w-4 h-4 bg-black/50 border border-white/10 rounded"
-                                />
-                                <label htmlFor="autoConfirm" className="text-xs text-gray-400">
-                                    Auto-confirm email (dev only — requires server function deployed)
-                                </label>
-                            </div>
                         </div>
                     )}
 

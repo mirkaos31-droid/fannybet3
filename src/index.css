@@ -100,52 +100,6 @@
       background-position: 200% center;
     }
   }
-
-  @keyframes win-pulse {
-
-    0%,
-    100% {
-      box-shadow: 0 0 15px rgba(255, 204, 0, 0.4), inset 0 0 5px rgba(255, 204, 0, 0.2);
-    }
-
-    50% {
-      box-shadow: 0 0 35px rgba(255, 204, 0, 0.7), inset 0 0 15px rgba(255, 204, 0, 0.4);
-    }
-  }
-
-  @keyframes super-jackpot-lightning {
-
-    0%,
-    20%,
-    40%,
-    60%,
-    80%,
-    100% {
-      box-shadow: 0 0 25px rgba(185, 242, 255, 0.5), inset 0 0 10px rgba(185, 242, 255, 0.3);
-      filter: brightness(1);
-    }
-
-    10%,
-    30%,
-    50%,
-    70%,
-    90% {
-      box-shadow: 0 0 50px rgba(185, 242, 255, 0.9), inset 0 0 20px rgba(255, 255, 255, 0.5), 0 0 80px rgba(0, 212, 255, 0.4);
-      filter: brightness(1.4);
-    }
-  }
-}
-
-.win-montepremi {
-  animation: win-pulse 2s ease-in-out infinite;
-  border-color: #ffcc00 !important;
-}
-
-.win-superjackpot {
-  animation: super-jackpot-lightning 1.5s linear infinite;
-  border-color: #b9f2ff !important;
-  background: linear-gradient(rgba(10, 10, 12, 0.9), rgba(10, 10, 12, 0.9)) padding-box,
-    linear-gradient(135deg, #b9f2ff 0%, #ffffff 50%, #b9f2ff 100%) border-box !important;
 }
 
 @layer base {

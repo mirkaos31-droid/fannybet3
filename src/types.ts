@@ -14,11 +14,34 @@ export interface User {
     predictionAccuracy: number;
     betsPlaced: number;
     totalTokensWon: number;
+    totalPoints: number;
 }
 
 export type League = 'SERIE A' | 'CUSTOM';
 
-export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'DUEL_ARENA' | 'PROFILE';
+export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'DUEL_ARENA';
+
+export interface Duel {
+    id: string;
+    matchdayId: number;
+    challenger: {
+        id: string;
+        username: string;
+        avatarUrl?: string;
+    };
+    opponent: {
+        id: string;
+        username: string;
+        avatarUrl?: string;
+    };
+    status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED';
+    scores?: {
+        challenger_score: number;
+        opponent_score: number;
+    };
+    winnerId?: string;
+    createdAt: string;
+}
 
 export interface Match {
     id: number;

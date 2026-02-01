@@ -75,39 +75,6 @@ export const gameService = {
         };
     },
 
-    // Sign up using a server-side function that auto-confirms the email (requires deploying `no_confirm_signup` Supabase Function and setting SUPABASE_SERVICE_ROLE_KEY in its secrets)
-    signUpNoConfirm: async (username: string, email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
-        try {
-            const invokeRes = await supabase.functions.invoke('no_confirm_signup', { body: { email, password, username } });
-            if (invokeRes.error) return { user: null, error: invokeRes.error.message };
-
-            // After server-side creation, sign in to get a session
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-            if (signInError) return { user: null, error: signInError.message };
-            if (!signInData.user) return { user: null, error: 'Sign-in failed after server signup' };
-
-            return {
-                user: {
-                    id: signInData.user.id,
-                    username,
-                    role: 'USER',
-                    tokens: 100,
-                    email: signInData.user.email,
-                    wins1x2: 0,
-                    winsSurvival: 0,
-                    level: 1,
-                    predictionAccuracy: 0,
-                    betsPlaced: 0,
-                    totalTokensWon: 0,
-                    totalPoints: 0
-                },
-                error: null
-            };
-        } catch (err: any) {
-            return { user: null, error: err?.message || 'Unknown error' };
-        }
-    },
-
     logout: async () => {
         await supabase.auth.signOut();
     },
@@ -407,71 +374,50 @@ export const gameService = {
         const currentBets = bets.filter(b => b.matchdayId === md.id);
 
         let maxScore = 0;
-        const betScores: { bet: Bet; score: number }[] = [];
-
         currentBets.forEach(bet => {
-            let score = 0;
+            let s = 0;
             md.results.forEach((res, idx) => {
-                if (res && res === bet.predictions[idx]) score++;
+                if (res && res === bet.predictions[idx]) s++;
             });
-            betScores.push({ bet, score });
-            if (score > maxScore) maxScore = score;
+            if (s > maxScore) maxScore = s;
         });
 
-        const totalPrizePool = (md.currentPot || 0) + (md.rolloverPot || 0);
+        const currentTotalPot = md.currentPot;
         let nextRollover = 0;
         let winnerMsg = "";
 
-        // Reward threshold: 7 hits to win the pot
         if (maxScore >= 7) {
-            const winners = betScores.filter(bs => bs.score === maxScore);
-            const prizePerWinner = Math.floor(totalPrizePool / winners.length);
-
-            console.log(`WINNERS FOUND: ${winners.length} users with ${maxScore} hits. Prize per user: ${prizePerWinner}`);
-            winnerMsg = `${winners.length} Vincitori con ${maxScore} punti! (${prizePerWinner} FT cad.)`;
+            console.log("WINNER FOUND");
+            winnerMsg = "VINCITORI TROVATI!";
             nextRollover = 0;
-
-            // Distribute tokens to winners
-            for (const win of winners) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('tokens, total_tokens_won, wins_1x2')
-                    .eq('username', win.bet.username)
-                    .single();
-
-                if (profile) {
-                    await supabase
-                        .from('profiles')
-                        .update({
-                            tokens: (profile.tokens || 0) + prizePerWinner,
-                            total_tokens_won: (profile.total_tokens_won || 0) + prizePerWinner,
-                            wins_1x2: (profile.wins_1x2 || 0) + 1
-                        })
-                        .eq('username', win.bet.username);
-                }
-            }
+            // TODO: Distribute tokens to winners?
         } else {
-            console.log("NO WINNER (Threshold 7 not reached), ROLLOVER");
-            winnerMsg = "Nessun vincitore (Sotto soglia 7). Rollover programmato.";
-            nextRollover = totalPrizePool;
+            console.log("NO WINNER, ROLLOVER");
+            winnerMsg = "NESSUN VINCITORE (Rollover)";
+            nextRollover = currentTotalPot;
         }
 
-        // 2.5 UPDATE USER TOTAL POINTS AND BRS PLACED FOR ALL PARTICIPANTS
-        for (const bs of betScores) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('total_points, bets_placed')
-                .eq('username', bs.bet.username)
-                .single();
+        // 2.5 UPDATE USER TOTAL POINTS
+        for (const bet of currentBets) {
+            let s = 0;
+            md.results.forEach((res, idx) => {
+                if (res && res === bet.predictions[idx]) s++;
+            });
 
-            if (profile) {
+            if (s > 0) {
+                // Fetch current user total_points
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('total_points')
+                    .eq('username', bet.username)
+                    .single();
+
+                const currentPoints = profile?.total_points || 0;
+
                 await supabase
                     .from('profiles')
-                    .update({
-                        total_points: (profile.total_points || 0) + bs.score,
-                        bets_placed: (profile.bets_placed || 0) + 1
-                    })
-                    .eq('username', bs.bet.username);
+                    .update({ total_points: currentPoints + s })
+                    .eq('username', bet.username);
             }
         }
 

@@ -154,12 +154,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                             {podium[1] && (
                                 <div className="flex flex-col items-center group scale-90 md:scale-95 translate-y-2">
                                     <div className="relative mb-3">
-                                        <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full border-4 p-1 bg-black/40 overflow-hidden transition-transform duration-500 group-hover:scale-110 ${viewType === 'MATCHDAY' && podium[1].score >= 10
-                                                ? 'win-superjackpot border-brand-diamond'
-                                                : viewType === 'MATCHDAY' && podium[1].score >= 7
-                                                    ? 'win-montepremi border-brand-gold'
-                                                    : 'border-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.3)]'
-                                            }`}>
+                                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-slate-400 p-1 bg-black/40 overflow-hidden shadow-[0_0_20px_rgba(148,163,184,0.3)] group-hover:scale-110 transition-transform duration-500">
                                             {podium[1].avatarUrl ? (
                                                 <img src={podium[1].avatarUrl} alt={podium[1].username} className="w-full h-full object-cover" />
                                             ) : (
@@ -170,7 +165,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         </div>
                                         <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-400 text-black flex items-center justify-center font-black text-xs">2</div>
                                     </div>
-                                    <span className={`text-[10px] md:text-xs font-black uppercase tracking-tighter truncate max-w-[80px] ${viewType === 'MATCHDAY' && podium[1].score >= 10 ? 'text-brand-diamond' : viewType === 'MATCHDAY' && podium[1].score >= 7 ? 'text-brand-gold' : 'text-slate-300'}`}>{podium[1].username}</span>
+                                    <span className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-tighter truncate max-w-[80px]">{podium[1].username}</span>
                                     <span className="text-lg md:text-xl font-display font-black text-white">{podium[1].score}<span className="text-[10px] opacity-40">{podium[1].extra}</span></span>
                                 </div>
                             )}
@@ -180,12 +175,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                 <div className="flex flex-col items-center group relative z-10 -translate-y-4">
                                     <div className="relative mb-4">
                                         <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">👑</div>
-                                        <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-4 p-1.5 bg-black/40 overflow-hidden transition-transform duration-500 group-hover:scale-110 ${viewType === 'MATCHDAY' && podium[0].score >= 10
-                                                ? 'win-superjackpot border-brand-diamond'
-                                                : viewType === 'MATCHDAY' && podium[0].score >= 7
-                                                    ? 'win-montepremi border-brand-gold'
-                                                    : 'border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.4)]'
-                                            }`}>
+                                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-yellow-400 p-1.5 bg-black/40 overflow-hidden shadow-[0_0_40px_rgba(250,204,21,0.4)] group-hover:scale-110 transition-transform duration-500">
                                             {podium[0].avatarUrl ? (
                                                 <img src={podium[0].avatarUrl} alt={podium[0].username} className="w-full h-full object-cover" />
                                             ) : (
@@ -196,7 +186,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         </div>
                                         <div className="absolute -bottom-2 right-0 w-8 h-8 rounded-full bg-yellow-400 text-black flex items-center justify-center font-black text-sm shadow-lg">1</div>
                                     </div>
-                                    <span className={`text-xs md:text-sm font-black uppercase tracking-tighter truncate max-w-[120px] ${viewType === 'MATCHDAY' && podium[0].score >= 10 ? 'text-brand-diamond' : viewType === 'MATCHDAY' && podium[0].score >= 7 ? 'text-brand-gold' : 'text-yellow-500'}`}>{podium[0].username}</span>
+                                    <span className="text-xs md:text-sm font-black text-yellow-500 uppercase tracking-tighter truncate max-w-[120px]">{podium[0].username}</span>
                                     <span className="text-2xl md:text-3xl font-display font-black text-white">{podium[0].score}<span className="text-[10px] opacity-40">{podium[0].extra}</span></span>
                                 </div>
                             )}
@@ -205,12 +195,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                             {podium[2] && (
                                 <div className="flex flex-col items-center group scale-80 md:scale-90 translate-y-4">
                                     <div className="relative mb-2">
-                                        <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-4 p-1 bg-black/40 overflow-hidden transition-transform duration-500 group-hover:scale-110 ${viewType === 'MATCHDAY' && podium[2].score >= 10
-                                                ? 'win-superjackpot border-brand-diamond'
-                                                : viewType === 'MATCHDAY' && podium[2].score >= 7
-                                                    ? 'win-montepremi border-brand-gold'
-                                                    : 'border-orange-700 shadow-[0_0_20px_rgba(194,65,12,0.3)]'
-                                            }`}>
+                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-orange-700 p-1 bg-black/40 overflow-hidden shadow-[0_0_20px_rgba(194,65,12,0.3)] group-hover:scale-110 transition-transform duration-500">
                                             {podium[2].avatarUrl ? (
                                                 <img src={podium[2].avatarUrl} alt={podium[2].username} className="w-full h-full object-cover" />
                                             ) : (
@@ -221,7 +206,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         </div>
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-orange-700 text-white flex items-center justify-center font-black text-[10px]">3</div>
                                     </div>
-                                    <span className={`text-[9px] md:text-[11px] font-black uppercase tracking-tighter truncate max-w-[70px] ${viewType === 'MATCHDAY' && podium[2].score >= 10 ? 'text-brand-diamond' : viewType === 'MATCHDAY' && podium[2].score >= 7 ? 'text-brand-gold' : 'text-orange-900'}`}>{podium[2].username}</span>
+                                    <span className="text-[9px] md:text-[11px] font-black text-orange-900 uppercase tracking-tighter truncate max-w-[70px]">{podium[2].username}</span>
                                     <span className="text-base md:text-lg font-display font-black text-white">{podium[2].score}<span className="text-[10px] opacity-40">{podium[2].extra}</span></span>
                                 </div>
                             )}
@@ -239,18 +224,10 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                         ) : (
                             list.map((user, idx) => {
                                 const actualRank = idx + 4;
-                                const isSuperJackpot = viewType === 'MATCHDAY' && user.score >= 10;
-                                const isWinner = viewType === 'MATCHDAY' && user.score >= 7 && user.score < 10;
-
                                 return (
                                     <div
                                         key={user.username}
-                                        className={`group flex items-center px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg border transition-all duration-300 transform hover:-translate-y-0.5 ${isSuperJackpot
-                                            ? 'win-superjackpot scale-[1.02] z-10 shadow-[0_0_30px_rgba(185,242,255,0.3)]'
-                                            : isWinner
-                                                ? 'win-montepremi border-brand-gold/50 shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                                                : 'border-brand-purple/20 hover:border-brand-purple shadow-[0_0_15px_rgba(157,0,255,0.05)] hover:shadow-[0_0_20px_rgba(157,0,255,0.15)]'
-                                            }`}
+                                        className="group flex items-center px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg border border-brand-purple/20 hover:border-brand-purple transition-all duration-300 shadow-[0_0_15px_rgba(157,0,255,0.05)] hover:shadow-[0_0_20px_rgba(157,0,255,0.15)] transform hover:-translate-y-0.5"
                                     >
                                         <div className="w-6 font-mono font-black text-[10px] text-gray-600 mr-4">
                                             #{actualRank}
@@ -266,24 +243,19 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className={`font-display font-black italic uppercase tracking-tighter text-sm ${isSuperJackpot ? 'text-brand-diamond drop-shadow-[0_0_8px_rgba(185,242,255,0.5)]' : isWinner ? 'text-brand-gold' : 'text-gray-200'}`}>
+                                            <span className="font-display font-black italic text-gray-200 uppercase tracking-tighter text-sm">
                                                 {user.username}
                                             </span>
                                         </div>
 
                                         <div className="flex items-center gap-4">
                                             <div className="flex flex-col items-end">
-                                                <span className={`text-lg font-display font-black leading-none ${isSuperJackpot ? 'text-brand-diamond' : isWinner ? 'text-brand-gold' : 'text-white'}`}>
+                                                <span className="text-lg font-display font-black text-white leading-none">
                                                     {user.score}<span className="text-[8px] text-gray-600 font-sans font-black">{user.extra}</span>
                                                 </span>
-                                                {isSuperJackpot && (
-                                                    <span className="text-[7px] font-black text-brand-diamond uppercase tracking-widest mt-0.5 animate-pulse flex items-center gap-1">
-                                                        💎 SUPER JACKPOT
-                                                    </span>
-                                                )}
-                                                {isWinner && (
-                                                    <span className="text-[7px] font-black text-brand-gold uppercase tracking-widest mt-0.5 animate-pulse flex items-center gap-1">
-                                                        💰 MONTEPREMI
+                                                {viewType === 'MATCHDAY' && user.score >= 7 && (
+                                                    <span className="text-[6px] font-black text-brand-purple uppercase tracking-widest mt-0.5 animate-pulse">
+                                                        ZONA PREMIO
                                                     </span>
                                                 )}
                                             </div>
