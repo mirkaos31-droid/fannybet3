@@ -58,15 +58,27 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
             )}
 
             <div className="glass-panel !bg-black/40 !p-1 md:!p-12 border-0 md:border-2 border-white/10 shadow-[0_0_50px_rgba(157,0,255,0.15)]">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 px-4 md:px-0 mt-6 md:mt-0">
+                <div className="flex flex-col items-center gap-6 mb-12 px-4 md:px-0 mt-6 md:mt-0">
                     <div className="bg-acid-glow px-6 py-2 md:py-3 skew-x-[-12deg] shadow-[0_0_30px_rgba(191,255,0,0.4)]">
                         <h3 className="text-2xl md:text-4xl font-display font-black italic tracking-tighter text-black skew-x-[12deg]">
                             ARENA <span className="text-black/60">1X2</span>
                         </h3>
                     </div>
-                    <div className="flex items-center gap-4 bg-white/5 px-6 py-2 rounded-2xl border border-white/10 overflow-x-auto whitespace-nowrap">
-                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">MONTEPREMI</span>
-                        <span className="text-xl md:text-2xl font-mono font-black text-brand-gold">{matchday.currentPot} FTK</span>
+
+                    <div className="flex flex-col items-center gap-3 w-full">
+                        {/* WIDENED MONTEPREMI CARD (Original Style - Centered & Widened) */}
+                        <div className="flex items-center justify-center gap-6 bg-white/5 px-12 md:px-24 py-4 rounded-2xl border border-white/10 w-auto min-w-[300px] md:min-w-[450px]">
+                            <span className="text-[10px] md:text-xs font-mono text-gray-500 uppercase tracking-[0.4em]">MONTEPREMI</span>
+                            <span className="text-xl md:text-3xl font-mono font-black text-brand-gold drop-shadow-[0_0_15px_rgba(255,204,0,0.2)]">{matchday.currentPot} FTK</span>
+                        </div>
+
+                        {matchday.deadline && (
+                            <span className={`text-[10px] md:text-xs font-black uppercase tracking-widest ${new Date() > new Date(matchday.deadline) || matchday.betsLocked ? 'text-red-500' : 'text-acid-glow'}`}>
+                                {new Date() > new Date(matchday.deadline) || matchday.betsLocked
+                                    ? '🚫 Scommesse Chiuse'
+                                    : `⏳ Scadenza: ${new Date(matchday.deadline).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })} ore ${new Date(matchday.deadline).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -123,26 +135,26 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
                         <button
                             onClick={() => submitBet(false)}
-                            disabled={loading || (user?.tokens || 0) < 1}
-                            className={`py-4 md:py-6 rounded-2xl text-lg md:text-xl font-display font-black italic tracking-tighter uppercase transition-all hover:scale-[0.98] active:scale-95 shadow-[0_0_20px_rgba(255,204,0,0.2)] relative overflow-hidden group ${loading || (user?.tokens || 0) < 1
+                            disabled={loading || (user?.tokens || 0) < 1 || (matchday.deadline ? new Date() > new Date(matchday.deadline) : false) || matchday.betsLocked}
+                            className={`py-4 md:py-6 rounded-2xl text-lg md:text-xl font-display font-black italic tracking-tighter uppercase transition-all hover:scale-[0.98] active:scale-95 shadow-[0_0_20px_rgba(255,204,0,0.2)] relative overflow-hidden group ${loading || (user?.tokens || 0) < 1 || (matchday.deadline ? new Date() > new Date(matchday.deadline) : false) || matchday.betsLocked
                                 ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
                                 : 'bg-brand-gold text-black border-2 border-white/20'
                                 }`}
                         >
                             <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
-                            {loading ? '...' : 'MONTEPREMI 1FT'}
+                            {loading ? '...' : ((matchday.deadline ? new Date() > new Date(matchday.deadline) : false) || matchday.betsLocked ? 'SCOMMESSE CHIUSE' : 'MONTEPREMI 1FT')}
                         </button>
 
                         <button
                             onClick={() => submitBet(true)}
-                            disabled={loading || (user?.tokens || 0) < 2}
-                            className={`py-4 md:py-6 rounded-2xl text-lg md:text-xl font-display font-black italic tracking-tighter uppercase transition-all hover:scale-[0.98] active:scale-95 shadow-[0_0_30px_rgba(185,242,255,0.4)] relative overflow-hidden group ${loading || (user?.tokens || 0) < 2
+                            disabled={loading || (user?.tokens || 0) < 2 || (matchday.deadline ? new Date() > new Date(matchday.deadline) : false) || matchday.betsLocked}
+                            className={`py-4 md:py-6 rounded-2xl text-lg md:text-xl font-display font-black italic tracking-tighter uppercase transition-all hover:scale-[0.98] active:scale-95 shadow-[0_0_30px_rgba(185,242,255,0.4)] relative overflow-hidden group ${loading || (user?.tokens || 0) < 2 || (matchday.deadline ? new Date() > new Date(matchday.deadline) : false) || matchday.betsLocked
                                 ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
                                 : 'bg-gradient-to-r from-brand-diamond via-white to-brand-diamond text-black border-2 border-white/20'
                                 }`}
                         >
                             <div className="absolute inset-0 bg-white/40 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
-                            {loading ? '...' : 'SUPERJACKPOT 2FT'}
+                            {loading ? '...' : ((matchday.deadline ? new Date() > new Date(matchday.deadline) : false) || matchday.betsLocked ? 'SCOMMESSE CHIUSE' : 'SUPERJACKPOT 2FT')}
                         </button>
                     </div>
                 </div>

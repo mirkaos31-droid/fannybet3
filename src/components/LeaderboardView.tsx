@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { Matchday } from '../types';
 import { gameService } from '../services/gameService';
+import { Gem } from 'lucide-react';
 
 interface LeaderboardViewProps {
     matchday: Matchday | null;
@@ -12,6 +13,7 @@ interface RankedUser {
     predictions: string[];
     timestamp: string;
     avatarUrl?: string;
+    includeSuperJackpot?: boolean;
 }
 
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) => {
@@ -58,7 +60,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                             score,
                             predictions: bet.predictions,
                             timestamp: bet.timestamp,
-                            avatarUrl: bet.avatarUrl
+                            avatarUrl: bet.avatarUrl,
+                            includeSuperJackpot: bet.includeSuperJackpot
                         };
                     });
 
@@ -89,8 +92,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
     }
 
     const currentRankingData = viewType === 'MATCHDAY'
-        ? ranking.map(r => ({ username: r.username, score: r.score, avatarUrl: r.avatarUrl, extra: '/12' }))
-        : globalRanking.map(r => ({ username: r.username, score: r.totalPoints, avatarUrl: r.avatarUrl, extra: ' PT' }));
+        ? ranking.map(r => ({ username: r.username, score: r.score, avatarUrl: r.avatarUrl, extra: '/12', includeSuperJackpot: r.includeSuperJackpot }))
+        : globalRanking.map(r => ({ username: r.username, score: r.totalPoints, avatarUrl: r.avatarUrl, extra: ' PT', includeSuperJackpot: false }));
 
     const podium = currentRankingData.slice(0, 3);
     const list = currentRankingData.slice(3);
@@ -165,7 +168,10 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         </div>
                                         <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-400 text-black flex items-center justify-center font-black text-xs">2</div>
                                     </div>
-                                    <span className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-tighter truncate max-w-[80px]">{podium[1].username}</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-tighter truncate max-w-[80px]">{podium[1].username}</span>
+                                        {podium[1].includeSuperJackpot && <Gem size={10} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
+                                    </div>
                                     <span className="text-lg md:text-xl font-display font-black text-white">{podium[1].score}<span className="text-[10px] opacity-40">{podium[1].extra}</span></span>
                                 </div>
                             )}
@@ -186,7 +192,10 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         </div>
                                         <div className="absolute -bottom-2 right-0 w-8 h-8 rounded-full bg-yellow-400 text-black flex items-center justify-center font-black text-sm shadow-lg">1</div>
                                     </div>
-                                    <span className="text-xs md:text-sm font-black text-yellow-500 uppercase tracking-tighter truncate max-w-[120px]">{podium[0].username}</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-xs md:text-sm font-black text-yellow-500 uppercase tracking-tighter truncate max-w-[120px]">{podium[0].username}</span>
+                                        {podium[0].includeSuperJackpot && <Gem size={12} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
+                                    </div>
                                     <span className="text-2xl md:text-3xl font-display font-black text-white">{podium[0].score}<span className="text-[10px] opacity-40">{podium[0].extra}</span></span>
                                 </div>
                             )}
@@ -206,7 +215,10 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         </div>
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-orange-700 text-white flex items-center justify-center font-black text-[10px]">3</div>
                                     </div>
-                                    <span className="text-[9px] md:text-[11px] font-black text-orange-900 uppercase tracking-tighter truncate max-w-[70px]">{podium[2].username}</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[9px] md:text-[11px] font-black text-orange-900 uppercase tracking-tighter truncate max-w-[70px]">{podium[2].username}</span>
+                                        {podium[2].includeSuperJackpot && <Gem size={10} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
+                                    </div>
                                     <span className="text-base md:text-lg font-display font-black text-white">{podium[2].score}<span className="text-[10px] opacity-40">{podium[2].extra}</span></span>
                                 </div>
                             )}
@@ -243,8 +255,10 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="font-display font-black italic text-gray-200 uppercase tracking-tighter text-sm">
+                                            <span className="font-display font-black italic text-gray-200 uppercase tracking-tighter text-sm flex items-center gap-1.5">
                                                 {user.username}
+                                                {/* @ts-ignore */}
+                                                {user.includeSuperJackpot && <Gem size={12} className="text-cyan-400 fill-cyan-400/20" />}
                                             </span>
                                         </div>
 

@@ -69,7 +69,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 <div className="hidden md:block p-8 md:p-10 border-b border-white/5">
-                    <h1 className="text-2xl md:text-4xl modern-title">
+                    <h1 className="text-[0.98rem] md:text-[1.46rem] modern-title">
                         FANNY<span className="text-brand-orange drop-shadow-[0_0_10px_rgba(255,106,0,0.5)]">BET</span>
                     </h1>
                 </div>

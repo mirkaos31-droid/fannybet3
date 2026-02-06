@@ -26,7 +26,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
             const tzOffset = date.getTimezoneOffset() * 60000;
             const localISODate = new Date(date.getTime() - tzOffset).toISOString();
             return localISODate.slice(0, 16);
-        } catch (e) {
+        } catch {
             return isoString.slice(0, 16);
         }
     };
@@ -83,39 +83,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
         <div className="min-h-screen bg-[#0a0a0a] -mx-4 -mt-4 md:-mx-8 md:-mt-8 p-4 md:p-10 animate-fade-in text-white relative">
             <div className="max-w-6xl mx-auto space-y-8 pb-20">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-white/10 pb-8">
-                    <div className="flex flex-col md:flex-row items-center gap-8 w-full md:w-auto">
-                        <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white">ADMIN CONSOLE</h2>
-                        <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10 w-full md:w-auto overflow-x-auto">
-                            <button
-                                onClick={() => setActiveTab('MATCHDAY')}
-                                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'MATCHDAY' ? 'bg-[#dfff00] text-black shadow-[0_0_20px_rgba(223,255,0,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                            >
-                                ⚽ 1X2 GESTIONE
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('SURVIVAL')}
-                                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'SURVIVAL' ? 'bg-[#dfff00] text-black shadow-[0_0_20px_rgba(223,255,0,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                            >
-                                ☠️ SURVIVAL
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('USERS')}
-                                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-[#dfff00] text-black shadow-[0_0_20px_rgba(223,255,0,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                            >
-                                👥 UTENTI
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('SYSTEM')}
-                                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'SYSTEM' ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                            >
-                                ⚙️ SYSTEM
-                            </button>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6">
+                    <div className="flex flex-col lg:flex-row items-center gap-6 w-full lg:w-auto">
+                        <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter text-white shrink-0 uppercase">Admin</h2>
+
+                        {/* Tab Switcher - Optimized for Mobile (Scrollable & Thinner) */}
+                        <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/10 w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth">
+                            {[
+                                { id: 'MATCHDAY', label: '1X2', icon: '⚽' },
+                                { id: 'SURVIVAL', label: 'Survival', icon: '☠️' },
+                                { id: 'USERS', label: 'Utenti', icon: '👥' },
+                                { id: 'SYSTEM', label: 'System', icon: '⚙️' }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={`flex-1 md:flex-none whitespace-nowrap px-3 md:px-5 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all
+                                        ${activeTab === tab.id
+                                            ? tab.id === 'SYSTEM' ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-[#dfff00] text-black shadow-[0_0_15px_rgba(223,255,0,0.3)]'
+                                            : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                >
+                                    <span className="mr-1.5">{tab.icon}</span> {tab.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
                     {onToggleView && (
-                        <button onClick={onToggleView} className="w-full md:w-auto bg-transparent text-[#dfff00] px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#dfff00]/10 hover:scale-105 active:scale-95 transition-all border border-[#dfff00] shadow-[0_0_15px_rgba(223,255,0,0.1)]">
-                            RETURN HOME
+                        <button onClick={onToggleView} className="w-full md:w-auto bg-transparent text-[#dfff00] px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#dfff00]/10 hover:scale-[1.02] active:scale-95 transition-all border border-[#dfff00]/50 shadow-[0_0_15px_rgba(223,255,0,0.1)]">
+                            ← HOME
                         </button>
                     )}
                 </div>
@@ -141,18 +136,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                         <input
                                             type="datetime-local"
                                             value={formatForInput(matchday.deadline)}
-                                            onChange={(e) => {
+                                            onChange={async (e) => {
                                                 const val = e.target.value;
                                                 const localDate = new Date(val);
                                                 const isoDate = localDate.toISOString();
                                                 setMatchday({ ...matchday, deadline: isoDate });
-                                                gameService.updateDeadline(isoDate);
+                                                await gameService.updateDeadline(isoDate);
+                                                const md = await gameService.getMatchday();
+                                                setMatchday(md);
                                             }}
                                             className="bg-black/50 border border-white/10 rounded-xl px-5 py-3 w-full text-white font-black text-lg outline-none focus:border-[#dfff00] focus:shadow-[0_0_15px_rgba(223,255,0,0.2)] transition-all cursor-pointer"
                                         />
                                         <div className="absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none text-2xl opacity-50">📅</div>
                                     </div>
                                     <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest text-white">Sincronizzazione orario attiva</p>
+
+                                    <div className="mt-3 flex items-center gap-3">
+                                        {matchday.betsLocked ? (
+                                            <>
+                                                <span className="px-3 py-1 rounded-full bg-red-600 text-black font-black text-[10px] uppercase">Scommesse CHIUSE</span>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!confirm('Sbloccare le scommesse per questa giornata?')) return;
+                                                        const res = await gameService.setBetLock(false);
+                                                        if (res && res.success) {
+                                                            const md = await gameService.getMatchday();
+                                                            setMatchday(md);
+                                                            alert('Scommesse sbloccate.');
+                                                        } else {
+                                                            alert('Errore: ' + (res?.message || 'Operazione fallita'));
+                                                        }
+                                                    }}
+                                                    className="px-3 py-2 rounded-xl bg-amber-600 text-black font-black uppercase text-xs tracking-widest hover:bg-amber-500 transition-all"
+                                                >
+                                                    Sblocca Inserimenti
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <span className="px-3 py-1 rounded-full bg-green-600 text-black font-black text-[10px] uppercase">Scommesse APERTE</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -187,6 +210,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                         className="flex-1 bg-transparent text-[#dfff00] py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-[#dfff00]/50 hover:bg-[#dfff00] hover:text-black hover:border-[#dfff00] hover:shadow-[0_0_20px_rgba(223,255,0,0.4)] transition-all"
                                     >
                                         📂 Archivia & Processa
+                                    </button>
+
+                                    <button
+                                        onClick={async () => {
+                                            // Diagnostic: check duels grouped by matchday
+                                            const summary = await gameService.adminGetDuelsSummary();
+                                            if (!summary || summary.length === 0) {
+                                                alert('Nessun duello registrato.');
+                                                return;
+                                            }
+
+                                            const details = summary
+                                                .sort((a, b) => b.matchdayId - a.matchdayId)
+                                                .map(s => `Matchday ${s.matchdayId}: ${s.count} duello(s)`)
+                                                .join('\n');
+
+                                            alert(`Duel summary:\n\n${details}`);
+                                        }}
+                                        className="flex-1 bg-transparent text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/20 hover:bg-white/5 transition-all"
+                                    >
+                                        🔍 Check Arena Duelli
                                     </button>
                                 </div>
                             </div>

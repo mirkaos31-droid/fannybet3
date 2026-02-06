@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { gameService } from '../services/gameService';
 import type { Matchday, Bet, User, ViewMode } from '../types';
 import { BettingInterface } from './BettingInterface';
@@ -12,6 +12,7 @@ import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
 import { Zap, Eye, Trophy, Skull, Swords } from 'lucide-react';
 import { DuelArenaView } from './DuelArenaView';
+import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 
 interface UserDashboardProps {
     user: User | null;
@@ -28,7 +29,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
 
-    const loadData = async () => {
+    const [loading, setLoading] = useState(true);
+
+    const loadData = useCallback(async () => {
+        setLoading(true);
         const md = await gameService.getMatchday();
         setMatchday(md);
         if (user) {
@@ -39,25 +43,35 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
             const me = players.find(p => p.username === user.username);
             if (me) setSurvivalStatus(me.status);
         }
-    };
+        setLoading(false);
+    }, [user]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
-    }, [user, view]); // Reload when view changes too (to refresh bets)
+    }, [loadData, view]); // Reload when view changes too (to refresh bets)
 
     useEffect(() => {
+        // Reset classes
+        document.body.classList.remove('gold-arena', 'bronze-arena');
+
         if (view === 'SPY') {
             document.body.classList.add('gold-arena');
-        } else {
-            document.body.classList.remove('gold-arena');
+        } else if (view === 'DUEL_ARENA') {
+            document.body.classList.add('bronze-arena');
         }
-        return () => document.body.classList.remove('gold-arena');
+
+        return () => document.body.classList.remove('gold-arena', 'bronze-arena');
     }, [view]);
 
     const handleBetPlaced = () => {
         loadData();
         if (onBalanceUpdate) onBalanceUpdate();
     };
+
+    if (loading && view === 'HOME') {
+        return <DashboardSkeleton />;
+    }
 
     if (!matchday && view === 'BETTING') {
         return (
@@ -84,15 +98,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
     // Fallback for Stats Header if no matchday
     const jackpotDisplay = matchday ? matchday.superJackpot : 1000;
-    const potDisplay = matchday ? matchday.currentPot : 0; // Or fetch rollover?
-
-    // We can just proceed, but handle stats carefully
+    const potDisplay = matchday ? matchday.currentPot : 0;
 
     return (
         <>
+            {/* Nav & Modals */}
             {showProfile && (
-                <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/95 backdrop-blur-md">
-                    <div className="min-h-screen flex items-start justify-center pt-32 pb-24 md:pt-40">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/90 backdrop-blur-xl animate-fade-in" onClick={() => setShowProfile(false)}></div>
+                    <div className="w-full max-w-4xl relative z-10 animate-scale-in">
                         <ProfileView
                             user={user}
                             onClose={() => setShowProfile(false)}
@@ -126,9 +140,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
                 {/* Requested Hero Section - ONLY ON HOME */}
                 {view === 'HOME' && (
-                    <div className="relative pt-44 pb-8 md:pt-48 md:pb-20 text-center animate-fade-in px-2">
-                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.5em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
-                        <h1 className="text-8xl sm:text-[10rem] md:text-[22rem] font-display font-black italic tracking-tighter leading-[0.8] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(157,0,255,0.5)]">
+                    <div className="relative pt-[6.4rem] pb-6 md:pt-[7.2rem] md:pb-16 text-center animate-fade-in px-2">
+                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.6em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
+                        <h1 className="!text-[5.2rem] sm:!text-[9.1rem] md:!text-[19.5rem] font-display font-black italic tracking-tighter leading-[0.72] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_120px_rgba(157,0,255,0.9)] transform-gpu scale-[1.02] md:scale-[1.05]">
                             FANNY<br className="md:hidden" /> BET
                         </h1>
 
@@ -154,22 +168,25 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {/* Optimized Stats (Affiancate su mobile) - ONLY ON HOME */}
                 {view === 'HOME' && (
-                    <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-12 px-2 md:px-0 max-w-5xl mx-auto">
-                        <div className="glass-card card-gold !py-2 md:!py-5 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(255,204,0,0.2)] hover:shadow-[0_0_60px_rgba(255,204,0,0.4)] transition-all duration-500 hover:scale-105">
-                            <span className="text-brand-gold text-[7px] md:text-[12px] tracking-[0.6em] font-black uppercase mb-0.5 block opacity-90">MONTE PREMI</span>
-                            <div className="text-xl md:text-5xl font-mono font-black text-brand-gold drop-shadow-[0_0_20px_rgba(255,204,0,0.6)]">
-                                {potDisplay}<span className="text-[7px] md:text-lg opacity-40 ml-1">FTK</span>
+                    <>
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-12 px-2 md:px-0 max-w-5xl mx-auto items-stretch">
+                            {/* MONTEPREMI CARD */}
+                            <div className="card-perforated border-gold-real !py-4 md:!py-8 px-2 md:px-12 text-center group transition-all duration-500 hover:scale-105 shadow-[0_0_48px_rgba(255,204,0,0.25)] hover:shadow-[0_0_80px_rgba(255,204,0,0.5)] flex flex-col justify-center">
+                                <span className="text-brand-gold text-[10px] md:text-[16px] tracking-[0.6em] font-black uppercase mb-1 block opacity-95 relative z-10">MONTE PREMI</span>
+                                <div className="text-4xl md:text-7xl font-display font-black text-brand-gold drop-shadow-[0_0_28px_rgba(255,204,0,0.7)] relative z-10 font-digital">
+                                    {potDisplay}<span className="text-[12px] md:text-2xl opacity-40 ml-1 font-mono">FTK</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="glass-card card-diamond !py-2 md:!py-5 px-2 md:px-12 text-center relative overflow-hidden group shadow-[0_0_40px_rgba(185,242,255,0.2)] hover:shadow-[0_0_60px_rgba(185,242,255,0.4)] transition-all duration-500 hover:scale-105">
-                            {/* Diamond Facet sparkle effects handled by CSS after */}
-                            <span className="text-white text-[7px] md:text-[12px] tracking-[0.6em] font-black uppercase mb-0.5 block opacity-70 relative z-10">SUPER JACKPOT</span>
-                            <div className="text-xl md:text-5xl font-mono font-black text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.7)] relative z-10">
-                                {jackpotDisplay}<span className="text-[7px] md:text-lg opacity-50 ml-1">FTK</span>
+                            {/* SUPER JACKPOT CARD */}
+                            <div className="card-perforated card-neon-animated !py-4 md:!py-8 px-2 md:px-12 text-center group transition-all duration-500 hover:scale-105 flex flex-col justify-center">
+                                <span className="text-white text-[9px] md:text-[14px] tracking-[0.6em] font-black uppercase mb-1 block opacity-70 relative z-10">SUPER JACKPOT</span>
+                                <div className="text-3xl md:text-6xl font-display font-black text-cyan-400 drop-shadow-[0_0_25px_rgba(0,255,255,0.7)] relative z-10 font-digital">
+                                    {jackpotDisplay}<span className="text-[11px] md:text-2xl opacity-70 text-cyan-200 ml-1 font-mono">FTK</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </>
                 )}
 
                 {view !== 'HOME' && (
@@ -235,33 +252,36 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Fannies</h3>
                         </button>
 
-                        {/* CLASSIFICHE (MID RIGHT RIGHT) - SWAPPED FROM SFIDE */}
+                        {/* CLASSIFICHE (MID RIGHT RIGHT) */}
                         <button
                             onClick={() => setView('LEADERBOARD')}
-                            className="glass-card card-purple col-span-1 group h-[11.5rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-slow [animation-delay:1s] hover:rotate-1 w-full"
+                            className="glass-card card-vibrant-purple border-brand-purple/50 col-span-1 group h-[11.5rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-slow [animation-delay:0.8s] hover:-rotate-1 w-full shadow-[0_0_20px_rgba(157,0,255,0.2)] hover:shadow-[0_0_40px_rgba(157,0,255,0.4)] transition-all"
                         >
-                            <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-brand-purple/5 to-transparent"></div>
-                            <div className="mb-0.5 md:mb-2 group-hover:scale-110 transition-transform duration-500 relative z-10">
-                                <Trophy size={24} className="text-brand-purple md:w-12 md:h-12" strokeWidth={2.5} />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#9d00ff]/5 blur-[60px] rounded-full group-hover:bg-[#9d00ff]/10 transition-all duration-700"></div>
+                            <div className="mb-0.5 md:mb-2 group-hover:scale-110 transition-transform duration-500">
+                                <Trophy size={24} className="text-brand-purple-vibrant md:w-12 md:h-12" strokeWidth={2.5} />
                             </div>
-                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase relative z-10">Classifiche</h3>
+                            <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Classifica</h3>
                         </button>
 
-                        {/* SFIDE (BOTTOM FULL) - SWAPPED FROM CLASSIFICHE */}
-                        <button
-                            onClick={() => setView('DUEL_ARENA')}
-                            className="glass-card card-bronze col-span-4 group h-[16.5rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float-slow [animation-delay:2s] hover:scale-[1.01] w-full"
-                        >
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#b45309]/5 blur-[60px] rounded-full group-hover:bg-[#b45309]/10 transition-all duration-700"></div>
-                            <div className="mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500">
-                                <Swords size={40} className="text-[#b45309] md:w-20 md:h-20" strokeWidth={2.5} />
-                            </div>
-                            <h3 className="text-xl sm:text-4xl md:text-7xl font-black italic tracking-tighter text-white/90 uppercase">Sfide</h3>
-                            <p className="text-gray-600 text-[8px] sm:text-sm md:text-base mt-1 uppercase tracking-[0.3em] font-black group-hover:text-[#b45309] transition-colors">il muro della gloria.</p>
-                        </button>
+                        {/* ARENA DELLE SFIDE (BOTTOM FULL WIDTH) */}
+                        <div className="col-span-4">
+                            <button
+                                onClick={() => setView('DUEL_ARENA')}
+                                className="glass-card card-bronze group h-[11.5rem] sm:h-[20rem] md:h-[34rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float [animation-delay:1.5s] hover:scale-[1.01] w-full"
+                            >
+                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#b45309]/5 blur-[60px] rounded-full group-hover:bg-[#b45309]/10 transition-all duration-700"></div>
+                                <div className="mb-1 md:mb-4 group-hover:rotate-12 transition-transform duration-500">
+                                    <Swords size={32} className="text-[#b45309] md:w-16 md:h-16" strokeWidth={2.5} />
+                                </div>
+                                <h3 className="text-[12px] sm:text-xl md:text-3xl font-black italic tracking-tighter text-white/90 uppercase">Sfide</h3>
+                                <p className="text-gray-600 text-[6px] sm:text-[9px] md:text-xs mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#b45309] transition-colors">duello 1vs1.</p>
+                            </button>
+                        </div>
                     </div>
                 )}
 
+                {/* Sub-views */}
                 {view === 'BETTING' && matchday && (
                     <div className="relative animate-fade-in">
                         <BettingInterface

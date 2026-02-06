@@ -59,11 +59,25 @@ CREATE POLICY "Bets are viewable by everyone"
 
 DROP POLICY IF EXISTS "Users can create their own bets" ON public.bets;
 CREATE POLICY "Users can create their own bets" 
-  ON public.bets FOR INSERT WITH CHECK (auth.uid() = user_id);
+  ON public.bets FOR INSERT WITH CHECK (
+    auth.uid() = user_id
+    AND (
+      SELECT COALESCE((deadline > now()), true) FROM public.matchdays WHERE id = matchday_id
+    ) = true
+  );
 
 DROP POLICY IF EXISTS "Users can update their own bets" ON public.bets;
 CREATE POLICY "Users can update their own bets" 
-  ON public.bets FOR UPDATE USING (auth.uid() = user_id);
+  ON public.bets FOR UPDATE
+  USING (auth.uid() = user_id AND (
+      SELECT COALESCE((deadline > now()), true) FROM public.matchdays WHERE id = matchday_id
+    ) = true)
+  WITH CHECK (
+    auth.uid() = user_id
+    AND (
+      SELECT COALESCE((deadline > now()), true) FROM public.matchdays WHERE id = matchday_id
+    ) = true
+  );
 
 -- Policies for Survival
 DROP POLICY IF EXISTS "Survival seasons are viewable by everyone" ON public.survival_seasons;

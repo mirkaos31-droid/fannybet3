@@ -35,6 +35,7 @@ export interface Duel {
         avatarUrl?: string;
     };
     status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED';
+    wagerAmount?: number;
     scores?: {
         challenger_score: number;
         opponent_score: number;
@@ -62,6 +63,14 @@ export interface Matchday {
 
     status: 'OPEN' | 'CLOSED' | 'ARCHIVED';
     deadline: string; // ISO Date
+
+    // Betting control
+    betsLocked?: boolean;
+
+    // Post-processing metadata
+    winners?: string[]; // Array of winner usernames (populated after archive)
+    winnerAnimation?: boolean; // Show animation for winners
+    leaderboardAnimation?: boolean; // Show animation on leaderboard
 }
 
 export interface Bet {

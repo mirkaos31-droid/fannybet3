@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { User } from '../types';
 import { gameService } from '../services/gameService';
-import { Camera, Edit2, Check, X, Trophy, Skull, Activity, Target } from 'lucide-react';
+import { Camera, Edit2, Check, X, Trophy, Skull, Activity, Target, ArrowLeft } from 'lucide-react';
 
 interface ProfileViewProps {
     user: User | null;
@@ -107,6 +107,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                 <div className="absolute top-1/2 -right-48 w-[500px] h-[500px] bg-brand-purple/5 blur-[150px] rounded-full animate-float"></div>
                 <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full"></div>
             </div>
+
+            {/* Back Button (top-left) */}
+            <div className="absolute left-4 top-2 z-20">
+                <button onClick={onClose} className="flex items-center gap-2 px-3 py-2 rounded-full bg-black/40 border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-black/50 transition">
+                    <ArrowLeft size={16} />
+                    <span>INDIETRO</span>
+                </button>
+            </div>
+
 
             {/* Header / Avatar Section */}
             <div className="flex flex-col items-center mb-10">
@@ -318,15 +327,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                 </button>
             </div>
 
-            {/* Back Button */}
-            <div className="mt-10 flex justify-center">
-                <button
-                    onClick={onClose}
-                    className="px-12 py-3 rounded-full text-gray-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.4em]"
-                >
-                    Chiudi Profilo
-                </button>
-            </div>
+
         </div>
     );
 };

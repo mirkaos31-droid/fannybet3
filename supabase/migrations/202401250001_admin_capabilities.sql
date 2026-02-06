@@ -1,4 +1,6 @@
 -- 1. Enable Admins to UPDATE other profiles (for Tokens/Role)
+-- Make idempotent: drop policy if exists
+DROP POLICY IF EXISTS "Admins can update any profile" ON public.profiles;
 CREATE POLICY "Admins can update any profile" 
 ON public.profiles 
 FOR UPDATE 

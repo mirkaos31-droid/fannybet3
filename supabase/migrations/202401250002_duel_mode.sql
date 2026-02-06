@@ -1,5 +1,10 @@
 -- 1. Create Duels Table
-CREATE TYPE duel_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'COMPLETED');
+-- Create enum type if missing
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'duel_status') THEN
+    CREATE TYPE duel_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'COMPLETED');
+  END IF;
+END$$;
 
 CREATE TABLE IF NOT EXISTS public.duels (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -16,15 +21,18 @@ CREATE TABLE IF NOT EXISTS public.duels (
 -- Enable RLS
 ALTER TABLE public.duels ENABLE ROW LEVEL SECURITY;
 
--- Policies
+-- Policies (idempotent)
+DROP POLICY IF EXISTS "Users can view duels they are part of" ON public.duels;
 CREATE POLICY "Users can view duels they are part of" 
   ON public.duels FOR SELECT 
   USING (auth.uid() = challenger_id OR auth.uid() = opponent_id);
 
+DROP POLICY IF EXISTS "Users can create duels" ON public.duels;
 CREATE POLICY "Users can create duels" 
   ON public.duels FOR INSERT 
   WITH CHECK (auth.uid() = challenger_id);
 
+DROP POLICY IF EXISTS "Users can update duels they are part of" ON public.duels;
 CREATE POLICY "Users can update duels they are part of" 
   ON public.duels FOR UPDATE 
   USING (auth.uid() = challenger_id OR auth.uid() = opponent_id);
