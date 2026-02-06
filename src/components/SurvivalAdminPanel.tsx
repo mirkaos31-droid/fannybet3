@@ -113,8 +113,8 @@ export const SurvivalAdminPanel: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="bg-black/40 border-2 border-[#dfff00] p-4 rounded-3xl text-center shadow-[0_0_20px_rgba(223,255,0,0.1)] relative overflow-hidden group hover:scale-[1.02] transition-transform">
                     <div className="absolute inset-0 bg-[#dfff00]/5 group-hover:bg-[#dfff00]/10 transition-colors"></div>
-                    <div className="text-[9px] text-[#dfff00] font-black uppercase tracking-[0.3em] mb-1 opacity-80">Montepremi</div>
-                    <div className="text-3xl font-black text-white italic tracking-tighter drop-shadow-lg">{season.prizePool} <span className="text-xl not-italic">🪙</span></div>
+                    <div className="text-[9px] text-[#dfff00] font-black uppercase tracking-[0.3em] mb-1 opacity-80">Montepremi Accumulato</div>
+                    <div className="text-3xl font-black text-white italic tracking-tighter drop-shadow-lg">{season.prizePool} <span className="text-xl not-italic opacity-40 ml-1">FTK</span></div>
                 </div>
                 <div className="bg-black/40 border-2 border-[#dfff00]/50 p-4 rounded-3xl text-center group hover:border-[#dfff00] transition-colors">
                     <div className="text-[9px] text-green-400 font-black uppercase tracking-[0.3em] mb-1 opacity-80">Sopravvissuti</div>

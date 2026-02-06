@@ -13,6 +13,7 @@ interface DbDuelJoinedRecord {
     created_at: string;
     challenger: { id: string; username: string; avatar_url?: string };
     opponent: { id: string; username: string; avatar_url?: string };
+    wager_amount?: number;
 }
 
 interface DbUserRecord {
@@ -38,7 +39,7 @@ export const duelService = {
         }));
     },
 
-    createDuel: async (opponentId: string): Promise<{ success: boolean; message: string }> => {
+    createDuel: async (opponentId: string, wagerAmount: number = 0): Promise<{ success: boolean; message: string }> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return { success: false, message: "Non loggato" };
         const md = await bettingService.getMatchday();
@@ -50,7 +51,8 @@ export const duelService = {
                 matchday_id: md.id,
                 challenger_id: user.id,
                 opponent_id: opponentId,
-                status: 'PENDING'
+                status: 'PENDING',
+                wager_amount: wagerAmount
             });
 
         if (error) return { success: false, message: error.message };
@@ -61,6 +63,10 @@ export const duelService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
+        // Only return duels for the active matchday to avoid showing stale duels
+        const md = await bettingService.getMatchday();
+        if (!md) return [];
+
         const { data, error } = await supabase
             .from('duels')
             .select(`
@@ -68,6 +74,7 @@ export const duelService = {
                 challenger:profiles!challenger_id(id, username, avatar_url),
                 opponent:profiles!opponent_id(id, username, avatar_url)
             `)
+            .eq('matchday_id', md.id)
             .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
             .order('created_at', { ascending: false });
 
@@ -95,6 +102,7 @@ export const duelService = {
                 opponent_score: d.scores.opponent_score ?? 0
             } : undefined,
             winnerId: d.winner_id,
+            wagerAmount: d.wager_amount || 0,
             createdAt: d.created_at
         }));
     },
@@ -148,6 +156,7 @@ export const duelService = {
                 opponent_score: d.scores.opponent_score ?? 0
             } : undefined,
             winnerId: d.winner_id,
+            wagerAmount: d.wager_amount || 0,
             createdAt: d.created_at
         }));
     },

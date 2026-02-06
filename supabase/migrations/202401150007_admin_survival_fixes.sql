@@ -282,7 +282,7 @@ BEGIN
   END IF;
 
   -- 2. Get rollover from last ARCHIVED matchday (if any)
-  SELECT rollover_pot INTO v_rollover 
+  SELECT id, rollover_pot INTO v_last_archived_id, v_rollover 
   FROM matchdays 
   WHERE status = 'ARCHIVED' 
   ORDER BY id DESC LIMIT 1;
@@ -315,6 +315,11 @@ BEGIN
       v_deadline,
       0
   ) RETURNING id INTO new_id;
+
+  -- 5. Cleanup: remove duels from the last archived matchday so arena resets on new day
+  IF v_last_archived_id IS NOT NULL THEN
+    DELETE FROM public.duels WHERE matchday_id = v_last_archived_id;
+  END IF;
 
   RETURN json_build_object('success', true, 'message', 'Nuova giornata creata!', 'id', new_id);
 END;

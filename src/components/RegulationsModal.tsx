@@ -31,7 +31,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
                             Scommetti sull'esito delle partite selezionate per la giornata.
-                            Indovinare almeno <span className="text-white">7 risultati su 10</span> ti permette di vincere il <span className="text-brand-gold">MONTE PREMI</span>.
+                            Indovinare almeno <span className="text-white">7 risultati su 12</span> ti permette di vincere il <span className="text-brand-gold">MONTE PREMI</span>.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
                             <li><span className="text-white font-bold">1</span>: Vittoria Casa | <span className="text-white font-bold">X</span>: Pareggio | <span className="text-white font-bold">2</span>: Vittoria Trasferta</li>
@@ -51,21 +51,19 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                             <li>Non puoi scegliere la stessa squadra più di una volta per stagione.</li>
                             <li>L'ultimo sopravvissuto vince l'intero bottino accumulato.</li>
                             <li>Bonus: Ogni eliminato aggiunge 2 FTK al premio finale.</li>
-                            <li className="text-amber-400"><span className="font-black">IMPORTANTE:</span> Una volta iniziato il torneo, nessun nuovo utente può iscriversi fino alla conclusione.</li>
-                            <li className="text-green-400">Il premio viene <span className="font-black">automaticamente trasferito</span> al wallet del vincitore alla chiusura della stagione.</li>
                         </ul>
                     </section>
 
-                    <section className="border-l-4 border-brand-purple pl-4 py-1">
-                        <h2 className="text-lg md:text-xl font-black italic text-brand-purple mb-2 uppercase tracking-tighter">
+                    <section className="border-l-4 border-[#b45309] pl-4 py-1">
+                        <h2 className="text-lg md:text-xl font-black italic text-[#b45309] mb-2 uppercase tracking-tighter">
                             3. ARENA DELLE SFIDE
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
                             Sfida un altro utente in un duello testa a testa 1vs1 sui pronostici della giornata.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
-                            <li>Chi indovina più risultati vince la sfida.</li>
-                            <li>In caso di pareggio, i punti vengono restituiti (meno commissione arena).</li>
+                            <li>Vince chi ottiene il punteggio più alto basato sulla <span className="text-[#b45309] font-bold">difficoltà</span> dei pronostici indovinati (1, 2 o 3 Goal).</li>
+                            <li>In caso di pareggio, la posta viene restituita.</li>
                         </ul>
                     </section>
 
@@ -77,7 +75,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                             Il premio supremo riservato alla perfezione assoluta.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
-                            <li>Vinto da chi indovina <span className="text-brand-gold font-black">10 risultati su 10</span> nella modalità 1x2.</li>
+                            <li>Vinto da chi indovina <span className="text-brand-gold font-black">10 risultati su 12</span> nella modalità 1x2.</li>
                             <li>Il montepremi è progressivo e cresce a ogni giornata senza vincitori.</li>
                         </ul>
                     </section>
@@ -110,7 +108,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
 
                     <section className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 mt-8">
                         <p className="text-[10px] text-gray-600 uppercase tracking-widest text-center">
-                            Ultimo aggiornamento: 1 Febbraio 2026 • Versione 2.1
+                            Ultimo aggiornamento: 30 Gennaio 2026 • Versione 2.0
                         </p>
                     </section>
 

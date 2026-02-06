@@ -29,7 +29,10 @@ export const bettingService = {
             rolloverPot: data.rollover_pot,
             status: data.status as 'OPEN' | 'CLOSED' | 'ARCHIVED',
             deadline: data.deadline,
-            betsLocked: data.bets_locked || false
+            betsLocked: data.bets_locked || false,
+            winners: data.winners || [],
+            winnerAnimation: data.winner_animation || false,
+            leaderboardAnimation: data.leaderboard_animation || false
         };
     },
 
@@ -51,7 +54,10 @@ export const bettingService = {
             rolloverPot: d.rollover_pot,
             status: d.status as 'ARCHIVED',
             deadline: d.deadline,
-            betsLocked: d.bets_locked || false
+            betsLocked: d.bets_locked || false,
+            winners: d.winners || [],
+            winnerAnimation: d.winner_animation || false,
+            leaderboardAnimation: d.leaderboard_animation || false
         }));
     },
 
@@ -186,6 +192,18 @@ export const bettingService = {
             return { success: false, message: betError.message };
         }
 
+        // Increment bets_placed in profile
+        const { data: currentProf } = await supabase
+            .from('profiles')
+            .select('bets_placed')
+            .eq('id', user.id)
+            .single();
+
+        await supabase
+            .from('profiles')
+            .update({ bets_placed: (currentProf?.bets_placed || 0) + 1 })
+            .eq('id', user.id);
+
         return { success: true, message: includeSuperJackpot ? "Schedina + SuperJackpot Giocata!" : "Schedina Base Giocata!" };
     },
 
@@ -264,6 +282,27 @@ export const bettingService = {
             .eq('matchday_id', md.id);
     },
 
+    // --- ADMIN DIAGNOSTICS ---
+    // Returns a summary of duel counts grouped by matchday_id
+    adminGetDuelsSummary: async (): Promise<{ matchdayId: number; count: number }[]> => {
+        const { data, error } = await supabase
+            .from('duels')
+            .select('matchday_id');
+
+        if (error || !data) {
+            console.error('Error fetching duels for admin summary:', error);
+            return [];
+        }
+
+        const counts: Record<number, number> = {};
+        (data || []).forEach((d: any) => {
+            const id = d.matchday_id || 0;
+            counts[id] = (counts[id] || 0) + 1;
+        });
+
+        return Object.entries(counts).map(([matchdayId, count]) => ({ matchdayId: parseInt(matchdayId, 10), count }));
+    },
+
     archiveMatchday: async (): Promise<{ success: boolean; message: string; survivalStats?: { eliminated: number; advanced: number } }> => {
         const md = await bettingService.getMatchday();
         if (!md) return { success: false, message: "Nessuna giornata attiva" };
@@ -287,6 +326,16 @@ export const bettingService = {
             console.error("Survival Process Error:", err);
         }
 
+        // 1.5 PROCESS DUELS
+        try {
+            console.log("Resolving Duels...");
+            const { error: duelError } = await supabase.rpc('resolve_matchday_duels', { p_matchday_id: md.id });
+            if (duelError) console.error("Duel Resolution Error:", duelError);
+            else console.log("Duels resolved successfully.");
+        } catch (err) {
+            console.error("Duel Resolution Exception:", err);
+        }
+
         // 2. CALCULATE 1X2 WINNERS (Client-side implementation of logic)
         const bets = await bettingService.getAllBets();
         const currentBets = bets.filter(b => b.matchdayId === md.id);
@@ -300,51 +349,147 @@ export const bettingService = {
             if (s > maxScore) maxScore = s;
         });
 
-        const currentTotalPot = md.currentPot;
+        const currentTotalPot = md.currentPot || 0;
+        const currentSuper = md.superJackpot || 0;
         let nextRollover = 0;
         let winnerMsg = "";
+        let winnersUsernames: string[] = [];
 
         if (maxScore >= 7) {
-            console.log("WINNER FOUND");
-            winnerMsg = "VINCITORI TROVATI!";
-            nextRollover = 0;
-            // TODO: Distribute tokens to winners?
+            console.log("WINNER(S) FOUND");
+
+            // Identify winners (exactly those with maxScore)
+            const winners = currentBets.filter(bet => {
+                let s = 0;
+                md.results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
+                return s === maxScore;
+            });
+
+            const winnersCount = winners.length;
+
+            // Distribute pot + superJackpot equally among winners; burn remainder if odd
+            const totalPayout = Math.floor(currentTotalPot + currentSuper);
+            const share = winnersCount > 0 ? Math.floor(totalPayout / winnersCount) : 0;
+            const remainder = winnersCount > 0 ? (totalPayout % winnersCount) : totalPayout;
+
+            winnersUsernames = winners.map(w => w.username);
+
+            // Update each winner profile: tokens, wins1x2, totalTokensWon
+            for (const w of winnersUsernames) {
+                // Fetch current totals
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('id, tokens, wins1x2, total_tokens_won')
+                    .eq('username', w)
+                    .single();
+
+                if (!profile) continue;
+
+                const newTokens = (profile.tokens || 0) + share;
+                const newWins = (profile.wins1x2 || 0) + 1;
+                const newTotalWon = (profile.total_tokens_won || 0) + share;
+
+                await supabase
+                    .from('profiles')
+                    .update({ tokens: newTokens, wins1x2: newWins, total_tokens_won: newTotalWon })
+                    .eq('id', profile.id);
+            }
+
+            nextRollover = 0; // Pot distributed
+            winnerMsg = `VINCITORI: ${winnersUsernames.join(', ')} — ${share} token${winnersCount > 1 ? " ciascuno" : ""} (bruciati: ${remainder})`;
+
         } else {
             console.log("NO WINNER, ROLLOVER");
             winnerMsg = "NESSUN VINCITORE (Rollover)";
             nextRollover = currentTotalPot;
         }
 
-        // 2.5 UPDATE USER TOTAL POINTS
+        // 2.5 UPDATE USER TOTAL POINTS, ACCURACY & LEVEL
         for (const bet of currentBets) {
             let s = 0;
             md.results.forEach((res, idx) => {
                 if (res && res === bet.predictions[idx]) s++;
             });
 
-            if (s > 0) {
-                // Fetch current user total_points
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('total_points')
-                    .eq('username', bet.username)
-                    .single();
+            // Fetch current profile to get current points, wins, and calculate new stats
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('username', bet.username)
+                .single();
 
-                const currentPoints = profile?.total_points || 0;
+            if (profile) {
+                const newPoints = (profile.total_points || 0) + s;
+
+                // Recalculate Accuracy
+                // We need total correct of all archived bets. 
+                // This is slightly expensive to do every archive if we fetch all history, 
+                // but for now let's just use the current stats and update incrementally if possible.
+                // Or better: fetch all bets for this user to ensure perfection.
+                const { data: userBets } = await supabase.from('bets').select('predictions, matchday_id').eq('user_id', profile.id);
+                const archivedMDs = await bettingService.getArchivedMatchdays(); // Cached in memory or just fetch
+                const archivedIds = new Set(archivedMDs.map(a => a.id));
+                // Add the current one to the set since it's about to be archived
+                archivedIds.add(md.id);
+
+                let totalCorrect = 0;
+                let archivedCount = 0;
+                userBets?.forEach(ub => {
+                    if (archivedIds.has(ub.matchday_id)) {
+                        archivedCount++;
+                        // If it's the current md, use md.results
+                        const results = ub.matchday_id === md.id ? md.results : archivedMDs.find(a => a.id === ub.matchday_id)?.results;
+                        if (results) {
+                            results.forEach((r, i) => { if (r && r === ub.predictions[i]) totalCorrect++; });
+                        }
+                    }
+                });
+
+                const newAccuracy = archivedCount > 0 ? Math.round((totalCorrect / (archivedCount * 12)) * 100) : 0;
+
+                // Level milestones
+                const milestones = [
+                    { level: 1, req: { bets: 0, wins: 0, tokens: 0 } },
+                    { level: 2, req: { bets: 5, wins: 1, tokens: 100 } },
+                    { level: 3, req: { bets: 15, wins: 3, tokens: 500 } },
+                    { level: 4, req: { bets: 30, wins: 7, tokens: 1500 } },
+                    { level: 5, req: { bets: 50, wins: 15, tokens: 5000 } },
+                ];
+
+                const currentWins = (profile.wins_1x2 || 0) + (profile.wins_survival || 0) + (s >= 7 ? 1 : 0);
+                const currentTokens = profile.total_tokens_won || 0;
+                let newLevel = 1;
+
+                for (let i = milestones.length - 1; i >= 0; i--) {
+                    const m = milestones[i];
+                    if ((profile.bets_placed || 0) >= m.req.bets && currentWins >= m.req.wins && currentTokens >= m.req.tokens) {
+                        newLevel = m.level;
+                        break;
+                    }
+                }
 
                 await supabase
                     .from('profiles')
-                    .update({ total_points: currentPoints + s })
-                    .eq('username', bet.username);
+                    .update({
+                        total_points: newPoints,
+                        prediction_accuracy: newAccuracy,
+                        level: newLevel
+                    })
+                    .eq('id', profile.id);
             }
         }
 
-        // 3. ARCHIVE MATCHDAY
+        // 3. ARCHIVE MATCHDAY: close the day, clear pots, zero jackpot, record winners and set animations (reset happens on next admin_create_matchday)
         await supabase
             .from('matchdays')
             .update({
                 status: 'ARCHIVED',
-                rollover_pot: nextRollover
+                rollover_pot: nextRollover,
+                current_pot: 0,
+                super_jackpot: 0,
+                winners: winnersUsernames,
+                winner_animation: (winnersUsernames.length > 0),
+                leaderboard_animation: (winnersUsernames.length > 0)
             })
             .eq('id', md.id);
 
