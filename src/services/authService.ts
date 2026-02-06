@@ -42,36 +42,66 @@ export const authService = {
     },
 
     signUp: async (username: string, email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { username } // Passed to handle_new_user trigger
+        // Use the edge function to bypass email confirmation
+        try {
+            const { data, error } = await supabase.functions.invoke('no_confirm_signup', {
+                body: { email, password, username }
+            });
+
+            if (error) {
+                // Fallback to standard signup if function is missing/fails, but log it
+                console.error("Edge function failed, falling back to standard signup:", error);
+                const { data: standardData, error: standardError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { username } }
+                });
+                if (standardError) return { user: null, error: standardError.message };
+                if (!standardData.user) return { user: null, error: "Signup failed" };
+
+                return {
+                    user: {
+                        id: standardData.user.id,
+                        username,
+                        role: 'USER',
+                        tokens: 100,
+                        email: standardData.user.email,
+                        wins1x2: 0,
+                        winsSurvival: 0,
+                        level: 1,
+                        predictionAccuracy: 0,
+                        betsPlaced: 0,
+                        totalTokensWon: 0,
+                        totalPoints: 0
+                    },
+                    error: null
+                };
             }
-        });
 
-        if (error) return { user: null, error: error.message };
-        if (!data.user) return { user: null, error: "Signup failed" };
+            if (data?.error) return { user: null, error: data.error };
 
-        // Profile is auto-created by trigger, but might take a ms. 
-        // We return basic info immediately.
-        return {
-            user: {
-                id: data.user.id,
-                username,
-                role: 'USER',
-                tokens: 100,
-                email: data.user.email,
-                wins1x2: 0,
-                winsSurvival: 0,
-                level: 1,
-                predictionAccuracy: 0,
-                betsPlaced: 0,
-                totalTokensWon: 0,
-                totalPoints: 0
-            },
-            error: null
-        };
+            const newUser = data.user.user;
+            return {
+                user: {
+                    id: newUser.id,
+                    username,
+                    role: 'USER',
+                    tokens: 100,
+                    email: newUser.email,
+                    wins1x2: 0,
+                    winsSurvival: 0,
+                    level: 1,
+                    predictionAccuracy: 0,
+                    betsPlaced: 0,
+                    totalTokensWon: 0,
+                    totalPoints: 0
+                },
+                error: null
+            };
+        } catch (err) {
+            console.error("Signup error:", err);
+            return { user: null, error: "Errore durante la registrazione" };
+        }
     },
 
     logout: async () => {
