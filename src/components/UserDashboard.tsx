@@ -323,6 +323,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
 
+                <div className="fixed bottom-1 right-1 text-[8px] font-mono text-white/10 select-none pointer-events-none z-[1000]">
+                    v2026.02.06.1612
+                </div>
             </div>
 
             {/* Bottom Navigation Bar - HOME view only */}
