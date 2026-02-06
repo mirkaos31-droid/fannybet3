@@ -172,9 +172,6 @@ export const bettingService = {
 
         if (tokenError) return { success: false, message: "Token deduction failed" };
 
-        // Update Pot (Atomic Increment by 1 - base game fee)
-        await supabase.rpc('increment_matchday_pot', { p_matchday_id: md.id, p_amount: 1 });
-
         // Insert Bet
         const { error: betError } = await supabase
             .from('bets')
