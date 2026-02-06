@@ -302,7 +302,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'LEADERBOARD' && (
                     <div className="relative animate-fade-in">
-                        <LeaderboardView />
+                        <LeaderboardView matchday={matchday} />
                     </div>
                 )}
 
