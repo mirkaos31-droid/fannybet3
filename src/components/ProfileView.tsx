@@ -99,13 +99,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
 
     return (
         <div className="relative animate-fade-in px-4 max-w-4xl mx-auto pt-10 pb-20 min-h-screen">
-            {/* Deep Blue Gradient Background */}
-            <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#020617]">
-                <div className="absolute inset-0 bg-gradient-to-b from-brand-purple/5 via-blue-900/10 to-[#020617]"></div>
-                {/* Mesh Glows */}
-                <div className="absolute -top-48 -left-48 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full animate-pulse-slow"></div>
-                <div className="absolute top-1/2 -right-48 w-[500px] h-[500px] bg-brand-purple/5 blur-[150px] rounded-full animate-float"></div>
-                <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full"></div>
+            {/* Simplified Background */}
+            <div className="fixed inset-0 z-[-1] bg-[#020617]">
+                <div className="absolute inset-0 bg-gradient-to-b from-brand-purple/5 via-blue-900/5 to-[#020617]"></div>
             </div>
 
             {/* Back Button (top-left) */}
