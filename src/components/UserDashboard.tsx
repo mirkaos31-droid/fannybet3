@@ -268,7 +268,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                         <div className="col-span-4">
                             <button
                                 onClick={() => setView('DUEL_ARENA')}
-                                className="glass-card card-bronze group h-[11.5rem] sm:h-[20rem] md:h-[34rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float [animation-delay:1.5s] hover:scale-[1.01] w-full"
+                                className="glass-card card-bronze group h-[9.8rem] sm:h-[17rem] md:h-[29rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float [animation-delay:1.5s] hover:scale-[1.01] w-full"
                             >
                                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#b45309]/5 blur-[60px] rounded-full group-hover:bg-[#b45309]/10 transition-all duration-700"></div>
                                 <div className="mb-1 md:mb-4 group-hover:rotate-12 transition-transform duration-500">

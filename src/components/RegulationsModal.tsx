@@ -9,8 +9,8 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur">
-            <div className="glass-card !p-6 md:!p-10 max-h-[80vh] overflow-y-auto w-full md:max-w-2xl relative border-white/10">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-20 bg-black/60 backdrop-blur-sm will-change-transform" style={{ transform: 'translateZ(0)' }}>
+            <div className="glass-card !p-6 md:!p-10 max-h-[75vh] overflow-y-auto w-full md:max-w-2xl relative border-white/10">
                 {/* Close button */}
                 <button
                     onClick={onClose}

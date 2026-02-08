@@ -80,7 +80,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] -mx-4 -mt-4 md:-mx-8 md:-mt-8 p-4 md:p-10 animate-fade-in text-white relative">
+        <div className="min-h-screen bg-[#0a0a0a] -mx-4 -mt-4 md:-mx-8 md:-mt-8 p-4 md:p-10 pt-16 md:pt-20 animate-fade-in text-white relative">
             <div className="max-w-6xl mx-auto space-y-8 pb-20">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6">
