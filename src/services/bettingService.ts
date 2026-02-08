@@ -61,10 +61,10 @@ export const bettingService = {
         }));
     },
 
-    getGlobalRanking: async (): Promise<{ username: string; totalPoints: number; avatarUrl?: string }[]> => {
+    getGlobalRanking: async (): Promise<{ username: string; totalPoints: number; level: number; avatarUrl?: string }[]> => {
         const { data } = await supabase
             .from('profiles')
-            .select('username, total_points, avatar_url')
+            .select('username, total_points, level, avatar_url')
             .order('total_points', { ascending: false })
             .limit(100);
 
@@ -73,6 +73,7 @@ export const bettingService = {
         return data.map(d => ({
             username: d.username,
             totalPoints: d.total_points || 0,
+            level: d.level || 1,
             avatarUrl: d.avatar_url
         }));
     },
@@ -498,5 +499,11 @@ export const bettingService = {
         const { error } = await supabase.rpc('reset_fanny_system');
         if (error) return { success: false, message: error.message };
         return { success: true, message: "Sistema resettato con successo. Tutti i dati di gioco sono stati ripuliti." };
+    },
+
+    recalculatePot: async (): Promise<{ success: boolean; message: string; newPot?: number }> => {
+        const { data, error } = await supabase.rpc('admin_recalculate_current_pot');
+        if (error) return { success: false, message: error.message };
+        return data as { success: boolean; message: string; newPot?: number };
     },
 };

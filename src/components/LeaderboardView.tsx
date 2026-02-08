@@ -13,6 +13,7 @@ interface RankedUser {
     predictions: string[];
     timestamp: string;
     avatarUrl?: string;
+    level: number;
     includeSuperJackpot?: boolean;
 }
 
@@ -61,6 +62,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                             predictions: bet.predictions,
                             timestamp: bet.timestamp,
                             avatarUrl: bet.avatarUrl,
+                            level: bet.level || 1,
                             includeSuperJackpot: bet.includeSuperJackpot
                         };
                     });
@@ -92,8 +94,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
     }
 
     const currentRankingData = viewType === 'MATCHDAY'
-        ? ranking.map(r => ({ username: r.username, score: r.score, avatarUrl: r.avatarUrl, extra: '/12', includeSuperJackpot: r.includeSuperJackpot }))
-        : globalRanking.map(r => ({ username: r.username, score: r.totalPoints, avatarUrl: r.avatarUrl, extra: ' PT', includeSuperJackpot: false }));
+        ? ranking.map(r => ({ username: r.username, score: r.score, avatarUrl: r.avatarUrl, level: r.level, extra: '/12', includeSuperJackpot: r.includeSuperJackpot }))
+        : globalRanking.map(r => ({ username: r.username, score: r.totalPoints, avatarUrl: r.avatarUrl, level: (r as any).level || 1, extra: ' PT', includeSuperJackpot: false }));
 
     const podium = currentRankingData.slice(0, 3);
     const list = currentRankingData.slice(3);
@@ -236,40 +238,48 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                         ) : (
                             list.map((user, idx) => {
                                 const actualRank = idx + 4;
+                                // Level based styles with much more prominent glow
+                                const levelStyles: Record<number, string> = {
+                                    1: 'border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]',
+                                    2: 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.3)] bg-green-500/5',
+                                    3: 'border-blue-500/70 shadow-[0_0_25px_rgba(59,130,246,0.4)] bg-blue-500/5',
+                                    4: 'border-brand-purple/80 shadow-[0_0_30px_rgba(157,0,255,0.5)] bg-brand-purple/5',
+                                    5: 'border-red-500 shadow-[0_0_35px_rgba(239,68,68,0.6)] bg-red-500/10 ring-1 ring-red-500/40'
+                                };
+
                                 return (
                                     <div
-                                        key={user.username}
-                                        className="group flex items-center px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg border border-brand-purple/20 hover:border-brand-purple transition-all duration-300 shadow-[0_0_15px_rgba(157,0,255,0.05)] hover:shadow-[0_0_20px_rgba(157,0,255,0.15)] transform hover:-translate-y-0.5"
+                                        key={`${user.username}-${idx}`}
+                                        className={`group flex items-center px-6 py-3 bg-black/60 backdrop-blur-md rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] ${levelStyles[user.level] || levelStyles[1]}`}
                                     >
-                                        <div className="w-6 font-mono font-black text-[10px] text-gray-600 mr-4">
+                                        <div className="w-10 font-mono font-black text-sm text-white/90 mr-4">
                                             #{actualRank}
                                         </div>
 
-                                        <div className="flex-1 flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full border border-brand-purple/30 p-[1px] overflow-hidden">
+                                        <div className="flex-1 flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full border-2 border-white/20 p-[2px] overflow-hidden group-hover:border-white/50 transition-colors">
                                                 {user.avatarUrl ? (
                                                     <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-black text-[8px] text-brand-purple bg-brand-purple/10 uppercase">
+                                                    <div className="w-full h-full flex items-center justify-center font-black text-xs text-brand-purple bg-brand-purple/10 uppercase">
                                                         {user.username.charAt(0)}
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="font-display font-black italic text-gray-200 uppercase tracking-tighter text-sm flex items-center gap-1.5">
+                                            <span className="font-display font-black italic text-white uppercase tracking-tighter text-lg flex items-center gap-2">
                                                 {user.username}
-                                                {/* @ts-ignore */}
-                                                {user.includeSuperJackpot && <Gem size={12} className="text-cyan-400 fill-cyan-400/20" />}
+                                                {user.includeSuperJackpot && <Gem size={14} className="text-cyan-400 fill-cyan-400/20 shadow-[0_0_10px_rgba(34,211,238,0.5)]" />}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-6">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-lg font-display font-black text-white leading-none">
-                                                    {user.score}<span className="text-[8px] text-gray-600 font-sans font-black">{user.extra}</span>
+                                                <span className="text-2xl font-display font-black text-white leading-none">
+                                                    {user.score}<span className="text-[10px] text-gray-500 font-sans font-black uppercase ml-1">{user.extra}</span>
                                                 </span>
                                                 {viewType === 'MATCHDAY' && user.score >= 7 && (
-                                                    <span className="text-[6px] font-black text-brand-purple uppercase tracking-widest mt-0.5 animate-pulse">
-                                                        ZONA PREMIO
+                                                    <span className="text-[7px] font-black text-brand-purple uppercase tracking-[0.2em] mt-1 animate-pulse bg-brand-purple/20 px-2 py-0.5 rounded-full border border-brand-purple/40">
+                                                        🏆 ZONA PREMIO
                                                     </span>
                                                 )}
                                             </div>

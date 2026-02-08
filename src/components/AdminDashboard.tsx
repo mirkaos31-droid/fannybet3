@@ -196,6 +196,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                     </button>
                                     <button
                                         onClick={async () => {
+                                            if (confirm("Ricalcolare il montepremi basandosi sulle giocate attuali?")) {
+                                                setLoading(true);
+                                                const res = await gameService.recalculatePot();
+                                                setLoading(false);
+                                                if (res.success) {
+                                                    const md = await gameService.getMatchday();
+                                                    setMatchday(md);
+                                                    alert(res.message + (res.newPot !== undefined ? ` Nuovo totale: ${res.newPot} FTK` : ''));
+                                                } else {
+                                                    alert("Errore: " + res.message);
+                                                }
+                                            }
+                                        }}
+                                        disabled={loading}
+                                        className="flex-1 bg-transparent text-amber-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-amber-500/50 hover:bg-amber-500 hover:text-black hover:border-amber-500 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all"
+                                    >
+                                        🔄 Ricalcola Pot
+                                    </button>
+                                    <button
+                                        onClick={async () => {
                                             if (confirm("Archiviare giornata? Questo PROCESSERÀ AUTOMATICAMENTE anche il round Survival!")) {
                                                 const res = await gameService.archiveMatchday();
                                                 let msg = res.message;

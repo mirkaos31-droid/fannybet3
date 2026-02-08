@@ -40,10 +40,29 @@ export const duelService = {
     },
 
     createDuel: async (opponentId: string, wagerAmount: number = 0): Promise<{ success: boolean; message: string }> => {
+        // Validation: 0 to 5 tokens limit
+        if (wagerAmount < 0 || wagerAmount > 5) {
+            return { success: false, message: "La posta deve essere compresa tra 0 e 5 token." };
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return { success: false, message: "Non loggato" };
+
         const md = await bettingService.getMatchday();
         if (!md) return { success: false, message: "Nessuna giornata attiva" };
+
+        // Check user tokens if wager > 0
+        if (wagerAmount > 0) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('tokens')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile || profile.tokens < wagerAmount) {
+                return { success: false, message: `Token insufficienti per questa sfida (${wagerAmount} richiesti, ne hai ${profile?.tokens || 0}).` };
+            }
+        }
 
         const { error } = await supabase
             .from('duels')
