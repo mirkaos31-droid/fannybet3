@@ -108,7 +108,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
 
                     <section className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 mt-8">
                         <p className="text-[10px] text-gray-600 uppercase tracking-widest text-center">
-                            Ultimo aggiornamento: 30 Gennaio 2026 • Versione 2.0
+                            Ultimo aggiornamento: 8 Febbraio 2026 • Versione 2.1
                         </p>
                     </section>
 
