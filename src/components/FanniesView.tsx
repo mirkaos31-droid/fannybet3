@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import type { Matchday, Bet } from '../types';
 import { gameService } from '../services/gameService';
+import { Lock, Swords } from 'lucide-react';
 
 interface FanniesViewProps {
     matchday: Matchday;
+    onChallenge?: (opponent: { id: string, username: string }) => void;
 }
 
-export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
+export const FanniesView: React.FC<FanniesViewProps> = ({ matchday, onChallenge }) => {
     const [bets, setBets] = useState<Bet[]>([]);
     const [history, setHistory] = useState<Matchday[]>([]);
     const [viewMode, setViewMode] = useState<'CURRENT' | 'ARCHIVE'>('CURRENT');
     const [selectedHistoryMd, setSelectedHistoryMd] = useState<Matchday | null>(null);
+    const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 
     useEffect(() => {
         gameService.getAllBets().then(setBets);
         gameService.getArchivedMatchdays().then(setHistory);
+        gameService.getCurrentUser().then(user => {
+            if (user) setCurrentUsername(user.username);
+        });
     }, [matchday, viewMode]);
 
     // Determine which matchday to show (Current or Selected from History)
     const activeMatchday = viewMode === 'CURRENT' ? matchday : (selectedHistoryMd || matchday);
     // Filter bets for the active matchday
     const displayedBets = bets.filter(b => b.matchdayId === activeMatchday.id);
+
+    // Privacy Logic: Bets are locked if it's the current matchday AND the deadline hasn't passed
+    const isDeadlinePassed = new Date() > new Date(activeMatchday.deadline);
+    const areBetsLocked = viewMode === 'CURRENT' && !isDeadlinePassed;
 
     const getAccuracy = (predictions: string[], results: (string | null)[]) => {
         let hits = 0;
@@ -95,7 +105,14 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
                     </div>
                 ) : (
                     displayedBets.map((bet) => {
+                        const isMyBet = currentUsername === bet.username;
+                        // Show content if: 
+                        // 1. Bets are NOT locked (deadline passed)
+                        // 2. It is MY bet
+                        // 3. We are in archive mode (always show history)
+                        const showContent = !areBetsLocked || isMyBet;
                         const accuracy = getAccuracy(bet.predictions, activeMatchday.results);
+
                         return (
                             <div key={bet.id} className="glass-card !bg-black/40 border-2 border-brand-gold/20 hover:border-brand-gold/40 transition-all group overflow-hidden relative">
                                 {/* Level Tag - Top Right Prominent */}
@@ -107,7 +124,16 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
 
                                 <div className="flex items-center justify-between mb-2 p-1">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-gold to-[#D4AF37] p-[1.5px] shadow-lg group-hover:scale-110 transition-transform">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-gold to-[#D4AF37] p-[1.5px] shadow-lg group-hover:scale-110 transition-transform relative">
+                                            {/* DIAMOND ICON for SuperJackpot - Top Left */}
+                                            {bet.includeSuperJackpot && (
+                                                <div className="absolute -top-1.5 -left-1.5 z-20 text-cyan-300 drop-shadow-[0_0_8px_rgba(0,255,255,0.8)] animate-pulse">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M12 2L2 12L12 22L22 12L12 2Z" stroke="none" />
+                                                    </svg>
+                                                </div>
+                                            )}
+
                                             {bet.avatarUrl ? (
                                                 <img src={bet.avatarUrl} alt={bet.username} className="w-full h-full object-cover rounded-lg" />
                                             ) : (
@@ -119,29 +145,58 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
                                         <div className="flex flex-col">
                                             <div className="flex flex-col items-start leading-none">
                                                 <span className="font-display font-black italic text-white uppercase tracking-tighter text-sm">{bet.username}</span>
-                                                <span className="text-[8px] font-black text-brand-gold/80 uppercase whitespace-nowrap mt-0.5">acc. {accuracy}%</span>
+                                                {showContent ? (
+                                                    <span className="text-[8px] font-black text-brand-gold/80 uppercase whitespace-nowrap mt-0.5">acc. {accuracy}%</span>
+                                                ) : (
+                                                    <span className="text-[8px] font-black text-gray-500 uppercase whitespace-nowrap mt-0.5 flex items-center gap-1">
+                                                        <Lock size={8} /> BLIND BET
+                                                    </span>
+                                                )}
                                             </div>
                                             <span className="text-[6px] font-mono text-gray-500 uppercase tracking-widest mt-0.5">
                                                 {new Date(bet.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })}
                                             </span>
                                         </div>
                                     </div>
+
+                                    {/* CHALLENGE BUTTON - Only for other users AND BEFORE DEADLINE */}
+                                    {!isMyBet && onChallenge && !isDeadlinePassed && (
+                                        <button
+                                            onClick={() => onChallenge({ id: bet.id, username: bet.username })}
+                                            className="w-7 h-7 flex items-center justify-center bg-gradient-to-b from-[#b45309] to-[#78350f] text-black rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] transition-all border border-[#451a03]"
+                                            title={`Sfida ${bet.username}`}
+                                        >
+                                            <Swords size={12} strokeWidth={2.5} className="drop-shadow-[0_1px_1px_rgba(255,255,255,0.2)]" />
+                                        </button>
+                                    )}
                                 </div>
 
-                                <div className="grid grid-cols-6 gap-1 md:gap-1 p-1 bg-black/20 rounded-lg border border-white/5 mx-auto max-w-[92%]">
-                                    {bet.predictions.map((p, idx) => (
-                                        <div key={idx} className="flex flex-col items-center">
-                                            <span className="text-[5px] text-gray-600 font-mono font-bold mb-0.2 opacity-60">#{idx + 1}</span>
-                                            <div className={`w-full h-6 md:h-7 rounded-none flex items-center justify-center font-mono font-black text-[9px] md:text-xs border transition-all ${activeMatchday.results[idx]
-                                                ? (activeMatchday.results[idx] === p
-                                                    ? 'bg-acid-glow text-black border-acid-glow shadow-[0_0_10px_rgba(191,255,0,0.3)]'
-                                                    : 'bg-red-500/10 text-red-500 border-red-500/30 line-through opacity-50')
-                                                : 'bg-white/5 text-brand-gold border-brand-gold/20'
-                                                }`}>
-                                                {p}
+                                <div className="grid grid-cols-6 gap-1 md:gap-1 p-1 bg-black/20 rounded-lg border border-white/5 mx-auto max-w-[92%] relative">
+                                    {showContent ? (
+                                        bet.predictions.map((p, idx) => (
+                                            <div key={idx} className="flex flex-col items-center">
+                                                <span className="text-[5px] text-gray-600 font-mono font-bold mb-0.2 opacity-60">#{idx + 1}</span>
+                                                <div className={`w-full h-6 md:h-7 rounded-none flex items-center justify-center font-mono font-black text-[9px] md:text-xs border transition-all ${activeMatchday.results[idx]
+                                                    ? (activeMatchday.results[idx] === p
+                                                        ? 'bg-acid-glow text-black border-acid-glow shadow-[0_0_10px_rgba(191,255,0,0.3)]'
+                                                        : 'bg-red-500/10 text-red-500 border-red-500/30 line-through opacity-50')
+                                                    : 'bg-white/5 text-brand-gold border-brand-gold/20'
+                                                    }`}>
+                                                    {p}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    ) : (
+                                        // BLIND MODE PLACEHOLDERS
+                                        Array(12).fill(0).map((_, idx) => (
+                                            <div key={idx} className="flex flex-col items-center opacity-50">
+                                                <span className="text-[5px] text-gray-600 font-mono font-bold mb-0.2 opacity-60">#{idx + 1}</span>
+                                                <div className="w-full h-6 md:h-7 bg-white/5 border border-white/10 flex items-center justify-center text-gray-600">
+                                                    <Lock size={10} />
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
 
                                 {bet.includeSuperJackpot && (
@@ -158,3 +213,4 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
         </div>
     );
 };
+

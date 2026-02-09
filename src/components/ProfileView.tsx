@@ -51,7 +51,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
     // --- LEVEL SYSTEM LOGIC ---
     const milestones = [
         { level: 1, label: 'Principiante', requirements: { bets: 0, wins: 0, tokens: 0 } },
-        { level: 2, label: 'Scommettitore', requirements: { bets: 5, wins: 1, tokens: 100 } },
+        { level: 2, label: 'Scommettitore', requirements: { bets: 5, wins: 1, tokens: 50 } },
         { level: 3, label: 'Veterano', requirements: { bets: 15, wins: 3, tokens: 500 } },
         { level: 4, label: 'Campione', requirements: { bets: 30, wins: 7, tokens: 1500 } },
         { level: 5, label: 'Leggenda', requirements: { bets: 50, wins: 15, tokens: 5000 } },

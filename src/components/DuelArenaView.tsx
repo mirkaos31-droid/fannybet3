@@ -4,7 +4,11 @@ import { supabase } from '../supabaseClient';
 import type { Duel } from '../types';
 import { Swords, History } from 'lucide-react';
 
-export const DuelArenaView: React.FC = () => {
+interface DuelArenaViewProps {
+    initialOpponent?: { id: string, username: string };
+}
+
+export const DuelArenaView: React.FC<DuelArenaViewProps> = ({ initialOpponent }) => {
     const [activeTab, setActiveTab] = useState<'ACTIVE' | 'FIND' | 'GLOBAL'>('ACTIVE');
     const [duels, setDuels] = useState<Duel[]>([]);
     const [globalDuels, setGlobalDuels] = useState<Duel[]>([]);
@@ -12,7 +16,8 @@ export const DuelArenaView: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [showRules, setShowRules] = useState(false);
     const [wagerAmount, setWagerAmount] = useState(0);
-    const [selectedOpponent, setSelectedOpponent] = useState<{ id: string, username: string } | null>(null);
+    const [selectedOpponent, setSelectedOpponent] = useState<{ id: string, username: string } | null>(initialOpponent || null);
+
 
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [userTokens, setUserTokens] = useState(0);

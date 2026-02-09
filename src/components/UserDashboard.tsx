@@ -29,6 +29,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
 
+    // State to pass opponent to DuelArena
+    const [targetOpponent, setTargetOpponent] = useState<{ id: string, username: string } | undefined>(undefined);
+
+
     const [loading, setLoading] = useState(true);
 
     const loadData = useCallback(async () => {
@@ -199,6 +203,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                         setShowProfile(true);
                                     } else {
                                         setView(v);
+                                        // Reset target opponent when navigating via bar
+                                        if (v !== 'DUEL_ARENA') setTargetOpponent(undefined);
                                     }
                                 }}
                             />
@@ -296,7 +302,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'SPY' && matchday && (
                     <div className="relative animate-fade-in">
-                        <FanniesView matchday={matchday} />
+                        <FanniesView
+                            matchday={matchday}
+                            onChallenge={(opp) => {
+                                setTargetOpponent(opp);
+                                setView('DUEL_ARENA');
+                            }}
+                        />
                     </div>
                 )}
 
@@ -319,7 +331,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'DUEL_ARENA' && (
                     <div className="relative animate-fade-in">
-                        <DuelArenaView />
+                        <DuelArenaView initialOpponent={targetOpponent} />
                     </div>
                 )}
 
