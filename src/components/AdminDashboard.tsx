@@ -61,6 +61,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             if (res.success) {
                                 const md = await gameService.getMatchday();
                                 setMatchday(md);
+                            } else {
+                                alert("Errore inizializzazione: " + res.message);
                             }
                             setLoading(false);
                         }}
