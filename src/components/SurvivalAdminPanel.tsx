@@ -7,6 +7,7 @@ export const SurvivalAdminPanel: React.FC = () => {
     const [players, setPlayers] = useState<SurvivalPlayer[]>([]);
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [entryFee, setEntryFee] = useState(2); // Default entry fee
 
     useEffect(() => {
         loadData();
@@ -17,8 +18,6 @@ export const SurvivalAdminPanel: React.FC = () => {
         setSeason(data.season);
         setPlayers(data.players);
     };
-
-
 
     const handleCloseSeason = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -46,12 +45,12 @@ export const SurvivalAdminPanel: React.FC = () => {
 
     const handleNewSeason = async (e: React.MouseEvent) => {
         e.preventDefault();
-        if (!window.confirm('Creare una nuova stagione Survival?')) return;
+        if (!window.confirm(`Creare una nuova stagione Survival con costo ${entryFee} token?`)) return;
 
         setLoading(true);
         setMsg(null);
         try {
-            const res = await gameService.startNewSurvivalSeason();
+            const res = await gameService.startNewSurvivalSeason(entryFee);
             if (res.success) {
                 setMsg({ type: 'success', text: res.message });
                 loadData();
@@ -74,6 +73,17 @@ export const SurvivalAdminPanel: React.FC = () => {
             <div className="glass-panel text-center py-12 border-dashed border-white/10">
                 <h3 className="text-2xl font-display font-bold mb-4">🗡️ SURVIVAL MODE</h3>
                 <p className="text-gray-400 mb-8 max-w-md mx-auto italic">Non ci sono stagioni attive al momento. Vuoi iniziarne una nuova e aprire le iscrizioni?</p>
+                <div className="flex flex-col items-center gap-4 mb-4">
+                    <label className="text-gray-400 text-xs font-black uppercase tracking-widest">Costo Ingresso (Token)</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={entryFee}
+                        onChange={(e) => setEntryFee(parseInt(e.target.value) || 2)}
+                        className="bg-black/50 border border-white/20 rounded-xl px-4 py-2 text-center text-white font-bold w-32 focus:border-[#dfff00] outline-none"
+                    />
+                </div>
                 <button
                     onClick={(e) => handleNewSeason(e)}
                     disabled={loading}

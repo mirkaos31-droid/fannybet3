@@ -331,7 +331,7 @@ export const bettingService = {
             console.error("Duel Resolution Exception:", err);
         }
 
-        // 2. CALCULATE 1X2 WINNERS (Client-side implementation of logic)
+        // 2. CALCULATE 1X2 WINNERS & SUPER JACKPOT
         const bets = await bettingService.getAllBets();
         const currentBets = bets.filter(b => b.matchdayId === md.id);
 
@@ -348,10 +348,13 @@ export const bettingService = {
         const currentSuper = md.superJackpot || 0;
         let nextRollover = 0;
         let winnerMsg = "";
-        let winnersUsernames: string[] = [];
+
+        // --- STANDARD POT DISTRIBUTION (Score >= 7) ---
+        let standardWinnersUsernames: string[] = [];
+        let standardShare = 0;
 
         if (maxScore >= 7) {
-            console.log("WINNER(S) FOUND");
+            console.log("STANDARD POT WINNER(S) FOUND");
 
             // Identify winners (exactly those with maxScore)
             const winners = currentBets.filter(bet => {
@@ -362,16 +365,15 @@ export const bettingService = {
 
             const winnersCount = winners.length;
 
-            // Distribute pot + superJackpot equally among winners; burn remainder if odd
-            const totalPayout = Math.floor(currentTotalPot + currentSuper);
-            const share = winnersCount > 0 ? Math.floor(totalPayout / winnersCount) : 0;
+            // Distribute STANDARD POT equally among winners; burn remainder if odd
+            const totalPayout = Math.floor(currentTotalPot);
+            standardShare = winnersCount > 0 ? Math.floor(totalPayout / winnersCount) : 0;
             const remainder = winnersCount > 0 ? (totalPayout % winnersCount) : totalPayout;
 
-            winnersUsernames = winners.map(w => w.username);
+            standardWinnersUsernames = winners.map(w => w.username);
 
-            // Update each winner profile: tokens, wins1x2, totalTokensWon
-            for (const w of winnersUsernames) {
-                // Fetch current totals
+            // Update each winner profile for Standard Pot
+            for (const w of standardWinnersUsernames) {
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('id, tokens, wins1x2, total_tokens_won')
@@ -380,9 +382,9 @@ export const bettingService = {
 
                 if (!profile) continue;
 
-                const newTokens = (profile.tokens || 0) + share;
+                const newTokens = (profile.tokens || 0) + standardShare;
                 const newWins = (profile.wins1x2 || 0) + 1;
-                const newTotalWon = (profile.total_tokens_won || 0) + share;
+                const newTotalWon = (profile.total_tokens_won || 0) + standardShare;
 
                 await supabase
                     .from('profiles')
@@ -391,13 +393,67 @@ export const bettingService = {
             }
 
             nextRollover = 0; // Pot distributed
-            winnerMsg = `VINCITORI: ${winnersUsernames.join(', ')} — ${share} token${winnersCount > 1 ? " ciascuno" : ""} (bruciati: ${remainder})`;
+            winnerMsg += `VINCITORI 1X2: ${standardWinnersUsernames.join(', ')} (+${standardShare}FTK)`;
+            if (remainder > 0) winnerMsg += ` (bruciati: ${remainder})`;
 
         } else {
-            console.log("NO WINNER, ROLLOVER");
-            winnerMsg = "NESSUN VINCITORE (Rollover)";
+            console.log("NO STANDARD WINNER, ROLLOVER");
+            winnerMsg += "NESSUN VINCITORE 1X2 (Rollover)";
             nextRollover = currentTotalPot;
         }
+
+        // --- SUPER JACKPOT DISTRIBUTION (Score >= 10 AND includeSuperJackpot) ---
+        // Verify eligibility: Must have played SuperJackpot bet AND scored >= 10 (regardless of if they were maxScore or not, though usually they would be)
+        // Wait, "Verrà assegnato solo a chi gioca il superjackpot e totalizza 10 o più punti."
+        // Logic: Find all bets with score >= 10 AND includeSuperJackpot == true.
+
+        const superJackpotWinners = currentBets.filter(bet => {
+            if (!bet.includeSuperJackpot) return false;
+            let s = 0;
+            md.results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
+            return s >= 10;
+        });
+
+        if (superJackpotWinners.length > 0 && currentSuper > 0) {
+            console.log("SUPER JACKPOT WINNER(S) FOUND");
+            const sjShare = Math.floor(currentSuper / superJackpotWinners.length);
+            const sjWinnersUsernames = superJackpotWinners.map(w => w.username);
+
+            // Update winners with Super Jackpot prize
+            for (const w of sjWinnersUsernames) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('id, tokens, wins1x2, total_tokens_won') // We track SJ wins as 1x2 wins or maybe separate? For now 1x2 wins.
+                    .eq('username', w)
+                    .single();
+
+                if (!profile) continue;
+
+                const newTokens = (profile.tokens || 0) + sjShare;
+                // Note: we might have already updated this user above if they also won Standard Pot. 
+                // To avoid race condition/overwriting, we should have probably done one update per user.
+                // However, since we await the update above, fetching again here gets the UPDATED values.
+                // So it is safe, just slightly inefficient (2 updates for same user).
+
+                const newTotalWon = (profile.total_tokens_won || 0) + sjShare;
+                // Optional: Increment wins again? Or is SJ considered a "bonus"? 
+                // Let's NOT increment wins1x2 again for the same matchday to avoid double counting "victories".
+                // Just Tokens.
+
+                await supabase
+                    .from('profiles')
+                    .update({ tokens: newTokens, total_tokens_won: newTotalWon })
+                    .eq('id', profile.id);
+            }
+            winnerMsg += ` | 💎 SUPER JACKPOT: ${sjWinnersUsernames.join(', ')} (+${sjShare}FTK)`;
+        } else {
+            // No Super Jackpot winners. 
+            // The Jackpot is NOT rolled over to 'rollover_pot' (which is for 1x2). 
+            // It effectively stays in the 'System' (or resets to 0 by default admin_create logic).
+            // We just don't pay it out.
+        }
+
+        const winnersUsernames = [...new Set([...standardWinnersUsernames, ...superJackpotWinners.map(w => w.username)])];
 
         // 2.5 UPDATE USER TOTAL POINTS, ACCURACY & LEVEL
         for (const bet of currentBets) {

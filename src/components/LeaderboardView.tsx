@@ -182,20 +182,42 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                             {podium[0] && (
                                 <div className="flex flex-col items-center group relative z-10 -translate-y-4">
                                     <div className="relative mb-4">
-                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">👑</div>
-                                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-yellow-400 p-1.5 bg-black/40 overflow-hidden shadow-[0_0_40px_rgba(250,204,21,0.4)] group-hover:scale-110 transition-transform duration-500">
+                                        {/* Crown & Glow ONLY for Official Winners in Archived Matchdays */}
+                                        {viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username) && (
+                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">👑</div>
+                                        )}
+
+                                        <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-4 p-1.5 bg-black/40 overflow-hidden transition-transform duration-500 group-hover:scale-110 
+                                            ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
+                                                ? 'border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.4)] animate-pulse' // Winner Style
+                                                : 'border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)]' // Standard Leader Style
+                                            }`}>
                                             {podium[0].avatarUrl ? (
                                                 <img src={podium[0].avatarUrl} alt={podium[0].username} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center font-black text-yellow-400 bg-yellow-950/20 text-2xl">
+                                                <div className={`w-full h-full flex items-center justify-center font-black text-2xl 
+                                                    ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
+                                                        ? 'text-yellow-400 bg-yellow-950/20'
+                                                        : 'text-white/40 bg-white/5'
+                                                    }`}>
                                                     {podium[0].username.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="absolute -bottom-2 right-0 w-8 h-8 rounded-full bg-yellow-400 text-black flex items-center justify-center font-black text-sm shadow-lg">1</div>
+                                        <div className={`absolute -bottom-2 right-0 w-8 h-8 rounded-full text-black flex items-center justify-center font-black text-sm shadow-lg
+                                            ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
+                                                ? 'bg-yellow-400'
+                                                : 'bg-white/80'
+                                            }`}>1</div>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <span className="text-xs md:text-sm font-black text-yellow-500 uppercase tracking-tighter truncate max-w-[120px]">{podium[0].username}</span>
+                                        <span className={`text-xs md:text-sm font-black uppercase tracking-tighter truncate max-w-[120px] 
+                                            ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
+                                                ? 'text-yellow-500'
+                                                : 'text-white/60'
+                                            }`}>
+                                            {podium[0].username}
+                                        </span>
                                         {podium[0].includeSuperJackpot && <Gem size={12} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
                                     </div>
                                     <span className="text-2xl md:text-3xl font-display font-black text-white">{podium[0].score}<span className="text-[10px] opacity-40">{podium[0].extra}</span></span>
