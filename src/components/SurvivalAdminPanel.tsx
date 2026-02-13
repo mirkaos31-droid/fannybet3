@@ -43,6 +43,27 @@ export const SurvivalAdminPanel: React.FC = () => {
         }
     };
 
+    const handleRemovePlayer = async (playerId: number, username: string) => {
+        if (!window.confirm(`Rimuovere ${username} dalla stagione? I token verranno rimborsati.`)) return;
+
+        setLoading(true);
+        setMsg(null);
+        try {
+            const res = await gameService.removeSurvivalPlayer(playerId);
+            if (res.success) {
+                setMsg({ type: 'success', text: res.message });
+                loadData();
+            } else {
+                setMsg({ type: 'error', text: res.message });
+            }
+        } catch (err) {
+            console.error("Error removing player:", err);
+            setMsg({ type: 'error', text: 'Errore durante la rimozione.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleNewSeason = async (e: React.MouseEvent) => {
         e.preventDefault();
         if (!window.confirm(`Creare una nuova stagione Survival con costo ${entryFee} token?`)) return;
@@ -164,6 +185,7 @@ export const SurvivalAdminPanel: React.FC = () => {
                                 <th className="px-4 py-3 text-center">Stato</th>
                                 <th className="px-4 py-3">Pick Attuale</th>
                                 <th className="px-4 py-3">Team Usati</th>
+                                <th className="px-4 py-3 text-right">Azioni</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -197,6 +219,16 @@ export const SurvivalAdminPanel: React.FC = () => {
                                                     <span className="text-gray-700">-</span>
                                                 )}
                                             </div>
+                                        </td>
+                                        <td className="px-4 py-4 text-right">
+                                            <button
+                                                onClick={() => handleRemovePlayer(p.id as number, p.username)}
+                                                disabled={loading}
+                                                className="text-red-500 hover:text-red-400 font-black text-[10px] uppercase tracking-widest p-2 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-30"
+                                                title="Rimuovi giocatore e rimborsa"
+                                            >
+                                                ELIMINA
+                                            </button>
                                         </td>
                                     </tr>
                                 ))

@@ -16,11 +16,16 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
     const [initLoading, setInitLoading] = useState(true);
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+    // Simplified case-insensitive comparison
+    const isSameUser = (p: SurvivalPlayer) => {
+        if (!user) return false;
+        const matchId = p.userId && user.id && p.userId.toString().toLowerCase() === user.id.toString().toLowerCase();
+        const matchUser = p.username && user.username && p.username.toLowerCase() === user.username.toLowerCase();
+        return !!(matchId || matchUser);
+    };
+
     // Derived State
-    const myPlayer = players.find(p =>
-        (p.userId && p.userId === user?.id) ||
-        (p.username && p.username === user?.username)
-    );
+    const myPlayer = players.find(isSameUser);
     const isAlive = myPlayer?.status?.toUpperCase() === 'ALIVE';
     const hasJoined = !!myPlayer;
     const isSeasonOpen = season?.status === 'OPEN';
@@ -95,12 +100,18 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
 
     // Get available teams from current matchday
     const getAvailableTeams = () => {
-        if (!activeMatchday) return [];
-        const allTeams = activeMatchday.matches.flatMap(m => [m.home, m.away]);
-        // Exclude the last four teams as per user request
-        const restrictedTeams = allTeams.slice(0, -4);
-        // Filter used teams
-        return restrictedTeams.filter(t => !myPlayer?.usedTeams.includes(t));
+        if (!activeMatchday || !activeMatchday.matches) return [];
+
+        // Filter out matches that don't have both teams named
+        const validMatches = activeMatchday.matches.filter(m => m.home?.trim() && m.away?.trim());
+        const allTeams = validMatches.flatMap(m => [m.home, m.away]);
+
+        // Exclude the last 4 teams (last 2 matches) as per user request to have exactly 20 teams
+        const restrictedTeams = allTeams.slice(0, 20);
+
+        // Filter teams already used by the player
+        const used = myPlayer?.usedTeams || [];
+        return restrictedTeams.filter(t => !used.includes(t));
     };
 
     if (initLoading) return <div className="text-center p-10 font-display text-2xl animate-pulse">CARICAMENTO ARENA...</div>;
@@ -287,7 +298,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                                     <div className="flex flex-col items-center gap-0.5 leading-none">
                                         <div className="flex items-center gap-1">
                                             <span className="font-display font-black text-[10px] text-white uppercase truncate">{p.username}</span>
-                                            {((p.userId && p.userId === user?.id) || (p.username && p.username === user?.username)) && (
+                                            {isSameUser(p) && (
                                                 <span className="text-[6px] text-brand-teal font-black">● TU</span>
                                             )}
                                         </div>

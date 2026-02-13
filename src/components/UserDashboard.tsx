@@ -44,7 +44,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
             setUserBets(bets);
 
             const { players } = await gameService.getSurvivalState();
-            const me = players.find(p => p.username === user.username);
+            const me = players.find(p =>
+                (p.userId && user.id && p.userId.toString().toLowerCase() === user.id.toString().toLowerCase()) ||
+                (p.username && user.username && p.username.toLowerCase() === user.username.toLowerCase())
+            );
             if (me) setSurvivalStatus(me.status);
         }
         setLoading(false);

@@ -82,7 +82,10 @@ export const survivalService = {
         let myPickCtx = undefined;
 
         if (user && openMD) {
-            const me = parsedPlayers.find(p => p.userId === user.id || p.username === user.user_metadata?.username);
+            const me = parsedPlayers.find(p =>
+                (p.userId && user.id && p.userId.toString().toLowerCase() === user.id.toString().toLowerCase()) ||
+                (p.username && user.user_metadata?.username && p.username.toLowerCase() === user.user_metadata.username.toLowerCase())
+            );
             console.log('[getSurvivalState] Finding "Me":', me);
             if (me && me.currentPick) {
                 const pickData = picks.find(pick => pick.player_id === me.id);
@@ -240,6 +243,12 @@ export const survivalService = {
 
     closeSurvivalSeason: async (seasonId: number): Promise<{ success: boolean; message: string }> => {
         const { data, error } = await supabase.rpc('close_survival_season', { p_season_id: seasonId });
+        if (error) return { success: false, message: error.message };
+        return data as { success: boolean, message: string };
+    },
+
+    removeSurvivalPlayer: async (playerId: number): Promise<{ success: boolean; message: string }> => {
+        const { data, error } = await supabase.rpc('admin_remove_survival_player', { p_player_id: playerId });
         if (error) return { success: false, message: error.message };
         return data as { success: boolean, message: string };
     },
