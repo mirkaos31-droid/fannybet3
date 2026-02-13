@@ -4,13 +4,13 @@ import { gameService } from '../services/gameService';
 
 interface BettingInterfaceProps {
     matchday: Matchday;
-    userBet?: Bet;
+    userBets: Bet[];
     user: User | null;
     onBetPlaced: () => void;
     onViewChange: (view: ViewMode) => void;
 }
 
-export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, userBet, user, onBetPlaced, onViewChange }) => {
+export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, userBets, user, onBetPlaced, onViewChange }) => {
     const [predictions, setPredictions] = useState<string[]>(Array(12).fill(''));
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
@@ -40,7 +40,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
     return (
         <div className="space-y-6 md:space-y-12 animate-fade-in pb-20 bg-gradient-to-br from-[#2d1b4d] via-[#120a1f] to-black min-h-screen p-0 md:p-10 border border-white/5">
             {/* Active Bet Notification Pill */}
-            {userBet && (
+            {userBets.length > 0 && (
                 <div className="flex justify-center px-4 md:px-0">
                     <button
                         onClick={() => onViewChange('SPY')}
@@ -50,7 +50,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-acid-glow"></span>
                         </span>
                         <span className="text-[10px] md:text-xs font-mono font-black text-acid-glow uppercase tracking-widest leading-none">
-                            GIOCATA ATTIVA RILEVATA <span className="text-white/40 ml-1">|</span> <span className="text-white group-hover:text-acid-glow transition-colors ml-1">VEDI DETTAGLI</span>
+                            {userBets.length === 1 ? 'GIOCATA ATTIVA RILEVATA' : `${userBets.length} GIOCATE ATTIVE RILEVATE`} <span className="text-white/40 ml-1">|</span> <span className="text-white group-hover:text-acid-glow transition-colors ml-1">VEDI DETTAGLI</span>
                         </span>
                         <span className="text-xs group-hover:translate-x-1 transition-transform">➡️</span>
                     </button>

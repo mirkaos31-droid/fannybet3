@@ -103,39 +103,35 @@ export const bettingService = {
         });
     },
 
-    getUserBet: async (username: string): Promise<Bet | undefined> => {
-        // Need to get user_id from username first? Or assuming caller passes valid context.
-        // Actually best to filter by the current open matchday.
-        // First get open matchday id
+    getUserBets: async (username: string): Promise<Bet[]> => {
         const md = await bettingService.getMatchday();
-        if (!md) return undefined;
+        if (!md) return [];
 
-        // Find profile id by username
         const { data: profile } = await supabase
             .from('profiles')
             .select('id')
             .eq('username', username)
             .single();
 
-        if (!profile) return undefined;
+        if (!profile) return [];
 
-        const { data: bet } = await supabase
+        const { data: bets } = await supabase
             .from('bets')
             .select('*')
             .eq('user_id', profile.id)
             .eq('matchday_id', md.id)
-            .maybeSingle();
+            .order('created_at', { ascending: false });
 
-        if (!bet) return undefined;
+        if (!bets) return [];
 
-        return {
+        return bets.map(bet => ({
             id: bet.id,
             username: username,
             matchdayId: bet.matchday_id,
             predictions: bet.predictions,
             includeSuperJackpot: bet.include_super_jackpot,
             timestamp: bet.created_at || new Date().toISOString()
-        };
+        }));
     },
 
     // --- ACTIONS ---
@@ -198,6 +194,9 @@ export const bettingService = {
             .from('profiles')
             .update({ bets_placed: (currentProf?.bets_placed || 0) + 1 })
             .eq('id', user.id);
+
+        // Proactively recalculate pot for UI immediate consistency
+        await bettingService.recalculatePot();
 
         return { success: true, message: includeSuperJackpot ? "Schedina + SuperJackpot Giocata!" : "Schedina Base Giocata!" };
     },

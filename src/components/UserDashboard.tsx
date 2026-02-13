@@ -22,7 +22,7 @@ interface UserDashboardProps {
 
 export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpdate, onLogout }) => {
     const [matchday, setMatchday] = useState<Matchday | null>(null);
-    const [userBet, setUserBet] = useState<Bet | undefined>(undefined);
+    const [userBets, setUserBets] = useState<Bet[]>([]);
     const [view, setView] = useState<ViewMode>('HOME');
     const [survivalStatus, setSurvivalStatus] = useState<'ALIVE' | 'ELIMINATED' | 'WINNER' | null>(null);
     const [showProfile, setShowProfile] = useState(false);
@@ -40,8 +40,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
         const md = await gameService.getMatchday();
         setMatchday(md);
         if (user) {
-            const bet = await gameService.getUserBet(user.username);
-            setUserBet(bet);
+            const bets = await gameService.getUserBets(user.username);
+            setUserBets(bets);
 
             const { players } = await gameService.getSurvivalState();
             const me = players.find(p => p.username === user.username);
@@ -292,7 +292,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     <div className="relative animate-fade-in">
                         <BettingInterface
                             matchday={matchday}
-                            userBet={userBet}
+                            userBets={userBets}
                             user={user}
                             onBetPlaced={handleBetPlaced}
                             onViewChange={setView}
