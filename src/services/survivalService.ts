@@ -31,7 +31,31 @@ export const survivalService = {
             .maybeSingle();
 
         console.log('[getSurvivalState] Current Active Season:', season);
-        if (!season) return { season: null, players: [] };
+
+        // If no active season, fetch the last winner from the most recently completed season
+        if (!season) {
+            const { data: lastWinnerHistory } = await supabase.rpc('get_survival_winner_history', { p_limit: 1 });
+            const lastWinner = lastWinnerHistory?.[0];
+
+            if (lastWinner) {
+                return {
+                    season: {
+                        id: lastWinner.season_id,
+                        status: 'COMPLETED',
+                        prizePool: lastWinner.prize_pool,
+                        entryFee: lastWinner.entry_fee,
+                        finishedAt: lastWinner.finished_at,
+                        winner: {
+                            username: lastWinner.username,
+                            avatarUrl: lastWinner.avatar_url,
+                            prize: Math.max(0, lastWinner.prize_pool - (lastWinner.entry_fee || 2))
+                        }
+                    },
+                    players: []
+                };
+            }
+            return { season: null, players: [] };
+        }
 
         // 2. Get Players
         console.log('[getSurvivalState] Fetching players for season:', season.id);
@@ -100,6 +124,7 @@ export const survivalService = {
                 id: season.id,
                 status: season.status as 'OPEN' | 'ACTIVE' | 'COMPLETED',
                 prizePool: season.prize_pool,
+                entryFee: season.entry_fee,
                 startMatchdayId: season.start_matchday_id,
                 currentMatch: myPickCtx
             },
@@ -210,7 +235,10 @@ export const survivalService = {
             console.log(`🏆 SURVIVAL WINNER FOUND: ${winner.username}. Prize: ${prize}`);
 
             // A. Mark Season Completed
-            await supabase.from('survival_seasons').update({ status: 'COMPLETED' }).eq('id', season.id);
+            await supabase.from('survival_seasons').update({
+                status: 'COMPLETED',
+                finished_at: new Date().toISOString()
+            }).eq('id', season.id);
 
             // B. Mark Player as Winner
             await supabase.from('survival_players').update({ status: 'WINNER' }).eq('id', winner.id);
@@ -258,5 +286,20 @@ export const survivalService = {
         const { data, error } = await supabase.rpc('start_new_survival_season', { p_entry_fee: entryFee });
         if (error) return { success: false, message: error.message };
         return data as { success: boolean, message: string };
+    },
+
+    fixPlayerId: async (username: string): Promise<{ success: boolean; message: string }> => {
+        const { data, error } = await supabase.rpc('admin_fix_survival_player_id', { p_username: username });
+        if (error) return { success: false, message: error.message };
+        return data as { success: boolean, message: string };
+    },
+
+    getWinnerHistory: async (limit: number = 3): Promise<any[]> => {
+        const { data, error } = await supabase.rpc('get_survival_winner_history', { p_limit: limit });
+        if (error) {
+            console.error('Error fetching winner history:', error);
+            return [];
+        }
+        return data || [];
     },
 };

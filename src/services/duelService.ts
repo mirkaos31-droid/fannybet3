@@ -9,6 +9,7 @@ interface DbDuelJoinedRecord {
     opponent_id: string;
     status: 'PENDING' | 'COMPLETED' | 'ACCEPTED' | 'DECLINED';
     scores?: { challenger_score?: number; opponent_score?: number };
+    live_scores?: { challenger_score?: number; opponent_score?: number };
     winner_id?: string;
     created_at: string;
     challenger: { id: string; username: string; avatar_url?: string };
@@ -40,49 +41,19 @@ export const duelService = {
     },
 
     createDuel: async (opponentId: string, wagerAmount: number = 0): Promise<{ success: boolean; message: string }> => {
-        // Validation: 0 to 5 tokens limit
-        if (wagerAmount < 0 || wagerAmount > 5) {
-            return { success: false, message: "La posta deve essere compresa tra 0 e 5 token." };
-        }
-
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { success: false, message: "Non loggato" };
-
-        const md = await bettingService.getMatchday();
-        if (!md) return { success: false, message: "Nessuna giornata attiva" };
-
-        // Check user tokens if wager > 0
-        if (wagerAmount > 0) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('tokens')
-                .eq('id', user.id)
-                .single();
-
-            if (!profile || profile.tokens < wagerAmount) {
-                return { success: false, message: `Token insufficienti per questa sfida (${wagerAmount} richiesti, ne hai ${profile?.tokens || 0}).` };
-            }
-        }
-
-        const { error } = await supabase
-            .from('duels')
-            .insert({
-                matchday_id: md.id,
-                challenger_id: user.id,
-                opponent_id: opponentId,
-                status: 'PENDING',
-                wager_amount: wagerAmount
-            });
+        const { data, error } = await supabase.rpc('create_duel_secure', {
+            p_opponent_id: opponentId,
+            p_wager_amount: wagerAmount
+        });
 
         if (error) return { success: false, message: error.message };
-        return { success: true, message: "Sfida inviata!" };
+        return data as { success: boolean, message: string };
     },
 
     getMyDuels: async (): Promise<Duel[]> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        // Only return duels for the active matchday to avoid showing stale duels
         const md = await bettingService.getMatchday();
         if (!md) return [];
 
@@ -91,7 +62,8 @@ export const duelService = {
             .select(`
                 *,
                 challenger:profiles!challenger_id(id, username, avatar_url),
-                opponent:profiles!opponent_id(id, username, avatar_url)
+                opponent:profiles!opponent_id(id, username, avatar_url),
+                live_scores
             `)
             .eq('matchday_id', md.id)
             .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
@@ -116,9 +88,9 @@ export const duelService = {
                 avatarUrl: d.opponent.avatar_url
             },
             status: d.status,
-            scores: d.scores ? {
-                challenger_score: d.scores.challenger_score ?? 0,
-                opponent_score: d.scores.opponent_score ?? 0
+            scores: (d.status === 'COMPLETED' || d.status === 'ACCEPTED') ? {
+                challenger_score: d.scores?.challenger_score ?? d.live_scores?.challenger_score ?? 0,
+                opponent_score: d.scores?.opponent_score ?? d.live_scores?.opponent_score ?? 0
             } : undefined,
             winnerId: d.winner_id,
             wagerAmount: d.wager_amount || 0,
@@ -127,14 +99,11 @@ export const duelService = {
     },
 
     respondToDuel: async (duelId: string, accept: boolean): Promise<{ success: boolean; message: string }> => {
-        const status = accept ? 'ACCEPTED' : 'DECLINED';
-        const { error } = await supabase
-            .from('duels')
-            .update({ status })
-            .eq('id', duelId);
+        const rpcName = accept ? 'accept_duel_secure' : 'decline_duel_secure';
+        const { data, error } = await supabase.rpc(rpcName, { p_duel_id: duelId });
 
         if (error) return { success: false, message: error.message };
-        return { success: true, message: accept ? "Sfida Accettata!" : "Sfida Rifiutata" };
+        return data as { success: boolean, message: string };
     },
 
     getAllDuels: async (): Promise<Duel[]> => {
@@ -146,7 +115,8 @@ export const duelService = {
             .select(`
                 *,
                 challenger:profiles!challenger_id(id, username, avatar_url),
-                opponent:profiles!opponent_id(id, username, avatar_url)
+                opponent:profiles!opponent_id(id, username, avatar_url),
+                live_scores
             `)
             .eq('matchday_id', md.id)
             .order('created_at', { ascending: false });
@@ -170,9 +140,9 @@ export const duelService = {
                 avatarUrl: d.opponent.avatar_url
             },
             status: d.status,
-            scores: d.scores ? {
-                challenger_score: d.scores.challenger_score ?? 0,
-                opponent_score: d.scores.opponent_score ?? 0
+            scores: (d.status === 'COMPLETED' || d.status === 'ACCEPTED') ? {
+                challenger_score: d.scores?.challenger_score ?? d.live_scores?.challenger_score ?? 0,
+                opponent_score: d.scores?.opponent_score ?? d.live_scores?.opponent_score ?? 0
             } : undefined,
             winnerId: d.winner_id,
             wagerAmount: d.wager_amount || 0,
@@ -191,5 +161,14 @@ export const duelService = {
             return { success: false, message: error.message };
         }
         return { success: true };
+    },
+
+    getLiveDuelScores: async (duelId: string): Promise<{ challenger_score: number; opponent_score: number } | null> => {
+        const { data, error } = await supabase.rpc('get_live_duel_scores', { p_duel_id: duelId });
+        if (error) {
+            console.error('Error fetching live scores:', error);
+            return null;
+        }
+        return data;
     }
 };

@@ -188,13 +188,13 @@ export const DuelArenaView: React.FC<DuelArenaViewProps> = ({ initialOpponent })
                     {pendingReceived.length > 0 && (
                         <section className="space-y-4">
                             <h3 className="text-xs font-black text-[#b45309] uppercase tracking-widest flex items-center gap-2"><Swords className="w-4 h-4" /> Inviti Ricevuti</h3>
-                            {pendingReceived.map(d => <DuelCard key={d.id} duel={d} onRespond={handleRespond} isPending={true} />)}
+                            {pendingReceived.map(d => <DuelCard key={d.id} duel={d} currentUserId={currentUserId} onRespond={handleRespond} isPending={true} />)}
                         </section>
                     )}
                     {pendingSent.length > 0 && (
                         <section className="space-y-4">
                             <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2"><History className="w-4 h-4" /> Sfide Inviate</h3>
-                            {pendingSent.map(d => <DuelCard key={d.id} duel={d} isPending={true} />)}
+                            {pendingSent.map(d => <DuelCard key={d.id} duel={d} currentUserId={currentUserId} isPending={true} />)}
                         </section>
                     )}
                     <section className="space-y-4">
@@ -202,7 +202,7 @@ export const DuelArenaView: React.FC<DuelArenaViewProps> = ({ initialOpponent })
                         {activeDuels.length === 0 ? (
                             <div className="text-center py-10 text-gray-600 font-bold uppercase text-[10px]">Nessun duello attivo.</div>
                         ) : (
-                            <div className="space-y-4">{activeDuels.map(d => <DuelCard key={d.id} duel={d} />)}</div>
+                            <div className="space-y-4">{activeDuels.map(d => <DuelCard key={d.id} duel={d} currentUserId={currentUserId} />)}</div>
                         )}
                     </section>
                 </div>
@@ -225,7 +225,7 @@ export const DuelArenaView: React.FC<DuelArenaViewProps> = ({ initialOpponent })
             {activeTab === 'GLOBAL' && (
                 <div className="space-y-4">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest">Tutti i Duelli</h3>
-                    <div className="space-y-4">{globalDuels.map(d => <DuelCard key={d.id} duel={d} />)}</div>
+                    <div className="space-y-4">{globalDuels.map(d => <DuelCard key={d.id} duel={d} currentUserId={currentUserId} />)}</div>
                 </div>
             )}
 
@@ -250,7 +250,7 @@ export const DuelArenaView: React.FC<DuelArenaViewProps> = ({ initialOpponent })
     );
 };
 
-const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: string, accept: boolean) => void }> = ({ duel, isPending, onRespond }) => {
+const DuelCard: React.FC<{ duel: Duel, currentUserId: string | null, isPending?: boolean, onRespond?: (id: string, accept: boolean) => void }> = ({ duel, currentUserId, isPending, onRespond }) => {
     const [showWinAnim, setShowWinAnim] = useState(false);
     const prevStatusRef = useRef<string | undefined>(duel.status);
 
@@ -271,7 +271,11 @@ const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: str
         }
     }, [duel.status, duel.winnerId]);
 
-    const winnerName = duel.winnerId === duel.challenger.id ? duel.challenger.username : duel.winnerId === duel.opponent.id ? duel.opponent.username : 'Vincitore';
+    const isWinner = duel.winnerId === currentUserId;
+    const isLoser = !!duel.winnerId && duel.winnerId !== currentUserId;
+    const isDraw = duel.status === 'COMPLETED' && !duel.winnerId;
+
+    const winnerName = duel.winnerId === duel.challenger.id ? duel.challenger.username : duel.winnerId === duel.opponent.id ? duel.opponent.username : 'Pareggio';
 
     return (
         <div className={`relative bg-black rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 ${isPending ? 'border-[#b45309]/50' : 'border-[#b45309]/30'} overflow-hidden group hover:border-[#b45309] transition-colors`}>
@@ -305,7 +309,14 @@ const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: str
                         </div>
                     </div>
                     <span className="font-black text-white text-xs truncate max-w-full">{duel.challenger.username}</span>
-                    {duel.scores && <div className="text-2xl font-black text-[#b45309] drop-shadow-[0_0_10px_rgba(180,83,9,0.5)]">{duel.scores.challenger_score}</div>}
+                    {duel.scores && (
+                        <div className="flex flex-col items-center">
+                            <div className={`text-2xl font-black ${duel.winnerId === duel.challenger.id ? 'text-[#dfff00]' : 'text-[#b45309]'} drop-shadow-[0_0_10px_rgba(180,83,9,0.5)]`}>
+                                {duel.scores.challenger_score}
+                            </div>
+                            {duel.status === 'ACCEPTED' && <span className="text-[7px] font-black bg-[#b45309] text-black px-1 rounded animate-pulse">LIVE</span>}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex flex-col items-center gap-2 w-1/2 pl-6">
@@ -315,7 +326,14 @@ const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: str
                         </div>
                     </div>
                     <span className="font-black text-white text-xs truncate max-w-full">{duel.opponent.username}</span>
-                    {duel.scores && <div className="text-2xl font-black text-white/50">{duel.scores.opponent_score}</div>}
+                    {duel.scores && (
+                        <div className="flex flex-col items-center">
+                            <div className={`text-2xl font-black ${duel.winnerId === duel.opponent.id ? 'text-[#dfff00]' : 'text-white/50'}`}>
+                                {duel.scores.opponent_score}
+                            </div>
+                            {duel.status === 'ACCEPTED' && <span className="text-[7px] font-black bg-[#b45309] text-black px-1 rounded animate-pulse">LIVE</span>}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -326,10 +344,18 @@ const DuelCard: React.FC<{ duel: Duel, isPending?: boolean, onRespond?: (id: str
                         <button onClick={() => onRespond(duel.id, true)} className="flex-1 py-3 rounded-xl bg-[#b45309] text-black font-black text-[10px] uppercase tracking-widest hover:bg-amber-500 hover:scale-105 transition-all shadow-lg">Accetta Sfida</button>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600 italic">
-                            {duel.status === 'COMPLETED' ? 'Terminata' : isPending ? "In attesa dell'avversario..." : 'In Corso...'}
+                    <div className="flex flex-col items-center gap-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#b45309] italic">
+                            {duel.status === 'COMPLETED' ? (isDraw ? '🤝 PAREGGIO' : isWinner ? '🏆 VITTORIA' : isLoser ? '❌ SCONFITTA' : 'Sfida Terminata') :
+                                duel.status === 'ACCEPTED' ? '⚔️ In Battaglia Live' :
+                                    isPending ? "⏳ In attesa dell'avversario..." : 'Sfida Inviata'}
                         </span>
+                        {(duel.status === 'ACCEPTED' || duel.status === 'PENDING') && (duel.wagerAmount || 0) > 0 && (
+                            <span className="text-[8px] font-black text-white/20 uppercase tracking-tighter">Token Riservati nel Wallet</span>
+                        )}
+                        {duel.status === 'COMPLETED' && (duel.wagerAmount || 0) > 0 && (
+                            <span className="text-[8px] font-black text-[#dfff00]/40 uppercase tracking-tighter">Premi Assegnati</span>
+                        )}
                     </div>
                 )}
             </div>

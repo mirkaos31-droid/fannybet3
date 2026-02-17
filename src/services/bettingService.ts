@@ -136,69 +136,21 @@ export const bettingService = {
 
     // --- ACTIONS ---
     placeBet: async (predictions: string[], includeSuperJackpot: boolean): Promise<{ success: boolean; message: string }> => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { success: false, message: "Not logged in" };
+        const { data, error } = await supabase.rpc('submit_1x2_bet', {
+            p_predictions: predictions,
+            p_include_super_jackpot: includeSuperJackpot
+        });
 
-        const md = await bettingService.getMatchday();
-        if (!md) return { success: false, message: "No active matchday" };
+        if (error) return { success: false, message: error.message };
 
-        // Disallow bets if matchday has a deadline in the past or equal to now
-        if (md.deadline) {
-            const deadlineTime = new Date(md.deadline).getTime();
-            if (isNaN(deadlineTime) || Date.now() >= deadlineTime) {
-                return { success: false, message: "Scommesse chiuse per la giornata (deadline raggiunta)." };
-            }
+        const res = data as { success: boolean, message: string };
+
+        if (res.success) {
+            // Proactively recalculate pot for UI immediate consistency
+            await bettingService.recalculatePot();
         }
 
-        const cost = includeSuperJackpot ? 2 : 1;
-
-        // Check tokens
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('tokens')
-            .eq('id', user.id)
-            .single();
-
-        if (!profile || profile.tokens < cost) return { success: false, message: "Insufficient tokens" };
-
-        // Deduct Tokens
-        const { error: tokenError } = await supabase
-            .from('profiles')
-            .update({ tokens: profile.tokens - cost })
-            .eq('id', user.id);
-
-        if (tokenError) return { success: false, message: "Token deduction failed" };
-
-        // Insert Bet
-        const { error: betError } = await supabase
-            .from('bets')
-            .insert({
-                user_id: user.id,
-                matchday_id: md.id,
-                predictions: predictions,
-                include_super_jackpot: includeSuperJackpot
-            });
-
-        if (betError) {
-            return { success: false, message: betError.message };
-        }
-
-        // Increment bets_placed in profile
-        const { data: currentProf } = await supabase
-            .from('profiles')
-            .select('bets_placed')
-            .eq('id', user.id)
-            .single();
-
-        await supabase
-            .from('profiles')
-            .update({ bets_placed: (currentProf?.bets_placed || 0) + 1 })
-            .eq('id', user.id);
-
-        // Proactively recalculate pot for UI immediate consistency
-        await bettingService.recalculatePot();
-
-        return { success: true, message: includeSuperJackpot ? "Schedina + SuperJackpot Giocata!" : "Schedina Base Giocata!" };
+        return res;
     },
 
     // --- ADMIN ACTIONS ---

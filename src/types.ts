@@ -106,7 +106,14 @@ export interface SurvivalSeason {
     id: number;
     status: 'OPEN' | 'ACTIVE' | 'COMPLETED';
     prizePool: number;
+    entryFee?: number;
     startMatchdayId?: number;
+    finishedAt?: string;
+    winner?: {
+        username: string;
+        avatarUrl?: string;
+        prize: number;
+    };
     currentMatch?: {
         myPick?: string;
         myStatus?: 'PENDING' | 'WIN' | 'ELIMINATED';

@@ -76,7 +76,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
                             <li>Vinto da chi indovina <span className="text-brand-gold font-black">10 risultati su 12</span> nella modalità 1x2.</li>
-                            <li>Il montepremi è progressivo e cresce a ogni giornata senza vincitori.</li>
+                            <li>Il montepremi è fisso e viene incrementato una tantum se non ci sono vincitori.</li>
                         </ul>
                     </section>
 
@@ -85,7 +85,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                             5. COMUNICAZIONI WHATSAPP
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
-                            Tutti gli utenti registrati saranno inseriti in un <span className="text-brand-teal font-bold">gruppo di notifica ufficiale WhatsApp</span>.
+                            Tutti gli utenti registrati saranno inseriti nella <span className="text-brand-teal font-bold">Fannybet community</span> (gruppo ufficiale WhatsApp).
                         </p>
                         <p className="mt-2 text-gray-500 text-[10px] md:text-xs italic">
                             Riceverai aggiornamenti sulle scadenze, risultati in tempo reale e annunci amministrativi.
@@ -108,7 +108,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
 
                     <section className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 mt-8">
                         <p className="text-[10px] text-gray-600 uppercase tracking-widest text-center">
-                            Ultimo aggiornamento: 8 Febbraio 2026 • Versione 2.1
+                            Ultimo aggiornamento: 16 Febbraio 2026 • Versione 2.2
                         </p>
                     </section>
 

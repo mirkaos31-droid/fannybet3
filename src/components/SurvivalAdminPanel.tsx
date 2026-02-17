@@ -5,6 +5,7 @@ import type { SurvivalSeason, SurvivalPlayer } from '../types';
 export const SurvivalAdminPanel: React.FC = () => {
     const [season, setSeason] = useState<SurvivalSeason | null>(null);
     const [players, setPlayers] = useState<SurvivalPlayer[]>([]);
+    const [history, setHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [entryFee, setEntryFee] = useState(2); // Default entry fee
@@ -17,6 +18,9 @@ export const SurvivalAdminPanel: React.FC = () => {
         const data = await gameService.getSurvivalState();
         setSeason(data.season);
         setPlayers(data.players);
+
+        const winners = await gameService.getWinnerHistory(3);
+        setHistory(winners);
     };
 
     const handleCloseSeason = async (e: React.MouseEvent) => {
@@ -59,6 +63,27 @@ export const SurvivalAdminPanel: React.FC = () => {
         } catch (err) {
             console.error("Error removing player:", err);
             setMsg({ type: 'error', text: 'Errore durante la rimozione.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleFixId = async (username: string) => {
+        if (!window.confirm(`Sincronizzare ID per ${username}? Risolve problemi di login/pick.`)) return;
+
+        setLoading(true);
+        setMsg(null);
+        try {
+            const res = await gameService.fixPlayerId(username);
+            if (res.success) {
+                setMsg({ type: 'success', text: res.message });
+                loadData();
+            } else {
+                setMsg({ type: 'error', text: res.message });
+            }
+        } catch (err) {
+            console.error("Error fixing ID:", err);
+            setMsg({ type: 'error', text: 'Errore durante la sincronizzazione.' });
         } finally {
             setLoading(false);
         }
@@ -220,7 +245,15 @@ export const SurvivalAdminPanel: React.FC = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4 text-right">
+                                        <td className="px-4 py-4 text-right flex justify-end gap-2">
+                                            <button
+                                                onClick={() => handleFixId(p.username)}
+                                                disabled={loading}
+                                                className="text-amber-500 hover:text-amber-400 font-black text-[10px] uppercase tracking-widest p-2 hover:bg-amber-500/10 rounded-lg transition-all disabled:opacity-30"
+                                                title="Sincronizza ID Utente (Fix EL Barto)"
+                                            >
+                                                FIX ID
+                                            </button>
                                             <button
                                                 onClick={() => handleRemovePlayer(p.id as number, p.username)}
                                                 disabled={loading}
@@ -243,6 +276,44 @@ export const SurvivalAdminPanel: React.FC = () => {
                     ➕ CREA NUOVA STAGIONE
                 </button>
             )}
+
+            {/* Winner History Section */}
+            <div className="mt-12 border-t-2 border-dashed border-white/5 pt-8 pb-8">
+                <div className="flex items-center gap-3 mb-6">
+                    <span className="text-2xl">🏆</span>
+                    <h4 className="text-xl font-black italic text-white tracking-widest uppercase">Storico Vincitori (Ultimi 3)</h4>
+                </div>
+
+                {history.length === 0 ? (
+                    <div className="bg-black/20 rounded-2xl p-8 text-center border border-white/5 italic text-gray-500">
+                        Nessun vincitore registrato nello storico.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {history.map((win) => (
+                            <div key={win.season_id} className="relative glass-panel bg-black/40 border-yellow-500/20 p-5 rounded-3xl group hover:border-yellow-500/50 transition-all">
+                                <div className="absolute top-2 right-3 text-[8px] font-black text-white/10 uppercase italic">Season #{win.season_id}</div>
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-16 h-16 rounded-full border-2 border-yellow-500/30 overflow-hidden mb-3 bg-black">
+                                        {win.avatar_url ? (
+                                            <img src={win.avatar_url} alt={win.username} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xl font-black text-yellow-600/50">
+                                                {win.username.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="font-display font-black text-sm text-white uppercase tracking-tight mb-1">{win.username}</div>
+                                    <div className="text-[#dfff00] font-black text-xs">+{Math.max(0, win.prize_pool - (win.entry_fee || 2))} FTK</div>
+                                    <div className="mt-4 text-[7px] text-gray-500 font-black uppercase tracking-widest border-t border-white/5 pt-2 w-full">
+                                        {win.finished_at ? new Date(win.finished_at).toLocaleDateString() : '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

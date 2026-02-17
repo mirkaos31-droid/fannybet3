@@ -265,9 +265,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             </h3>
                             <div className="grid gap-4">
                                 {matchday.matches.map((m, idx) => (
-                                    <div key={idx} className="bg-white/5 p-4 md:p-6 rounded-2xl border border-white/5 hover:border-[#dfff00]/30 transition-all flex flex-col lg:flex-row items-center gap-5 group">
+                                    <div key={idx} className="bg-white/5 p-3.5 md:p-5 rounded-2xl border border-white/5 hover:border-[#dfff00]/30 transition-all flex flex-col lg:flex-row items-center gap-4 group">
                                         <div className="flex items-center gap-3 w-full lg:w-auto">
-                                            <span className="text-3xl font-black italic text-white/10 group-hover:text-[#dfff00]/20 font-mono transition-colors">#{idx + 1}</span>
+                                            <span className="text-2xl font-black italic text-white/10 group-hover:text-[#dfff00]/20 font-mono transition-colors">#{idx + 1}</span>
                                             <div className="lg:hidden bg-black/40 px-3 py-1 rounded-full text-[9px] font-black uppercase text-gray-400 border border-white/5 flex-1 text-center">
                                                 {m.league}
                                             </div>
@@ -278,18 +278,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                                 type="text"
                                                 value={m.home}
                                                 onChange={(e) => handleUpdateMatch(idx, 'home', e.target.value)}
-                                                className="bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white font-black text-lg text-center md:text-left focus:border-[#dfff00] outline-none transition-colors"
+                                                className="bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white font-black text-base text-center md:text-left focus:border-[#dfff00] outline-none transition-colors"
                                             />
-                                            <span className="text-[#dfff00] font-black italic text-xs opacity-40 text-center">VS</span>
+                                            <span className="text-[#dfff00] font-black italic text-[10px] opacity-40 text-center uppercase">VS</span>
                                             <input
                                                 type="text"
                                                 value={m.away}
                                                 onChange={(e) => handleUpdateMatch(idx, 'away', e.target.value)}
-                                                className="bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white font-black text-lg text-center md:text-right focus:border-[#dfff00] outline-none transition-colors"
+                                                className="bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white font-black text-base text-center md:text-right focus:border-[#dfff00] outline-none transition-colors"
                                             />
                                         </div>
 
-                                        <div className="hidden lg:block bg-black/40 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 border border-white/5 min-w-[100px] text-center">
+                                        <div className="hidden lg:block bg-black/40 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-400 border border-white/5 min-w-[90px] text-center">
                                             {m.league}
                                         </div>
 

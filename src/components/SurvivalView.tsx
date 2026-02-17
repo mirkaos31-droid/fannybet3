@@ -26,6 +26,8 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
 
     // Derived State
     const myPlayer = players.find(isSameUser);
+    const isWinner = myPlayer?.status === 'WINNER';
+    const isSeasonCompleted = season?.status === 'COMPLETED';
     const isAlive = myPlayer?.status?.toUpperCase() === 'ALIVE';
     const hasJoined = !!myPlayer;
     const isSeasonOpen = season?.status === 'OPEN';
@@ -138,6 +140,20 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                 <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
             </div>
 
+            {/* Winner Celebration Overlay */}
+            {isWinner && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in pointer-events-none">
+                    <div className="text-center relative">
+                        <div className="absolute inset-0 bg-red-600/20 blur-[100px] rounded-full animate-pulse"></div>
+                        <h2 className="text-6xl md:text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-800 drop-shadow-[0_0_30px_rgba(234,179,8,0.5)] animate-bounce">
+                            CAMPIONE
+                        </h2>
+                        <p className="text-2xl font-bold text-white mt-4 uppercase tracking-[0.5em] opacity-80">Hai conquistato l'Arena!</p>
+                        <div className="mt-8 text-4xl font-black text-[#dfff00]">+{season.winner?.prize || 0} FTK</div>
+                    </div>
+                </div>
+            )}
+
             {/* HEADER - THE ARENA */}
             <div className="glass-panel relative overflow-hidden bg-black/80 border-red-900/50 py-10 md:py-16 px-4 md:p-6 group shadow-[0_0_50px_rgba(220,38,38,0.2)]">
                 {/* Immagine Arena Background */}
@@ -163,27 +179,27 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                             </h2>
                             <span className="text-base md:text-2xl font-black text-red-500/80 uppercase tracking-widest italic flex flex-col items-start leading-none gap-1">
                                 <span className="text-xs opacity-40 not-italic tracking-[0.3em] mb-1">PROTOCOL</span>
-                                ROUND {players.length > 0 ? Math.max(...players.map(p => p.usedTeams.length)) + 1 : 1}
+                                {isSeasonCompleted ? 'CLOSED' : `ROUND ${players.length > 0 ? Math.max(...players.map(p => p.usedTeams.length)) + 1 : 1}`}
                             </span>
                         </div>
                     </div>
 
                     <div className="flex flex-col items-center mt-2 md:mt-4">
                         <div className="text-2xl md:text-5xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-[#fef08a] via-[#eab308] to-[#713f12] drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] italic">
-                            FT KILL: {ftKill}
+                            {isSeasonCompleted ? 'END OF COMBAT' : `FT KILL: ${ftKill}`}
                         </div>
                         <div className="text-[7px] font-black text-red-900 uppercase tracking-[0.4em] opacity-40 mt-[-4px] mb-4">
                             Sanguis et Aurum
                         </div>
                     </div>
 
-                    {!hasJoined && !isSeasonOpen && (
+                    {!hasJoined && !isSeasonOpen && !isSeasonCompleted && (
                         <div className="mt-4 px-4 py-2 bg-black/40 border border-white/10 rounded-full text-[8px] font-black text-white/40 uppercase tracking-widest">
                             Lobby Chiusa • In Corso
                         </div>
                     )}
 
-                    {hasJoined && (
+                    {hasJoined && !isSeasonCompleted && (
                         <div className="flex justify-center">
                             <div className={`px-2 py-0.5 rounded-sm font-black text-[7px] italic tracking-tighter uppercase shadow-lg border ${isAlive ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-red-600/10 text-red-500 border-red-600/30'}`}>
                                 {isAlive ? 'ALIVE' : 'ELIMINATED'}
@@ -193,7 +209,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                 </div>
             </div>
 
-            {!hasJoined && (
+            {!hasJoined && !isSeasonCompleted && (
                 <div className="text-center py-6">
                     <p className="text-sm mb-4 font-bold text-white/60 uppercase tracking-widest">Only one will survive.</p>
                     <button
@@ -202,6 +218,46 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                         className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-black text-lg tracking-tighter shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                     >
                         {loading ? 'WAIT...' : 'JOIN (2 TOKENS)'}
+                    </button>
+                </div>
+            )}
+
+            {isSeasonCompleted && season.winner && (
+                <div className="max-w-md mx-auto animate-fade-in py-10">
+                    <div className="relative glass-panel bg-black/60 border-yellow-500/30 overflow-hidden transform hover:scale-[1.02] transition-all p-8 text-center group">
+                        {/* Glow Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/10 to-transparent"></div>
+                        <div className="absolute -top-10 -left-10 w-40 h-40 bg-yellow-500/10 blur-[50px] rounded-full"></div>
+
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="text-[10px] font-black text-yellow-500/80 uppercase tracking-[0.4em] mb-6 border-b border-yellow-500/20 pb-2">Last Champion</div>
+
+                            <div className="relative mb-6">
+                                <div className="w-24 h-24 rounded-full border-4 border-yellow-500/50 p-1.5 shadow-[0_0_30px_rgba(234,179,8,0.3)] bg-black">
+                                    <div className="w-full h-full rounded-full overflow-hidden">
+                                        {season.winner.avatarUrl ? (
+                                            <img src={season.winner.avatarUrl} alt={season.winner.username} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-3xl font-black bg-gradient-to-br from-yellow-600 to-yellow-900 text-white">
+                                                {season.winner.username.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-black w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg">👑</div>
+                            </div>
+
+                            <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter mb-2">{season.winner.username}</h3>
+                            <div className="flex items-center gap-2 bg-[#dfff00]/10 px-4 py-1.5 rounded-full border border-[#dfff00]/20">
+                                <span className="text-xs font-black text-[#dfff00]">VITTORIA: {season.winner.prize} FTK</span>
+                            </div>
+
+                            <p className="mt-8 text-[9px] font-black text-white/30 uppercase tracking-[0.2em] italic">Nuova stagione in arrivo...</p>
+                        </div>
+                    </div>
+
+                    <button onClick={onBack} className="mt-10 mx-auto block text-gray-400 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors">
+                        ← Torna alla Home
                     </button>
                 </div>
             )}
@@ -271,83 +327,85 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
             )}
 
             {/* PLAYERS LIST (Graveyard & Alive) */}
-            <div className="space-y-12 pb-20">
-                {/* STARTING GRID (ALIVE) */}
-                <div className="glass-panel border-green-500/20 bg-black/40 backdrop-blur-md pb-6 px-3">
-                    <h3 className="text-lg font-display font-black italic text-green-400 mb-4 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                        STARTING GRID ({players.filter(p => p.status?.toUpperCase() === 'ALIVE').length})
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                        {players.filter(p => p.status?.toUpperCase() === 'ALIVE').map(p => (
-                            <div key={p.id} className="bg-white/[0.03] border border-white/5 p-1 rounded-lg flex flex-col items-center text-center gap-1.5 relative group hover:bg-white/[0.08] transition-all">
-                                <div className="relative pt-1">
-                                    <div className="w-12 h-12 rounded-full border-2 border-green-500/30 overflow-hidden bg-black/40 group-hover:border-green-500 transition-colors">
+            {!isSeasonCompleted && (
+                <div className="space-y-12 pb-20">
+                    {/* STARTING GRID (ALIVE) */}
+                    <div className="glass-panel border-green-500/20 bg-black/40 backdrop-blur-md pb-6 px-3">
+                        <h3 className="text-lg font-display font-black italic text-green-400 mb-4 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                            STARTING GRID ({players.filter(p => p.status?.toUpperCase() === 'ALIVE').length})
+                        </h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                            {players.filter(p => p.status?.toUpperCase() === 'ALIVE').map(p => (
+                                <div key={p.id} className="bg-white/[0.03] border border-white/5 p-1 rounded-lg flex flex-col items-center text-center gap-1.5 relative group hover:bg-white/[0.08] transition-all">
+                                    <div className="relative pt-1">
+                                        <div className="w-12 h-12 rounded-full border-2 border-green-500/30 overflow-hidden bg-black/40 group-hover:border-green-500 transition-colors">
+                                            {p.avatarUrl ? (
+                                                <img src={p.avatarUrl} alt={p.username} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-sm font-black opacity-20 italic">
+                                                    {p.username.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border border-black flex items-center justify-center text-[8px] font-black shadow-lg">✓</div>
+                                    </div>
+
+                                    <div className="w-full min-w-0">
+                                        <div className="flex flex-col items-center gap-0.5 leading-none">
+                                            <div className="flex items-center gap-1">
+                                                <span className="font-display font-black text-[10px] text-white uppercase truncate">{p.username}</span>
+                                                {isSameUser(p) && (
+                                                    <span className="text-[6px] text-brand-teal font-black">● TU</span>
+                                                )}
+                                            </div>
+                                            <span className="text-[8px] font-black italic text-green-500/60 uppercase truncate">
+                                                {p.currentPick || 'READY'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-1 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full border border-white/5">
+                                        <span className="text-[9px] font-black text-yellow-500 leading-none">2</span>
+                                        <span className="text-[6px] font-black text-white/20 uppercase">TK</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* GRAVEYARD (DEAD) */}
+                    <div className="glass-panel border-red-900/40 bg-black/60 backdrop-blur-md pt-8">
+                        <h3 className="text-xl font-display font-black italic text-red-600 mb-8 flex items-center gap-2 justify-center">
+                            💀 CIMITERO ({players.filter(p => p.status !== 'ALIVE').length})
+                        </h3>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 px-2">
+                            {players.filter(p => p.status !== 'ALIVE').map(p => (
+                                <div key={p.id} className="tombstone group">
+                                    <div className="absolute top-2 right-2 text-[8px] text-red-900 font-black opacity-20">
+                                        {p.eliminatedAt ? `G${p.eliminatedAt}` : ''}
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full border border-white/5 grayscale opacity-30 mb-2 overflow-hidden">
                                         {p.avatarUrl ? (
                                             <img src={p.avatarUrl} alt={p.username} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-sm font-black opacity-20 italic">
-                                                {p.username.charAt(0).toUpperCase()}
-                                            </div>
+                                            <div className="w-full h-full flex items-center justify-center text-[8px] font-black">?</div>
                                         )}
                                     </div>
-                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border border-black flex items-center justify-center text-[8px] font-black shadow-lg">✓</div>
-                                </div>
-
-                                <div className="w-full min-w-0">
-                                    <div className="flex flex-col items-center gap-0.5 leading-none">
-                                        <div className="flex items-center gap-1">
-                                            <span className="font-display font-black text-[10px] text-white uppercase truncate">{p.username}</span>
-                                            {isSameUser(p) && (
-                                                <span className="text-[6px] text-brand-teal font-black">● TU</span>
-                                            )}
-                                        </div>
-                                        <span className="text-[8px] font-black italic text-green-500/60 uppercase truncate">
-                                            {p.currentPick || 'READY'}
-                                        </span>
+                                    <span className="font-display font-black text-[9px] text-white/40 uppercase tracking-tighter truncate w-full text-center">
+                                        {p.username}
+                                    </span>
+                                    <div className="mt-2 flex flex-wrap justify-center gap-0.5 max-w-full opacity-20 group-hover:opacity-40 transition-opacity">
+                                        {p.usedTeams.slice(-2).map((t, i) => (
+                                            <span key={i} className="text-[5px] font-black px-1 border border-white/10 rounded">{t}</span>
+                                        ))}
                                     </div>
                                 </div>
-
-                                <div className="mt-1 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full border border-white/5">
-                                    <span className="text-[9px] font-black text-yellow-500 leading-none">2</span>
-                                    <span className="text-[6px] font-black text-white/20 uppercase">TK</span>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
-
-                {/* GRAVEYARD (DEAD) */}
-                <div className="glass-panel border-red-900/40 bg-black/60 backdrop-blur-md pt-8">
-                    <h3 className="text-xl font-display font-black italic text-red-600 mb-8 flex items-center gap-2 justify-center">
-                        💀 CIMITERO ({players.filter(p => p.status !== 'ALIVE').length})
-                    </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 px-2">
-                        {players.filter(p => p.status !== 'ALIVE').map(p => (
-                            <div key={p.id} className="tombstone group">
-                                <div className="absolute top-2 right-2 text-[8px] text-red-900 font-black opacity-20">
-                                    {p.eliminatedAt ? `G${p.eliminatedAt}` : ''}
-                                </div>
-                                <div className="w-8 h-8 rounded-full border border-white/5 grayscale opacity-30 mb-2 overflow-hidden">
-                                    {p.avatarUrl ? (
-                                        <img src={p.avatarUrl} alt={p.username} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[8px] font-black">?</div>
-                                    )}
-                                </div>
-                                <span className="font-display font-black text-[9px] text-white/40 uppercase tracking-tighter truncate w-full text-center">
-                                    {p.username}
-                                </span>
-                                <div className="mt-2 flex flex-wrap justify-center gap-0.5 max-w-full opacity-20 group-hover:opacity-40 transition-opacity">
-                                    {p.usedTeams.slice(-2).map((t, i) => (
-                                        <span key={i} className="text-[5px] font-black px-1 border border-white/10 rounded">{t}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            )}
         </div>
     );
 };
