@@ -10,8 +10,8 @@ import { BottomNavBar } from './BottomNavBar';
 import { ProfileView } from './ProfileView';
 import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
-import { Zap, Eye, Trophy, Skull, Swords } from 'lucide-react';
-import { DuelArenaView } from './DuelArenaView';
+import { Zap, Eye, Trophy, Skull, Shield } from 'lucide-react';
+import { FBLegaView } from './FBLegaView';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 
 interface UserDashboardProps {
@@ -29,8 +29,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
 
-    // State to pass opponent to DuelArena
-    const [targetOpponent, setTargetOpponent] = useState<{ id: string, username: string } | undefined>(undefined);
 
 
     const [loading, setLoading] = useState(true);
@@ -64,11 +62,11 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
         if (view === 'SPY') {
             document.body.classList.add('gold-arena');
-        } else if (view === 'DUEL_ARENA') {
-            document.body.classList.add('bronze-arena');
+        } else if (view === 'FB_LEGA') {
+            document.body.classList.add('lega-arena');
         }
 
-        return () => document.body.classList.remove('gold-arena', 'bronze-arena');
+        return () => document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena');
     }, [view]);
 
     const handleBetPlaced = () => {
@@ -145,6 +143,27 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                         <div className="mesh-glow bg-brand-orange/5 bottom-0 -right-48 animate-float"></div>
                     </div>
                 )}
+
+                {/* Custom Image Background - FB_LEGA */}
+                {view === 'FB_LEGA' && (
+                    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#020508]">
+                        {/* Spaceship hull texture */}
+                        <div
+                            className="absolute -inset-[10%] opacity-[0.55] bg-cover bg-center bg-no-repeat scale-[0.8]"
+                            style={{ backgroundImage: `url('/lega_bg.png')` }}
+                        ></div>
+
+                        {/* Teal ambient tint for cockpit atmosphere */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a25]/60 via-transparent to-[#020508]/90"></div>
+
+                        {/* Edge vignette for depth */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(2,5,8,0.85)_100%)]"></div>
+
+                        {/* Lega Themed Glows */}
+                        <div className="mesh-glow bg-[#5d8aa8]/25 -top-48 -right-48 animate-pulse-slow"></div>
+                        <div className="mesh-glow bg-[#00ffaa]/5 bottom-0 -left-48 animate-float-slow"></div>
+                    </div>
+                )}
                 {/* Requested Hero Section - ONLY ON HOME */}
                 {view === 'HOME' && (
                     <div className="relative pt-[6.4rem] pb-6 md:pt-[7.2rem] md:pb-16 text-center animate-fade-in px-2">
@@ -168,7 +187,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             {view === 'SPY' && 'I FANNIES'}
                             {view === 'LEADERBOARD' && 'CLASSIFICHE'}
                             {view === 'SURVIVAL' && 'SURVIVAL MODE'}
-                            {view === 'DUEL_ARENA' && 'SFIDE'}
+                            {view === 'FB_LEGA' && 'FB LEGA'}
                         </h1>
                     </div>
                 )}
@@ -207,7 +226,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                     } else {
                                         setView(v);
                                         // Reset target opponent when navigating via bar
-                                        if (v !== 'DUEL_ARENA') setTargetOpponent(undefined);
                                     }
                                 }}
                             />
@@ -273,18 +291,19 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             <h3 className="text-[10px] sm:text-base md:text-xl font-black italic tracking-tighter text-white/90 uppercase">Classifica</h3>
                         </button>
 
-                        {/* ARENA DELLE SFIDE (BOTTOM FULL WIDTH) */}
+                        {/* FB LEGA (BOTTOM FULL WIDTH) */}
                         <div className="col-span-4">
                             <button
-                                onClick={() => setView('DUEL_ARENA')}
-                                className="glass-card card-bronze group h-[9.8rem] sm:h-[17rem] md:h-[29rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float [animation-delay:1.5s] hover:scale-[1.01] w-full"
+                                onClick={() => setView('FB_LEGA')}
+                                className="glass-card card-lega-alieno group h-[9.8rem] sm:h-[17rem] md:h-[29rem] flex flex-col justify-center items-center text-center relative overflow-hidden touch-target animate-float [animation-delay:1.5s] hover:scale-[1.01] w-full"
                             >
-                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#b45309]/5 blur-[60px] rounded-full group-hover:bg-[#b45309]/10 transition-all duration-700"></div>
+                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#bfff00]/5 blur-[60px] rounded-full group-hover:bg-[#5d8aa8]/20 transition-all duration-700"></div>
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#5d8aa8]/5 blur-[60px] rounded-full group-hover:bg-[#bfff00]/10 transition-all duration-700"></div>
                                 <div className="mb-1 md:mb-4 group-hover:rotate-12 transition-transform duration-500">
-                                    <Swords size={32} className="text-[#b45309] md:w-16 md:h-16" strokeWidth={2.5} />
+                                    <Shield size={32} className="text-[#5d8aa8] md:w-16 md:h-16 drop-shadow-[0_0_12px_rgba(93,138,168,0.9)] group-hover:text-acid-glow transition-colors" strokeWidth={2.5} />
                                 </div>
-                                <h3 className="text-[12px] sm:text-xl md:text-3xl font-black italic tracking-tighter text-white/90 uppercase">Sfide</h3>
-                                <p className="text-gray-600 text-[6px] sm:text-[9px] md:text-xs mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-[#b45309] transition-colors">duello 1vs1.</p>
+                                <h3 className="text-[12px] sm:text-xl md:text-3xl font-black italic tracking-tighter text-white/90 uppercase drop-shadow-md">FB Lega</h3>
+                                <p className="text-gray-500 text-[6px] sm:text-[9px] md:text-xs mt-0.5 uppercase tracking-[0.2em] font-black group-hover:text-acid-glow transition-colors">scopri la novità.</p>
                             </button>
                         </div>
                     </div>
@@ -307,10 +326,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     <div className="relative animate-fade-in">
                         <FanniesView
                             matchday={matchday}
-                            onChallenge={(opp) => {
-                                setTargetOpponent(opp);
-                                setView('DUEL_ARENA');
-                            }}
                         />
                     </div>
                 )}
@@ -332,9 +347,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
 
-                {view === 'DUEL_ARENA' && (
+                {view === 'FB_LEGA' && (
                     <div className="relative animate-fade-in">
-                        <DuelArenaView initialOpponent={targetOpponent} />
+                        <FBLegaView />
                     </div>
                 )}
 

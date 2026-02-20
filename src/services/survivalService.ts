@@ -179,7 +179,7 @@ export const survivalService = {
         // 4. Calculate eliminations
         const eliminatedIds: (string | number)[] = [];
         let advancedCount = 0;
-        let survivors: SurvivalPlayer[] = [];
+        const survivors: SurvivalPlayer[] = [];
 
         for (const player of players) {
             // Already eliminated?
@@ -294,7 +294,7 @@ export const survivalService = {
         return data as { success: boolean, message: string };
     },
 
-    getWinnerHistory: async (limit: number = 3): Promise<any[]> => {
+    getWinnerHistory: async (limit: number = 3): Promise<unknown[]> => {
         const { data, error } = await supabase.rpc('get_survival_winner_history', { p_limit: limit });
         if (error) {
             console.error('Error fetching winner history:', error);

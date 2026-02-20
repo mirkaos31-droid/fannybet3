@@ -3,14 +3,17 @@ import { gameService } from '../services/gameService';
 import type { Matchday } from '../types';
 import { SurvivalAdminPanel } from './SurvivalAdminPanel';
 import { UserManagementPanel } from './UserManagementPanel';
+import { FBLegaAdminPanel } from './FBLegaAdminPanel';
+import { Star } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AdminDashboardProps {
     onToggleView?: () => void;
-    initialTab?: 'MATCHDAY' | 'SURVIVAL' | 'USERS';
+    initialTab?: 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'LEGA';
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, initialTab = 'MATCHDAY' }) => {
-    const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA'>(initialTab as any);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -93,6 +96,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                         <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/10 w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth">
                             {[
                                 { id: 'MATCHDAY', label: '1X2', icon: '⚽' },
+                                { id: 'LEGA', label: 'FB Lega', icon: '🏆' },
                                 { id: 'SURVIVAL', label: 'Survival', icon: '☠️' },
                                 { id: 'USERS', label: 'Utenti', icon: '👥' },
                                 { id: 'SYSTEM', label: 'System', icon: '⚙️' }
@@ -234,26 +238,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                         📂 Archivia & Processa
                                     </button>
 
-                                    <button
-                                        onClick={async () => {
-                                            // Diagnostic: check duels grouped by matchday
-                                            const summary = await gameService.adminGetDuelsSummary();
-                                            if (!summary || summary.length === 0) {
-                                                alert('Nessun duello registrato.');
-                                                return;
-                                            }
-
-                                            const details = summary
-                                                .sort((a, b) => b.matchdayId - a.matchdayId)
-                                                .map(s => `Matchday ${s.matchdayId}: ${s.count} duello(s)`)
-                                                .join('\n');
-
-                                            alert(`Duel summary:\n\n${details}`);
-                                        }}
-                                        className="flex-1 bg-transparent text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/20 hover:bg-white/5 transition-all"
-                                    >
-                                        🔍 Check Arena Duelli
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -265,9 +249,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             </h3>
                             <div className="grid gap-4">
                                 {matchday.matches.map((m, idx) => (
-                                    <div key={idx} className="bg-white/5 p-3.5 md:p-5 rounded-2xl border border-white/5 hover:border-[#dfff00]/30 transition-all flex flex-col lg:flex-row items-center gap-4 group">
+                                    <div key={idx} className={`bg-white/5 p-3.5 md:p-5 rounded-2xl border transition-all flex flex-col lg:flex-row items-center gap-4 group ${matchday.jollyMatchIndex === idx ? 'border-[#5d8aa8] bg-[#5d8aa8]/5' : 'border-white/5 hover:border-[#dfff00]/30'}`}>
                                         <div className="flex items-center gap-3 w-full lg:w-auto">
-                                            <span className="text-2xl font-black italic text-white/10 group-hover:text-[#dfff00]/20 font-mono transition-colors">#{idx + 1}</span>
+                                            <div className="flex flex-col items-center">
+                                                <span className={`text-2xl font-black italic font-mono transition-all ${matchday.jollyMatchIndex === idx ? 'text-[#dfff00]' : 'text-white/20'}`}>
+                                                    #{idx + 1}
+                                                </span>
+                                                {idx < 10 && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const res = await gameService.updateJollyMatch(matchday.id, idx);
+                                                            if (res.success) {
+                                                                setMatchday({ ...matchday, jollyMatchIndex: idx });
+                                                                toast.success(`Match #${idx + 1} impostato come JOLLY ⭐`, {
+                                                                    description: "Il calcolo dei punti speciali verrà applicato in FB Lega."
+                                                                });
+                                                            }
+                                                        }}
+                                                        className={`mt-1 p-1.5 rounded-lg border transition-all ${matchday.jollyMatchIndex === idx
+                                                            ? 'bg-[#5d8aa8] border-[#5d8aa8] text-white shadow-[0_0_10px_rgba(93,138,168,0.5)]'
+                                                            : 'bg-white/5 border-white/10 text-gray-500 hover:border-[#5d8aa8] hover:text-[#5d8aa8]'
+                                                            }`}
+                                                        title="Imposta come Match Jolly (Solo Lega)"
+                                                    >
+                                                        <Star size={14} fill={matchday.jollyMatchIndex === idx ? "currentColor" : "none"} />
+                                                    </button>
+                                                )}
+                                            </div>
                                             <div className="lg:hidden bg-black/40 px-3 py-1 rounded-full text-[9px] font-black uppercase text-gray-400 border border-white/5 flex-1 text-center">
                                                 {m.league}
                                             </div>
@@ -371,6 +379,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                 </div>
                             </div>
                         </div>
+                    </div>
+                ) : activeTab === 'LEGA' ? (
+                    <div className="bg-transparent rounded-[30px] p-4 md:p-10 border-2 border-[#5d8aa8]/20 relative overflow-hidden">
+                        <FBLegaAdminPanel />
                     </div>
                 ) : (
                     <div className="bg-transparent rounded-[30px] p-4 md:p-10 border-2 border-white/10 relative overflow-hidden">

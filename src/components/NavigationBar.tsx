@@ -1,4 +1,4 @@
-import { Home, Zap, Eye, Trophy, Skull, User, Swords } from 'lucide-react';
+import { Home, Zap, Eye, Trophy, Skull, User, Shield } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface NavigationBarProps {
@@ -13,7 +13,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNav
         { id: 'SPY', label: 'I fannies', icon: <Eye size={18} /> },
         { id: 'LEADERBOARD', label: 'Classifiche', icon: <Trophy size={18} /> },
         { id: 'SURVIVAL', label: 'Survival Mode', icon: <Skull size={18} /> },
-        { id: 'DUEL_ARENA', label: 'Sfide', icon: <Swords size={18} /> },
+        { id: 'FB_LEGA', label: 'FB Lega', icon: <Shield size={18} /> },
         { id: 'PROFILE', label: 'Profilo', icon: <User size={18} /> },
     ];
 

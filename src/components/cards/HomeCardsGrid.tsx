@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomeCard } from './HomeCard';
-import { Zap, Eye, Trophy, Skull, Swords } from 'lucide-react';
+import { Zap, Eye, Trophy, Skull, Shield } from 'lucide-react';
 import type { ViewMode } from '../../types';
 
 interface HomeCardsGridProps {
@@ -49,11 +49,11 @@ export const HomeCardsGrid: React.FC<HomeCardsGridProps> = ({ setView, survivalS
       />
 
       <HomeCard
-        title="SFIDE"
-        subtitle="1vs1 Arena"
-        onClick={() => setView('DUEL_ARENA')}
-        className="card-bronze"
-        icon={<Swords size={48} className="text-amber-600" strokeWidth={2.5} />}
+        title="FB LEGA"
+        subtitle="scopri la novità"
+        onClick={() => setView('FB_LEGA')}
+        className="card-lega-alieno"
+        icon={<Shield size={48} className="text-acid-glow drop-shadow-[0_0_10px_rgba(93,138,168,0.5)]" strokeWidth={2.5} />}
       />
     </div>
   );

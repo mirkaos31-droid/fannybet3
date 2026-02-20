@@ -46,32 +46,12 @@ function App() {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'duels',
-          filter: `opponent_id=eq.${user.id}`
-        },
-        (payload: any) => {
-          console.log('New duel received!', payload);
-          toast("⚔️ Nuova Sfida!", {
-            description: "Qualcuno ti ha sfidato a duello.",
-            action: {
-              label: "Vedi",
-              onClick: () => window.location.reload() // Or navigate if we had router
-            }
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
           event: 'UPDATE',
           schema: 'public',
           table: 'matchdays'
         },
         (payload: any) => {
           // Check if results changed
-          // @ts-ignore
           if (payload.new && payload.new.results && JSON.stringify(payload.new.results) !== JSON.stringify(payload.old.results)) {
             toast("⚽ Risultati Aggiornati!", {
               description: "Controlla la classifica per vedere i punteggi.",

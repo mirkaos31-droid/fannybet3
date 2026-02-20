@@ -230,6 +230,22 @@
       linear-gradient(90deg, rgba(180, 83, 9, 0.03) 1px, transparent 1px);
   }
 
+  /* LEGA ARENA THEME (CHAMPIONSHIP) */
+  body.lega-arena::before {
+    background:
+      radial-gradient(circle at 10% 10%, rgba(93, 138, 168, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 90% 10%, rgba(191, 255, 0, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(93, 138, 168, 0.1) 0%, transparent 70%),
+      #02050a;
+  }
+
+  body.lega-arena::after {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='70' viewBox='0 0 60 70'%3E%3Cpath d='M30 0l30 17.5v35L30 70 0 52.5v-35z' fill='none' stroke='%235d8aa8' stroke-width='0.5' stroke-opacity='0.1'/%3E%3C/svg%3E"),
+      linear-gradient(rgba(93, 138, 168, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(93, 138, 168, 0.03) 1px, transparent 1px);
+  }
+
   /* Mobile Safe Area Adjustments */
   @supports (padding: max(0px)) {
     body {
@@ -472,6 +488,30 @@
   .card-acid-green:hover {
     border-color: rgba(191, 255, 0, 1);
     box-shadow: 0 0 40px rgba(191, 255, 0, 0.7), inset 0 0 20px rgba(191, 255, 0, 0.4), 0 0 80px rgba(191, 255, 0, 0.3);
+  }
+
+  .card-lega-alieno {
+    border: 4px solid rgba(44, 90, 120, 0.8) !important;
+    background: linear-gradient(135deg, rgba(30, 60, 80, 0.6) 0%, rgba(5, 5, 8, 0.95) 100%) !important;
+    box-shadow:
+      0 0 30px rgba(44, 90, 120, 0.3),
+      inset 0 0 20px rgba(44, 90, 120, 0.2);
+  }
+
+  .card-lega-alieno::before {
+    background: #2c5a78 !important;
+    opacity: 0.15 !important;
+    filter: blur(40px);
+  }
+
+  .card-lega-alieno:hover {
+    border-color: #5d8aa8 !important;
+    border-width: 4px !important;
+    background: linear-gradient(135deg, rgba(44, 90, 120, 0.7) 0%, rgba(10, 10, 12, 0.9) 100%) !important;
+    box-shadow:
+      0 0 60px rgba(44, 90, 120, 0.5),
+      inset 0 0 30px rgba(44, 90, 120, 0.3);
+    transform: translateY(-8px) scale(1.02);
   }
 
   .card-bright-yellow {

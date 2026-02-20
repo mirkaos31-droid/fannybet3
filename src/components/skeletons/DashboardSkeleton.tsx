@@ -30,7 +30,7 @@ export const DashboardSkeleton: React.FC = () => {
                 {/* Leaderboard */}
                 <Skeleton className="col-span-1 h-[11.5rem] sm:h-[20rem] md:h-[26rem] rounded-2xl" />
 
-                {/* Duels Bottom */}
+                {/* FB Lega Bottom */}
                 <Skeleton className="col-span-4 h-[16.5rem] sm:h-[28rem] md:h-[36rem] rounded-2xl" />
             </div>
         </div>

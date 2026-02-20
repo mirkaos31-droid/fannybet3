@@ -9,8 +9,8 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-20 bg-black/60 backdrop-blur-sm will-change-transform" style={{ transform: 'translateZ(0)' }}>
-            <div className="glass-card !p-6 md:!p-10 max-h-[75vh] overflow-y-auto w-full md:max-w-2xl relative border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur">
+            <div className="glass-card !p-6 md:!p-10 max-h-[80vh] overflow-y-auto w-full md:max-w-2xl relative border-white/10">
                 {/* Close button */}
                 <button
                     onClick={onClose}
@@ -31,7 +31,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
                             Scommetti sull'esito delle partite selezionate per la giornata.
-                            Indovinare almeno <span className="text-white">7 risultati su 12</span> ti permette di vincere il <span className="text-brand-gold">MONTE PREMI</span>.
+                            Indovinare almeno <span className="text-white">7 risultati su 10</span> ti permette di vincere il <span className="text-brand-gold">MONTE PREMI</span>.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
                             <li><span className="text-white font-bold">1</span>: Vittoria Casa | <span className="text-white font-bold">X</span>: Pareggio | <span className="text-white font-bold">2</span>: Vittoria Trasferta</li>
@@ -54,16 +54,16 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                         </ul>
                     </section>
 
-                    <section className="border-l-4 border-[#b45309] pl-4 py-1">
-                        <h2 className="text-lg md:text-xl font-black italic text-[#b45309] mb-2 uppercase tracking-tighter">
+                    <section className="border-l-4 border-brand-purple pl-4 py-1">
+                        <h2 className="text-lg md:text-xl font-black italic text-brand-purple mb-2 uppercase tracking-tighter">
                             3. ARENA DELLE SFIDE
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
                             Sfida un altro utente in un duello testa a testa 1vs1 sui pronostici della giornata.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
-                            <li>Vince chi ottiene il punteggio più alto basato sulla <span className="text-[#b45309] font-bold">difficoltà</span> dei pronostici indovinati (1, 2 o 3 Goal).</li>
-                            <li>In caso di pareggio, la posta viene restituita.</li>
+                            <li>Chi indovina più risultati vince la sfida.</li>
+                            <li>In caso di pareggio, i punti vengono restituiti (meno commissione arena).</li>
                         </ul>
                     </section>
 
@@ -75,8 +75,8 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                             Il premio supremo riservato alla perfezione assoluta.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
-                            <li>Vinto da chi indovina <span className="text-brand-gold font-black">10 risultati su 12</span> nella modalità 1x2.</li>
-                            <li>Il montepremi è fisso e viene incrementato una tantum se non ci sono vincitori.</li>
+                            <li>Vinto da chi indovina <span className="text-brand-gold font-black">10 risultati su 10</span> nella modalità 1x2.</li>
+                            <li>Il montepremi è progressivo e cresce a ogni giornata senza vincitori.</li>
                         </ul>
                     </section>
 
@@ -85,7 +85,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                             5. COMUNICAZIONI WHATSAPP
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
-                            Tutti gli utenti registrati saranno inseriti nella <span className="text-brand-teal font-bold">Fannybet community</span> (gruppo ufficiale WhatsApp).
+                            Tutti gli utenti registrati saranno inseriti in un <span className="text-brand-teal font-bold">gruppo di notifica ufficiale WhatsApp</span>.
                         </p>
                         <p className="mt-2 text-gray-500 text-[10px] md:text-xs italic">
                             Riceverai aggiornamenti sulle scadenze, risultati in tempo reale e annunci amministrativi.
@@ -108,7 +108,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
 
                     <section className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 mt-8">
                         <p className="text-[10px] text-gray-600 uppercase tracking-widest text-center">
-                            Ultimo aggiornamento: 16 Febbraio 2026 • Versione 2.2
+                            Ultimo aggiornamento: 30 Gennaio 2026 • Versione 2.0
                         </p>
                     </section>
 

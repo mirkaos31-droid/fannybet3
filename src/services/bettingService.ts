@@ -32,7 +32,8 @@ export const bettingService = {
             betsLocked: data.bets_locked || false,
             winners: data.winners || [],
             winnerAnimation: data.winner_animation || false,
-            leaderboardAnimation: data.leaderboard_animation || false
+            leaderboardAnimation: data.leaderboard_animation || false,
+            jollyMatchIndex: data.jolly_match_index
         };
     },
 
@@ -57,7 +58,8 @@ export const bettingService = {
             betsLocked: d.bets_locked || false,
             winners: d.winners || [],
             winnerAnimation: d.winner_animation || false,
-            leaderboardAnimation: d.leaderboard_animation || false
+            leaderboardAnimation: d.leaderboard_animation || false,
+            jollyMatchIndex: d.jolly_match_index
         }));
     },
 
@@ -228,26 +230,6 @@ export const bettingService = {
             .eq('matchday_id', md.id);
     },
 
-    // --- ADMIN DIAGNOSTICS ---
-    // Returns a summary of duel counts grouped by matchday_id
-    adminGetDuelsSummary: async (): Promise<{ matchdayId: number; count: number }[]> => {
-        const { data, error } = await supabase
-            .from('duels')
-            .select('matchday_id');
-
-        if (error || !data) {
-            console.error('Error fetching duels for admin summary:', error);
-            return [];
-        }
-
-        const counts: Record<number, number> = {};
-        (data || []).forEach((d: any) => {
-            const id = d.matchday_id || 0;
-            counts[id] = (counts[id] || 0) + 1;
-        });
-
-        return Object.entries(counts).map(([matchdayId, count]) => ({ matchdayId: parseInt(matchdayId, 10), count }));
-    },
 
     archiveMatchday: async (): Promise<{ success: boolean; message: string; survivalStats?: { eliminated: number; advanced: number } }> => {
         const md = await bettingService.getMatchday();
@@ -272,15 +254,6 @@ export const bettingService = {
             console.error("Survival Process Error:", err);
         }
 
-        // 1.5 PROCESS DUELS
-        try {
-            console.log("Resolving Duels...");
-            const { error: duelError } = await supabase.rpc('resolve_matchday_duels', { p_matchday_id: md.id });
-            if (duelError) console.error("Duel Resolution Error:", duelError);
-            else console.log("Duels resolved successfully.");
-        } catch (err) {
-            console.error("Duel Resolution Exception:", err);
-        }
 
         // 2. CALCULATE 1X2 WINNERS & SUPER JACKPOT
         const bets = await bettingService.getAllBets();

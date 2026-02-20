@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import type { Matchday, Bet } from '../types';
 import { gameService } from '../services/gameService';
-import { Lock, Swords } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 interface FanniesViewProps {
     matchday: Matchday;
-    onChallenge?: (opponent: { id: string, username: string }) => void;
 }
 
-export const FanniesView: React.FC<FanniesViewProps> = ({ matchday, onChallenge }) => {
+export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
     const [bets, setBets] = useState<Bet[]>([]);
     const [history, setHistory] = useState<Matchday[]>([]);
     const [viewMode, setViewMode] = useState<'CURRENT' | 'ARCHIVE'>('CURRENT');
@@ -159,16 +158,6 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday, onChallenge 
                                         </div>
                                     </div>
 
-                                    {/* CHALLENGE BUTTON - Only for other users AND BEFORE DEADLINE */}
-                                    {!isMyBet && onChallenge && !isDeadlinePassed && (
-                                        <button
-                                            onClick={() => onChallenge({ id: bet.id, username: bet.username })}
-                                            className="w-7 h-7 flex items-center justify-center bg-gradient-to-b from-[#b45309] to-[#78350f] text-black rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] transition-all border border-[#451a03]"
-                                            title={`Sfida ${bet.username}`}
-                                        >
-                                            <Swords size={12} strokeWidth={2.5} className="drop-shadow-[0_1px_1px_rgba(255,255,255,0.2)]" />
-                                        </button>
-                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-6 gap-1 md:gap-1 p-1 bg-black/20 rounded-lg border border-white/5 mx-auto max-w-[92%] relative">

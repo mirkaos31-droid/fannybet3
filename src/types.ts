@@ -19,30 +19,7 @@ export interface User {
 
 export type League = 'SERIE A' | 'CUSTOM';
 
-export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'DUEL_ARENA';
-
-export interface Duel {
-    id: string;
-    matchdayId: number;
-    challenger: {
-        id: string;
-        username: string;
-        avatarUrl?: string;
-    };
-    opponent: {
-        id: string;
-        username: string;
-        avatarUrl?: string;
-    };
-    status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED';
-    wagerAmount?: number;
-    scores?: {
-        challenger_score: number;
-        opponent_score: number;
-    };
-    winnerId?: string;
-    createdAt: string;
-}
+export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'FB_LEGA';
 
 export interface Match {
     id: number;
@@ -71,6 +48,7 @@ export interface Matchday {
     winners?: string[]; // Array of winner usernames (populated after archive)
     winnerAnimation?: boolean; // Show animation for winners
     leaderboardAnimation?: boolean; // Show animation on leaderboard
+    jollyMatchIndex?: number; // 0-indexed index of the Jolly Match (1-10) for FB Lega
 }
 
 export interface Bet {
@@ -118,4 +96,39 @@ export interface SurvivalSeason {
         myPick?: string;
         myStatus?: 'PENDING' | 'WIN' | 'ELIMINATED';
     };
+}
+
+export interface FBLeague {
+    id: number;
+    name: string;
+    admin_id: string;
+    entry_fee: number;
+    duration_matchdays: number;
+    current_round: number;
+    start_matchday_id: number;
+    scoring_rules: Record<string, number>;
+    prize_distribution: number[];
+    status: 'OPEN' | 'ACTIVE' | 'COMPLETED';
+    prize_pool: number;
+    created_at: string;
+    participant_count?: number;
+    is_member?: boolean;
+}
+
+export interface FBLeagueParticipant {
+    league_id: number;
+    user_id: string;
+    total_points: number;
+    joined_at: string;
+    username?: string;
+}
+
+export interface FBLeaguePick {
+    id: number;
+    league_id: number;
+    user_id: string;
+    matchday_id: number;
+    predictions: string[];
+    points_earned: number | null;
+    created_at: string;
 }
