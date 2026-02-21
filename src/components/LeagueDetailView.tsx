@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { LeaderboardModal } from './LeaderboardModal';
 import { PredictionsModal } from './PredictionsModal';
 import { LeagueRulesModal } from './LeagueRulesModal';
+import { supabase } from '../supabaseClient';
 
 interface LeagueDetailViewProps {
     leagueId: number;
@@ -39,9 +40,15 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 gameService.getCurrentUser()
             ]);
 
-            setData(details);
             setMatchday(mdData);
             setUser(currentUser);
+
+            // Fetch LIVE leaderboard instead of static participants
+            const liveParticipants = await gameService.getLeagueLeaderboardLive(leagueId);
+            setData({
+                league: details.league,
+                participants: liveParticipants
+            });
 
             if (currentUser && mdData) {
                 const picks = await gameService.getMyPicks(leagueId, currentUser.id);
@@ -57,6 +64,38 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             setLoading(false);
         }
     };
+
+    // LIVE UPDATE LISTENER
+    useEffect(() => {
+        if (!leagueId) return;
+
+        // Listen for changes in matchday results (when admin updates scores)
+        const channel = supabase
+            .channel(`live-scores-${leagueId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'matchdays'
+                },
+                async (payload) => {
+                    console.log('Matchday updated, refreshing leaderboard...', payload);
+                    // Reload ONLY the leaderboard for efficiency
+                    try {
+                        const liveParticipants = await gameService.getLeagueLeaderboardLive(leagueId);
+                        setData(prev => prev ? { ...prev, participants: liveParticipants } : null);
+                    } catch (err) {
+                        console.error('Error refreshing live leaderboard:', err);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [leagueId]);
 
     const handleSavePicks = async () => {
         if (!matchday) return;
@@ -117,7 +156,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             </div>
 
             {/* Compact Header Card */}
-            <div className="glass-card card-lega-alieno p-8 border-none overflow-hidden relative rounded-[2rem] mb-8">
+            <div className="glass-card card-lega-alieno card-scudetto-active p-8 border-none overflow-hidden relative mb-8">
                 <div className="absolute top-0 right-0 p-8 opacity-5 -mr-12 -mt-12">
                     <Shield size={180} />
                 </div>
@@ -145,7 +184,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             {/* 1. HORIZONTAL RULES BAR (Thin, under header) */}
             <button
                 onClick={() => setActiveModal('RULES')}
-                className="w-full mb-4 group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#1a2c38] border border-white/10 rounded-2xl transition-all duration-300"
+                className="w-full mb-4 group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#1a2c38] border border-white/10 transition-all duration-300"
             >
                 <div className="flex items-center gap-3">
                     <Info size={16} className="text-[#5d8aa8]" />
@@ -162,17 +201,22 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 {/* LA SCHEDINA */}
                 <button
                     onClick={() => setActiveModal('PREDICTIONS')}
-                    className={`group relative h-36 md:h-44 border-2 rounded-[2.5rem] p-5 md:p-8 transition-all duration-300 overflow-hidden text-left ${filledPicksCount === 10
-                        ? 'bg-[#111113] border-[#bfff00]/30 hover:border-[#bfff00]/60'
-                        : 'bg-[#111113] border-white/5 hover:border-[#5d8aa8]/40'
+                    className={`card-interstellar-action group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left ${filledPicksCount === 10
+                        ? 'border-[#bfff00]/30'
+                        : 'border-white/5'
                         }`}
                 >
+                    <div className="technical-corner corner-tl"></div>
+                    <div className="technical-corner corner-tr"></div>
+                    <div className="technical-corner corner-bl"></div>
+                    <div className="technical-corner corner-br"></div>
+
                     <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <ClipboardCheck size={120} className="text-[#5d8aa8]" />
+                        <ClipboardCheck size={160} className="text-[#5d8aa8]" />
                     </div>
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-2xl transition-colors ${filledPicksCount === 10 ? 'bg-[#bfff00]/20' : 'bg-[#5d8aa8]/20'
+                            <div className={`p-2.5 rounded-lg transition-colors ${filledPicksCount === 10 ? 'bg-[#bfff00]/20' : 'bg-[#5d8aa8]/20'
                                 }`}>
                                 <ClipboardCheck size={20} className={filledPicksCount === 10 ? 'text-[#bfff00]' : 'text-[#5d8aa8]'} />
                             </div>
@@ -192,14 +236,19 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 {/* CLASSIFICA */}
                 <button
                     onClick={() => setActiveModal('LEADERBOARD')}
-                    className="group relative h-36 md:h-44 bg-[#111113] hover:bg-[#1a2c38]/40 border-2 border-white/5 hover:border-[#5d8aa8]/40 rounded-[2.5rem] p-5 md:p-8 transition-all duration-300 overflow-hidden text-left"
+                    className="card-interstellar-action group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left"
                 >
+                    <div className="technical-corner corner-tl"></div>
+                    <div className="technical-corner corner-tr"></div>
+                    <div className="technical-corner corner-bl"></div>
+                    <div className="technical-corner corner-br"></div>
+
                     <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Trophy size={120} className="text-[#bfff00]" />
+                        <Trophy size={160} className="text-[#bfff00]" />
                     </div>
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">
-                            <div className="p-2.5 bg-[#bfff00]/10 rounded-2xl group-hover:bg-[#bfff00]/20 transition-colors">
+                            <div className="p-2.5 bg-[#bfff00]/10 rounded-lg group-hover:bg-[#bfff00]/20 transition-colors">
                                 <Trophy size={20} className="text-[#bfff00]" />
                             </div>
                             <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />

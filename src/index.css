@@ -514,6 +514,116 @@
     transform: translateY(-8px) scale(1.02);
   }
 
+  .card-scudetto-active {
+    position: relative !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, rgba(10, 26, 37, 0.95) 0%, rgba(5, 8, 12, 1) 100%) !important;
+    border: 2px solid rgba(93, 138, 168, 0.8) !important;
+    box-shadow:
+      0 20px 50px rgba(0, 0, 0, 0.9),
+      inset 0 0 30px rgba(93, 138, 168, 0.1) !important;
+    border-radius: 4px !important;
+    /* Sharp futuristic look */
+  }
+
+  .card-scudetto-active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/scudetto_xleague.png');
+    background-size: cover;
+    background-position: center;
+    /* Hue rotate to shift toward interstellar teal/blue */
+    filter: hue-rotate(165deg) brightness(0.5) saturate(1.2) contrast(1.1);
+    opacity: 0.45;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .card-scudetto-active>* {
+    position: relative;
+    z-index: 10;
+  }
+
+  .card-interstellar-action {
+    background: linear-gradient(180deg, rgba(15, 30, 45, 0.8) 0%, rgba(5, 10, 15, 0.98) 100%) !important;
+    border: 1px solid rgba(93, 138, 168, 0.4) !important;
+    box-shadow:
+      0 15px 40px rgba(0, 0, 0, 1),
+      inset 0 0 40px rgba(93, 138, 168, 0.05) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border-radius: 2px !important;
+    /* Extremely sharp cockpit panel */
+  }
+
+  .card-interstellar-action::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(93, 138, 168, 0.05) 50%, transparent 100%);
+    background-size: 100% 200%;
+    animation: scanLineH 8s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes scanLineH {
+    0% {
+      background-position: 0% -100%;
+    }
+
+    100% {
+      background-position: 0% 100%;
+    }
+  }
+
+  .card-interstellar-action:hover {
+    border-color: rgba(93, 138, 168, 0.8) !important;
+    box-shadow: 0 0 40px rgba(93, 138, 168, 0.2), inset 0 0 40px rgba(93, 138, 168, 0.1) !important;
+    transform: translateY(-8px) scale(1.02) !important;
+  }
+
+  .card-interstellar-action .technical-corner {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(93, 138, 168, 0.6);
+    z-index: 2;
+  }
+
+  .card-interstellar-action .corner-tl {
+    top: 0;
+    left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .card-interstellar-action .corner-tr {
+    top: 0;
+    right: 0;
+    border-left: 0;
+    border-bottom: 0;
+  }
+
+  .card-interstellar-action .corner-bl {
+    bottom: 0;
+    left: 0;
+    border-right: 0;
+    border-top: 0;
+  }
+
+  .card-interstellar-action .corner-br {
+    bottom: 0;
+    right: 0;
+    border-left: 0;
+    border-top: 0;
+  }
+
   .card-bright-yellow {
     border-color: rgba(255, 238, 0, 0.7);
     box-shadow: 0 0 25px rgba(255, 238, 0, 0.4), inset 0 0 12px rgba(255, 238, 0, 0.2), 0 0 50px rgba(255, 238, 0, 0.2);

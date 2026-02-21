@@ -55,10 +55,15 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                 </div>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className={`${idx < 3 ? 'text-[#bfff00]' : 'text-gray-400'} font-black italic text-lg`}>
+                                <span className={`${idx < 3 ? 'text-[#bfff00]' : 'text-gray-400'} font-black italic text-lg leading-none`}>
                                     {p.total_points}
                                 </span>
-                                <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest">PUNTI</span>
+                                {(p as any).live_points > 0 && (
+                                    <span className="text-[9px] font-black text-[#bfff00] animate-pulse">
+                                        +{(p as any).live_points} LIVE
+                                    </span>
+                                )}
+                                <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest mt-1">PUNTI</span>
                             </div>
                         </div>
                     ))}

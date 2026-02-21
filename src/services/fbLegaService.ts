@@ -67,6 +67,22 @@ export const fbLegaService = {
         };
     },
 
+    async getLeagueLeaderboardLive(leagueId: number): Promise<FBLeagueParticipant[]> {
+        const { data, error } = await supabase.rpc('get_fb_league_live_leaderboard', {
+            p_league_id: leagueId
+        });
+
+        if (error) throw error;
+
+        return data.map((p: any) => ({
+            user_id: p.user_id,
+            username: p.username,
+            total_points: p.grand_total, // Show calculated grand total
+            accumulated_points: p.total_points,
+            live_points: p.live_points
+        })) as FBLeagueParticipant[];
+    },
+
     async joinLeague(leagueId: number) {
         const { data, error } = await supabase.rpc('join_fb_league', {
             p_league_id: leagueId
