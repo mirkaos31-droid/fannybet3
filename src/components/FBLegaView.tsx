@@ -168,11 +168,7 @@ export const FBLegaView: React.FC = () => {
     return (
         <div className="animate-fade-in pb-20 px-1 md:px-0">
             {/* Hub Header */}
-            <div className="relative mb-12 overflow-hidden rounded-[3rem] p-12 bg-gradient-to-br from-[#1a2c38] to-[#0a0a0c] border border-white/5">
-                <div className="absolute top-0 right-0 p-12 opacity-10 -mr-20 -mt-20">
-                    <Shield size={300} className="text-[#5d8aa8]" />
-                </div>
-
+            <div className="relative mb-12 overflow-hidden rounded-[3rem] p-12 bg-gradient-to-br from-[#1a2c38] to-[#0a0a0c] border border-white/5 card-scudetto-active">
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-1 bg-[#5d8aa8] rounded-full"></div>

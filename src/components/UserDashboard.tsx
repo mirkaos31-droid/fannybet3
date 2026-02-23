@@ -102,7 +102,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     // User dashboard stats need matchday...
 
     // Fallback for Stats Header if no matchday
-    const jackpotDisplay = matchday ? matchday.superJackpot : 1000;
+    const jackpotDisplay = matchday ? matchday.superJackpot : 0;
     const potDisplay = matchday ? matchday.currentPot : 0;
 
     return (

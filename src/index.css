@@ -530,12 +530,12 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url('/scudetto_xleague.png');
+    background-image: url('/scudetto.png');
     background-size: cover;
     background-position: center;
-    /* Hue rotate to shift toward interstellar teal/blue */
-    filter: hue-rotate(165deg) brightness(0.5) saturate(1.2) contrast(1.1);
-    opacity: 0.45;
+    /* Hue rotate to shift toward interstellar teal/blue and balance aesthetics */
+    filter: hue-rotate(185deg) brightness(0.4) saturate(1.5) contrast(1.2);
+    opacity: 0.55;
     z-index: 0;
     pointer-events: none;
   }

@@ -157,9 +157,6 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
             {/* Compact Header Card */}
             <div className="glass-card card-lega-alieno card-scudetto-active p-8 border-none overflow-hidden relative mb-8">
-                <div className="absolute top-0 right-0 p-8 opacity-5 -mr-12 -mt-12">
-                    <Shield size={180} />
-                </div>
                 <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-1 bg-[#5d8aa8] rounded-full"></div>

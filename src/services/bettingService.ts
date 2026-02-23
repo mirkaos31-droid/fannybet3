@@ -256,8 +256,27 @@ export const bettingService = {
 
 
         // 2. CALCULATE 1X2 WINNERS & SUPER JACKPOT
-        const bets = await bettingService.getAllBets();
-        const currentBets = bets.filter(b => b.matchdayId === md.id);
+        const { data: currentBetsData } = await supabase
+            .from('bets')
+            .select(`
+                *,
+                profiles (username, avatar_url, level)
+            `)
+            .eq('matchday_id', md.id);
+
+        const currentBets = (currentBetsData || []).map(b => {
+            const profile = Array.isArray(b.profiles) ? b.profiles[0] : b.profiles;
+            return {
+                id: b.id,
+                username: profile?.username || 'Sconosciuto',
+                avatarUrl: profile?.avatar_url,
+                level: profile?.level || 1,
+                matchdayId: b.matchday_id,
+                predictions: b.predictions,
+                includeSuperJackpot: b.include_super_jackpot,
+                timestamp: b.created_at || new Date().toISOString()
+            };
+        });
 
         let maxScore = 0;
         currentBets.forEach(bet => {
@@ -396,31 +415,9 @@ export const bettingService = {
             if (profile) {
                 const newPoints = (profile.total_points || 0) + s;
 
-                // Recalculate Accuracy
-                // We need total correct of all archived bets. 
-                // This is slightly expensive to do every archive if we fetch all history, 
-                // but for now let's just use the current stats and update incrementally if possible.
-                // Or better: fetch all bets for this user to ensure perfection.
-                const { data: userBets } = await supabase.from('bets').select('predictions, matchday_id').eq('user_id', profile.id);
-                const archivedMDs = await bettingService.getArchivedMatchdays(); // Cached in memory or just fetch
-                const archivedIds = new Set(archivedMDs.map(a => a.id));
-                // Add the current one to the set since it's about to be archived
-                archivedIds.add(md.id);
-
-                let totalCorrect = 0;
-                let archivedCount = 0;
-                userBets?.forEach(ub => {
-                    if (archivedIds.has(ub.matchday_id)) {
-                        archivedCount++;
-                        // If it's the current md, use md.results
-                        const results = ub.matchday_id === md.id ? md.results : archivedMDs.find(a => a.id === ub.matchday_id)?.results;
-                        if (results) {
-                            results.forEach((r, i) => { if (r && r === ub.predictions[i]) totalCorrect++; });
-                        }
-                    }
-                });
-
-                const newAccuracy = archivedCount > 0 ? Math.round((totalCorrect / (archivedCount * 12)) * 100) : 0;
+                const newAccuracy = (profile.bets_placed || 0) > 0
+                    ? Math.round((newPoints / (profile.bets_placed * 12)) * 100)
+                    : 0;
 
                 // Level milestones
                 const milestones = [
@@ -464,9 +461,17 @@ export const bettingService = {
                 super_jackpot: 0,
                 winners: winnersUsernames,
                 winner_animation: (winnersUsernames.length > 0),
-                leaderboard_animation: (winnersUsernames.length > 0)
+                leaderboard_animation: (winnersUsernames.length > 0),
+                matches: [], // Clear matches to keep record lean
+                results: []  // Clear results
             })
             .eq('id', md.id);
+
+        // 4. CLEANUP: Delete bets for this matchday now that they are processed
+        await supabase
+            .from('bets')
+            .delete()
+            .eq('matchday_id', md.id);
 
         return {
             success: true,
