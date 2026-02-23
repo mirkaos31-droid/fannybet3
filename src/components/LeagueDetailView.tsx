@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight } from 'lucide-react';
+import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight } from 'lucide-react';
 import { gameService } from '../services/gameService';
 import type { FBLeague, FBLeagueParticipant, Matchday } from '../types';
 import { toast } from 'sonner';
