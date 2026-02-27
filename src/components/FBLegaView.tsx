@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, ChevronRight, PlusCircle, ArrowLeft, Loader2, Coins } from 'lucide-react';
 import { gameService } from '../services/gameService';
-import type { FBLeague } from '../types';
+import type { FBLeague, User } from '../types';
 import { toast } from 'sonner';
 import { LeagueDetailView } from './LeagueDetailView';
 
@@ -10,7 +10,7 @@ export const FBLegaView: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<'DISCOVER' | 'MY_LEAGUES' | 'CREATE'>('DISCOVER');
     const [selectedLeagueId, setSelectedLeagueId] = useState<number | null>(null);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     // Create Form State
     const [newLeague, setNewLeague] = useState({
@@ -59,8 +59,9 @@ export const FBLegaView: React.FC = () => {
             } else {
                 toast.error(result.message);
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Errore durante la creazione');
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante la creazione');
         }
     };
 
@@ -73,8 +74,9 @@ export const FBLegaView: React.FC = () => {
             } else {
                 toast.error(result.message);
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Errore durante l\'iscrizione');
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante l\'iscrizione');
         }
     };
 

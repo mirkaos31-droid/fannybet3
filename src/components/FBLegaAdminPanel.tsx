@@ -29,7 +29,7 @@ export const FBLegaAdminPanel: React.FC = () => {
             ]);
             setLeagues(leaguesData);
             setMatchday(mdData);
-        } catch (error) {
+        } catch {
             toast.error('Errore nel caricamento delle leghe');
         } finally {
             setLoading(false);
@@ -62,8 +62,9 @@ export const FBLegaAdminPanel: React.FC = () => {
             } else {
                 toast.error(result.message);
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Errore durante la creazione');
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante la creazione');
         } finally {
             setLoading(false);
         }
@@ -82,8 +83,9 @@ export const FBLegaAdminPanel: React.FC = () => {
             } else {
                 toast.error(result.message);
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Errore durante la risoluzione');
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante la risoluzione');
         } finally {
             setActionLoading(null);
         }
@@ -101,8 +103,9 @@ export const FBLegaAdminPanel: React.FC = () => {
             } else {
                 toast.error(result.message);
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Errore durante la distribuzione');
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante la distribuzione');
         } finally {
             setActionLoading(null);
         }

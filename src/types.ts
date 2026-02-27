@@ -121,6 +121,7 @@ export interface FBLeagueParticipant {
     total_points: number;
     joined_at: string;
     username?: string;
+    live_points?: number;
 }
 
 export interface FBLeaguePick {

@@ -16,6 +16,7 @@ export const UserManagementPanel: React.FC = () => {
     const [filter, setFilter] = useState('');
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
     const [tokenChange, setTokenChange] = useState('0');
+    const [burnedTokens, setBurnedTokens] = useState(0);
 
     useEffect(() => {
         loadUsers();
@@ -24,11 +25,15 @@ export const UserManagementPanel: React.FC = () => {
     const loadUsers = async () => {
         setLoading(true);
         try {
-            const allUsers = await gameService.getAllUsers();
+            const [allUsers, burned] = await Promise.all([
+                gameService.getAllUsers(),
+                gameService.getBurnedTokens()
+            ]);
             setUsers(allUsers);
+            setBurnedTokens(burned);
         } catch (err) {
-            console.error('Errore nel caricamento user:', err);
-            alert('Errore nel caricamento degli utenti');
+            console.error('Errore nel caricamento data:', err);
+            alert('Errore nel caricamento dei dati');
         } finally {
             setLoading(false);
         }
@@ -98,22 +103,28 @@ export const UserManagementPanel: React.FC = () => {
     return (
         <div className="space-y-6 animate-fade-in text-white">
             {/* Header */}
-            <div className="border-l-4 border-[#dfff00] pl-6 py-2">
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <h3 className="text-2xl font-black italic text-white mb-1">GESTIONE UTENTI</h3>
-                        <p className="text-sm text-gray-400 font-bold uppercase tracking-widest">{users.length} Account Attivi</p>
+            <div className="border-l-4 border-[#dfff00] pl-4 sm:pl-6 py-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                        <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-black/40 border border-white/5 rounded-2xl">
+                            <h3 className="text-lg sm:text-xl font-black italic text-white leading-none">GESTIONE UTENTI</h3>
+                            <p className="text-[8px] sm:text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-1">{users.length} Account Attivi</p>
+                        </div>
+                        <div className="px-4 py-1.5 bg-black border border-[#dfff00]/20 rounded-2xl shadow-[0_0_20px_rgba(223,255,0,0.05)]">
+                            <span className="text-[7px] font-black text-[#dfff00]/40 uppercase tracking-[0.3em] block mb-0.5">🔥 Token Bruciati</span>
+                            <span className="text-lg sm:text-xl font-black text-[#dfff00] italic leading-none">{burnedTokens}</span>
+                        </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                         <button
                             onClick={handleSync}
-                            className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all font-black text-[10px] uppercase tracking-widest text-[#dfff00]"
+                            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest text-[#dfff00]"
                         >
                             Sync Emails
                         </button>
                         <button
                             onClick={loadUsers}
-                            className="px-4 py-2 bg-[#dfff00] text-black border border-[#dfff00] rounded-xl hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest"
+                            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-[#dfff00] text-black border border-[#dfff00] rounded-xl hover:scale-105 transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest"
                         >
                             🔄 Aggiorna
                         </button>

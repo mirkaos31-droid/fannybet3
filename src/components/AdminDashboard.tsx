@@ -13,7 +13,7 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, initialTab = 'MATCHDAY' }) => {
-    const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA'>(initialTab as any);
+    const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA'>(initialTab);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -103,7 +103,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as any)}
+                                    onClick={() => setActiveTab(tab.id as 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA')}
                                     className={`flex-1 md:flex-none whitespace-nowrap px-3 md:px-5 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all
                                         ${activeTab === tab.id
                                             ? tab.id === 'SYSTEM' ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-[#dfff00] text-black shadow-[0_0_15px_rgba(223,255,0,0.3)]'

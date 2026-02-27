@@ -95,7 +95,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
 
     const currentRankingData = viewType === 'MATCHDAY'
         ? ranking.map(r => ({ username: r.username, score: r.score, avatarUrl: r.avatarUrl, level: r.level, extra: '/12', includeSuperJackpot: r.includeSuperJackpot }))
-        : globalRanking.map(r => ({ username: r.username, score: r.totalPoints, avatarUrl: r.avatarUrl, level: (r as any).level || 1, extra: ' PT', includeSuperJackpot: false }));
+        : globalRanking.map(r => ({ username: r.username, score: r.totalPoints, avatarUrl: r.avatarUrl, level: (r as { level?: number }).level || 1, extra: ' PT', includeSuperJackpot: false }));
 
     const podium = currentRankingData.slice(0, 3);
     const list = currentRankingData.slice(3);
@@ -262,11 +262,11 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                 const actualRank = idx + 4;
                                 // Level based styles with much more prominent glow
                                 const levelStyles: Record<number, string> = {
-                                    1: 'border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]',
-                                    2: 'border-green-500/60 shadow-[0_0_20px_rgba(34,197,94,0.3)] bg-green-500/5',
-                                    3: 'border-blue-500/70 shadow-[0_0_25px_rgba(59,130,246,0.4)] bg-blue-500/5',
-                                    4: 'border-brand-purple/80 shadow-[0_0_30px_rgba(157,0,255,0.5)] bg-brand-purple/5',
-                                    5: 'border-red-500 shadow-[0_0_35px_rgba(239,68,68,0.6)] bg-red-500/10 ring-1 ring-red-500/40'
+                                    1: 'border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.1)]',
+                                    2: 'border-green-400 shadow-[0_0_25px_rgba(34,197,94,0.4)] bg-green-500/10',
+                                    3: 'border-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.5)] bg-blue-500/10',
+                                    4: 'border-brand-purple shadow-[0_0_35px_rgba(157,0,255,0.6)] bg-brand-purple/10',
+                                    5: 'border-red-400 shadow-[0_0_40px_rgba(239,68,68,0.7)] bg-red-500/15 ring-1 ring-red-400/50'
                                 };
 
                                 return (
@@ -274,12 +274,12 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                         key={`${user.username}-${idx}`}
                                         className={`group flex items-center px-6 py-3 bg-black/60 backdrop-blur-md rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] ${levelStyles[user.level] || levelStyles[1]}`}
                                     >
-                                        <div className="w-10 font-mono font-black text-sm text-white/90 mr-4">
+                                        <div className="w-8 font-mono font-black text-sm text-white/90 mr-2">
                                             #{actualRank}
                                         </div>
 
-                                        <div className="flex-1 flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full border-2 border-white/20 p-[2px] overflow-hidden group-hover:border-white/50 transition-colors">
+                                        <div className="flex-1 flex items-center gap-3">
+                                            <div className="w-11 h-11 rounded-full border-2 border-white/20 p-[2px] overflow-hidden group-hover:border-white/50 transition-colors">
                                                 {user.avatarUrl ? (
                                                     <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
                                                 ) : (

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight } from 'lucide-react';
 import { gameService } from '../services/gameService';
-import type { FBLeague, FBLeagueParticipant, Matchday } from '../types';
+import type { FBLeague, FBLeagueParticipant, Matchday, User } from '../types';
 import { toast } from 'sonner';
 import { LeaderboardModal } from './LeaderboardModal';
 import { PredictionsModal } from './PredictionsModal';
@@ -22,16 +22,12 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const [myPicks, setMyPicks] = useState<string[]>(new Array(10).fill(''));
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     // Modal States
     const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES'>('NONE');
 
-    useEffect(() => {
-        loadLeagueData();
-    }, [leagueId]);
-
-    const loadLeagueData = async () => {
+    const loadLeagueData = useCallback(async () => {
         try {
             setLoading(true);
             const [details, mdData, currentUser] = await Promise.all([
@@ -63,7 +59,11 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
         } finally {
             setLoading(false);
         }
-    };
+    }, [leagueId]);
+
+    useEffect(() => {
+        loadLeagueData();
+    }, [loadLeagueData]);
 
     // LIVE UPDATE LISTENER
     useEffect(() => {
@@ -114,8 +114,9 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             } else {
                 toast.error(result.message);
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Errore durante il salvataggio');
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante il salvataggio');
         } finally {
             setSaving(false);
         }
@@ -132,7 +133,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
     const { league, participants } = data;
     const isParticipant = participants.some(p => p.user_id === user?.id);
-    const bonusX = (league.scoring_rules as any)?.X || 1;
+    const bonusX = (league.scoring_rules as Record<string, number>)?.X || 1;
 
     // Helper for pick count
     const filledPicksCount = myPicks.filter(p => p !== '').length;

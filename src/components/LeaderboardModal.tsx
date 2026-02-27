@@ -58,9 +58,9 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                 <span className={`${idx < 3 ? 'text-[#bfff00]' : 'text-gray-400'} font-black italic text-lg leading-none`}>
                                     {p.total_points}
                                 </span>
-                                {(p as any).live_points > 0 && (
+                                {p.live_points !== undefined && p.live_points > 0 && (
                                     <span className="text-[9px] font-black text-[#bfff00] animate-pulse">
-                                        +{(p as any).live_points} LIVE
+                                        +{p.live_points} LIVE
                                     </span>
                                 )}
                                 <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest mt-1">PUNTI</span>

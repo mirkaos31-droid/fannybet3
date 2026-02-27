@@ -62,7 +62,7 @@ export const fbLegaService = {
             league,
             participants: participants.map(p => ({
                 ...p,
-                username: (p.profiles as any)?.username
+                username: (p.profiles as unknown as { username: string })?.username
             })) as FBLeagueParticipant[]
         };
     },
@@ -74,7 +74,7 @@ export const fbLegaService = {
 
         if (error) throw error;
 
-        return data.map((p: any) => ({
+        return data.map((p: { user_id: string; username: string; grand_total: number; total_points: number; live_points: number }) => ({
             user_id: p.user_id,
             username: p.username,
             total_points: p.grand_total, // Show calculated grand total

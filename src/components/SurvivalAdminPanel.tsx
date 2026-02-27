@@ -5,7 +5,7 @@ import type { SurvivalSeason, SurvivalPlayer } from '../types';
 export const SurvivalAdminPanel: React.FC = () => {
     const [season, setSeason] = useState<SurvivalSeason | null>(null);
     const [players, setPlayers] = useState<SurvivalPlayer[]>([]);
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<unknown[]>([]);
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [entryFee, setEntryFee] = useState(2); // Default entry fee
@@ -290,27 +290,37 @@ export const SurvivalAdminPanel: React.FC = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {history.map((win) => (
-                            <div key={win.season_id} className="relative glass-panel bg-black/40 border-yellow-500/20 p-5 rounded-3xl group hover:border-yellow-500/50 transition-all">
-                                <div className="absolute top-2 right-3 text-[8px] font-black text-white/10 uppercase italic">Season #{win.season_id}</div>
-                                <div className="flex flex-col items-center text-center">
-                                    <div className="w-16 h-16 rounded-full border-2 border-yellow-500/30 overflow-hidden mb-3 bg-black">
-                                        {win.avatar_url ? (
-                                            <img src={win.avatar_url} alt={win.username} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xl font-black text-yellow-600/50">
-                                                {win.username.charAt(0).toUpperCase()}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="font-display font-black text-sm text-white uppercase tracking-tight mb-1">{win.username}</div>
-                                    <div className="text-[#dfff00] font-black text-xs">+{Math.max(0, win.prize_pool - (win.entry_fee || 2))} FTK</div>
-                                    <div className="mt-4 text-[7px] text-gray-500 font-black uppercase tracking-widest border-t border-white/5 pt-2 w-full">
-                                        {win.finished_at ? new Date(win.finished_at).toLocaleDateString() : '-'}
+                        {history.map((win) => {
+                            const w = win as {
+                                season_id: number;
+                                avatar_url?: string;
+                                username: string;
+                                prize_pool: number;
+                                entry_fee?: number;
+                                finished_at?: string;
+                            };
+                            return (
+                                <div key={w.season_id} className="relative glass-panel bg-black/40 border-yellow-500/20 p-5 rounded-3xl group hover:border-yellow-500/50 transition-all">
+                                    <div className="absolute top-2 right-3 text-[8px] font-black text-white/10 uppercase italic">Season #{w.season_id}</div>
+                                    <div className="flex flex-col items-center text-center">
+                                        <div className="w-16 h-16 rounded-full border-2 border-yellow-500/30 overflow-hidden mb-3 bg-black">
+                                            {w.avatar_url ? (
+                                                <img src={w.avatar_url} alt={w.username} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xl font-black text-yellow-600/50">
+                                                    {w.username.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="font-display font-black text-sm text-white uppercase tracking-tight mb-1">{w.username}</div>
+                                        <div className="text-[#dfff00] font-black text-xs">+{Math.max(0, w.prize_pool - (w.entry_fee || 2))} FTK</div>
+                                        <div className="mt-4 text-[7px] text-gray-500 font-black uppercase tracking-widest border-t border-white/5 pt-2 w-full">
+                                            {w.finished_at ? new Date(w.finished_at).toLocaleDateString() : '-'}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

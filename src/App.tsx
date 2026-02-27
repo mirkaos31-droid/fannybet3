@@ -50,7 +50,7 @@ function App() {
           schema: 'public',
           table: 'matchdays'
         },
-        (payload: any) => {
+        (payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
           // Check if results changed
           if (payload.new && payload.new.results && JSON.stringify(payload.new.results) !== JSON.stringify(payload.old.results)) {
             toast("⚽ Risultati Aggiornati!", {

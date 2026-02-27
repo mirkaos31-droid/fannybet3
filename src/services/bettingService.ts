@@ -491,4 +491,15 @@ export const bettingService = {
         if (error) return { success: false, message: error.message };
         return data as { success: boolean; message: string; newPot?: number };
     },
+
+    getBurnedTokens: async (): Promise<number> => {
+        const { data, error } = await supabase
+            .from('system_stats')
+            .select('value')
+            .eq('key', 'burned_tokens')
+            .single();
+
+        if (error || !data) return 0;
+        return Number(data.value);
+    }
 };

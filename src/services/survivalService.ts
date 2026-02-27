@@ -294,7 +294,7 @@ export const survivalService = {
         return data as { success: boolean, message: string };
     },
 
-    getWinnerHistory: async (limit: number = 3): Promise<unknown[]> => {
+    getWinnerHistory: async (limit: number = 3): Promise<Record<string, unknown>[]> => {
         const { data, error } = await supabase.rpc('get_survival_winner_history', { p_limit: limit });
         if (error) {
             console.error('Error fetching winner history:', error);
