@@ -86,6 +86,7 @@ export interface SurvivalSeason {
     prizePool: number;
     entryFee?: number;
     startMatchdayId?: number;
+    startMatchdayDeadline?: string;
     finishedAt?: string;
     winner?: {
         username: string;

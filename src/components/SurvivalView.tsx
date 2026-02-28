@@ -31,6 +31,8 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
     const isAlive = myPlayer?.status?.toUpperCase() === 'ALIVE';
     const hasJoined = !!myPlayer;
     const isSeasonOpen = season?.status === 'OPEN';
+    const isDeadlinePassed = season?.startMatchdayDeadline ? new Date() > new Date(season.startMatchdayDeadline) : false;
+    const canJoin = isSeasonOpen && !isDeadlinePassed;
 
     console.log('[SurvivalView] State Update:', {
         userId: user?.id,
@@ -193,9 +195,9 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                         </div>
                     </div>
 
-                    {!hasJoined && !isSeasonOpen && !isSeasonCompleted && (
+                    {!hasJoined && (!isSeasonOpen || isDeadlinePassed) && !isSeasonCompleted && (
                         <div className="mt-4 px-4 py-2 bg-black/40 border border-white/10 rounded-full text-[8px] font-black text-white/40 uppercase tracking-widest">
-                            Lobby Chiusa • In Corso
+                            {isDeadlinePassed ? 'Lobby Chiusa • Iniziato' : 'Lobby Chiusa • In Corso'}
                         </div>
                     )}
 
@@ -214,10 +216,10 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                     <p className="text-sm mb-4 font-bold text-white/60 uppercase tracking-widest">Only one will survive.</p>
                     <button
                         onClick={handleJoin}
-                        disabled={loading || !isSeasonOpen || (user?.tokens || 0) < 2}
+                        disabled={loading || !canJoin || (user?.tokens || 0) < 2}
                         className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-black text-lg tracking-tighter shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                     >
-                        {loading ? 'WAIT...' : 'JOIN (2 TOKENS)'}
+                        {loading ? 'WAIT...' : (isDeadlinePassed ? 'CHIUSO' : 'JOIN (2 TOKENS)')}
                     </button>
                 </div>
             )}

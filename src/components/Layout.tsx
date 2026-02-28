@@ -34,12 +34,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Token Display (Very Visible) */}
-                    <div className="flex flex-col items-end bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
-                        <span className="text-[6px] text-gray-500 font-black uppercase tracking-widest leading-none mb-0.5">Balance</span>
+                    {/* Token Display (Enhanced) */}
+                    <div className="flex flex-col items-end bg-white/5 px-3.5 py-2 rounded-xl border border-brand-gold/40 shadow-[0_0_15px_rgba(255,204,0,0.2)] shadow-inner">
+                        <span className="text-[7px] text-gray-500 font-black uppercase tracking-widest leading-none mb-0.5">Balance</span>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-lg font-mono font-black text-brand-gold drop-shadow-[0_0_10px_rgba(255,204,0,0.3)]">{user?.tokens || 0}</span>
-                            <span className="text-[7px] font-black text-brand-gold/60">FTK</span>
+                            <span className="text-xl font-mono font-black text-brand-gold drop-shadow-[0_0_12px_rgba(255,204,0,0.4)]">{user?.tokens || 0}</span>
+                            <span className="text-[8px] font-black text-brand-gold/60">FTK</span>
                         </div>
                     </div>
 
@@ -121,11 +121,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                     </div>
 
                     <div className="flex items-center gap-4 md:gap-8">
-                        <div className="text-right">
-                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mb-2">Credits</p>
+                        <div className="text-right bg-white/5 px-5 py-3 rounded-2xl border border-brand-orange/40 shadow-[0_0_20px_rgba(255,106,0,0.2)] flex flex-col items-end">
+                            <p className="text-[11px] text-gray-500 font-black uppercase tracking-[0.4em] mb-2">Credits</p>
                             <div className="flex items-baseline gap-1 md:gap-2">
-                                <span className="text-xl md:text-3xl font-display font-black text-brand-orange drop-shadow-[0_0_15px_rgba(255,106,0,0.3)]">{user?.tokens || 0}</span>
-                                <span className="text-[10px] md:text-xs font-black text-white/30 tracking-widest italic">TK</span>
+                                <span className="text-2xl md:text-[2.1rem] font-display font-black text-brand-orange drop-shadow-[0_0_18px_rgba(255,106,0,0.4)]">{user?.tokens || 0}</span>
+                                <span className="text-[11px] md:text-sm font-black text-white/30 tracking-widest italic">TK</span>
                             </div>
                         </div>
 

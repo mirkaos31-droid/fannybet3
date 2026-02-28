@@ -24,7 +24,7 @@ export const survivalService = {
         // 1. Get Active/Open Season
         const { data: season } = await supabase
             .from('survival_seasons')
-            .select('*')
+            .select('*, matchdays(deadline)')
             .in('status', ['OPEN', 'ACTIVE'])
             .order('created_at', { ascending: false })
             .limit(1)
@@ -126,6 +126,7 @@ export const survivalService = {
                 prizePool: season.prize_pool,
                 entryFee: season.entry_fee,
                 startMatchdayId: season.start_matchday_id,
+                startMatchdayDeadline: (season.matchdays as any)?.deadline,
                 currentMatch: myPickCtx
             },
             players: parsedPlayers
