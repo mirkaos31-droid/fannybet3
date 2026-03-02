@@ -51,44 +51,47 @@ export const CollectibleCard: React.FC<CollectibleCardProps> = ({
     };
 
     return (
-        <div className="perspective-1000 w-full aspect-[3/4]">
+        <div className="perspective-1000 w-full aspect-[3/4] max-w-[240px] mx-auto">
             <div className={`relative w-full h-full transition-transform duration-1000 transform-style-3d ${isFlipped ? 'rotate-y-0' : 'rotate-y-180'}`}>
 
                 {/* Back Side (Hidden initially if new) */}
-                <div className={`absolute inset-0 backface-hidden rounded-[2.5rem] border-[12px] ${getBorderColor()} bg-black overflow-hidden shadow-2xl transition-all duration-300`}
+                <div className={`absolute inset-0 backface-hidden rounded-[1.5rem] border-[6px] md:border-[8px] ${getBorderColor()} bg-black overflow-hidden shadow-2xl transition-all duration-300`}
                     style={{ boxShadow: getGlowColor() }}>
                     {unlocked && imageUrl ? (
-                        <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+                        <img src={imageUrl} alt={title} className="w-full h-full object-cover opacity-80" />
                     ) : (
                         <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
-                            <Lock className="text-white/10" size={64} />
+                            <Lock className="text-white/10" size={48} />
                         </div>
                     )}
 
-                    <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-6 ${unlocked ? 'opacity-100' : 'opacity-40'}`}>
-                        <h3 className="text-white font-black italic uppercase text-lg leading-tight drop-shadow-md">
+                    <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-4 ${unlocked ? 'opacity-100' : 'opacity-40'}`}>
+                        <h3 className="text-white font-black italic uppercase text-sm md:text-base leading-tight drop-shadow-lg">
                             {unlocked ? title : '???'}
                         </h3>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1 line-clamp-2">
-                            {unlocked ? description : 'Obiettivo Nascosto'}
-                        </p>
+                        <div className="mt-1">
+                            <p className="text-[8px] md:text-[9px] text-[#ff8800] font-black uppercase tracking-tighter mb-0.5">Obiettivo:</p>
+                            <p className="text-[9px] md:text-[10px] text-gray-300 font-bold uppercase tracking-tight leading-tight line-clamp-2">
+                                {unlocked ? description : 'Contenuto Secretato'}
+                            </p>
+                        </div>
                         {unlockedAt && (
-                            <div className="mt-3 py-1 px-3 bg-white/10 rounded-full w-fit">
-                                <span className="text-[8px] font-black text-white/50 uppercase">Sbloccata: {new Date(unlockedAt).toLocaleDateString()}</span>
+                            <div className="mt-2 py-0.5 px-2 bg-white/10 rounded-full w-fit">
+                                <span className="text-[7px] font-black text-white/50 uppercase">Sbloccata: {new Date(unlockedAt).toLocaleDateString()}</span>
                             </div>
                         )}
                     </div>
 
-                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${unlocked ? 'bg-black/60 text-white' : 'bg-white/5 text-white/20'}`}>
+                    <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest ${unlocked ? 'bg-black/80 text-white border border-white/10' : 'bg-white/5 text-white/20'}`}>
                         {rarity}
                     </div>
                 </div>
 
                 {/* Front Side (Face down/Locked look during flip) */}
-                <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-[2.5rem] border-[12px] border-gray-800 bg-neutral-900 flex items-center justify-center overflow-hidden">
-                    <div className="flex flex-col items-center gap-4 opacity-20">
-                        <Lock size={64} className="text-white" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">NUOVO SBLOCCO</span>
+                <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-[1.5rem] border-[8px] border-gray-800 bg-neutral-900 flex items-center justify-center overflow-hidden">
+                    <div className="flex flex-col items-center gap-3 opacity-20">
+                        <Lock size={48} className="text-white" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white">NUOVO SBLOCCO</span>
                     </div>
                     {/* Add some "mystery" pattern */}
                     <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(circle_at_center,white_0%,transparent_70%)]"></div>

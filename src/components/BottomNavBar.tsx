@@ -32,7 +32,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ onRegulations, onCar
                         <Library size={32} className="text-black drop-shadow-md" />
                     </button>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff8800] animate-pulse">Card</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff8800] animate-pulse">Le Tue Cards</span>
                     </div>
                 </div>
 

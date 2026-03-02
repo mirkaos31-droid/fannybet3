@@ -11,11 +11,7 @@ END $$;
 
 ALTER TABLE public.user_cards ADD COLUMN IF NOT EXISTS seen_in_gallery BOOLEAN DEFAULT false;
 
--- 2. CLEANUP: Remove any card that is not in the official 6-card set
-DELETE FROM public.collectible_cards 
-WHERE title NOT IN ('Il Maestro del 5-5-5', 'C''eri quasi!', 'Horto muso', 'Hat-trick', 'Ultimo Posto', 'Survival');
-
--- 3. Seed/Update EXACTLY 6 Card Definitions
+-- 2. Seed/Update EXACTLY 6 Card Definitions
 INSERT INTO public.collectible_cards (title, description, rarity, category, image_url)
 VALUES 
 (
