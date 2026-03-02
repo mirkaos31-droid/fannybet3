@@ -12,6 +12,7 @@ import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
 import { Zap, Eye, Trophy, Skull, Shield } from 'lucide-react';
 import { FBLegaView } from './FBLegaView';
+import { CardGallery } from './CardGallery';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 
 interface UserDashboardProps {
@@ -188,6 +189,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             {view === 'LEADERBOARD' && 'CLASSIFICHE'}
                             {view === 'SURVIVAL' && 'SURVIVAL MODE'}
                             {view === 'FB_LEGA' && 'FB LEGA'}
+                            {view === 'CARDS' && 'ARCHIVIO CARD'}
                         </h1>
                     </div>
                 )}
@@ -353,6 +355,12 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
 
+                {view === 'CARDS' && (
+                    <div className="relative animate-fade-in">
+                        <CardGallery onBack={() => setView('HOME')} />
+                    </div>
+                )}
+
                 <div className="fixed bottom-1 right-1 text-[8px] font-mono text-white/10 select-none pointer-events-none z-[1000]">
                     v2026.02.06.1612
                 </div>
@@ -362,7 +370,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
             {view === 'HOME' && (
                 <BottomNavBar
                     onRegulations={() => setShowRegulations(true)}
-                    onRequestTokens={() => setShowRequestTokens(true)}
+                    onCards={() => setView('CARDS')}
                     onProfile={() => setShowProfile(true)}
                 />
             )}

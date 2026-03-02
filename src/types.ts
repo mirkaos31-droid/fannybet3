@@ -19,7 +19,7 @@ export interface User {
 
 export type League = 'SERIE A' | 'CUSTOM';
 
-export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'FB_LEGA';
+export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'FB_LEGA' | 'CARDS';
 
 export interface Match {
     id: number;
@@ -107,7 +107,7 @@ export interface FBLeague {
     duration_matchdays: number;
     current_round: number;
     start_matchday_id: number;
-    scoring_rules: Record<string, number>;
+    scoring_rules: Record<string, number | boolean>;
     prize_distribution: number[];
     status: 'OPEN' | 'ACTIVE' | 'COMPLETED';
     prize_pool: number;

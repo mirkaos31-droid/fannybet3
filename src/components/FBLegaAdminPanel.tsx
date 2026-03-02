@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { gameService } from '../services/gameService';
 import type { FBLeague, Matchday } from '../types';
 import { toast } from 'sonner';
 import { Trophy, Play, Gift, Loader2 } from 'lucide-react';
 
-export const FBLegaAdminPanel: React.FC = () => {
+export const FBLegaAdminPanel = () => {
     const [leagues, setLeagues] = useState<FBLeague[]>([]);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [loading, setLoading] = useState(true);
@@ -15,6 +15,9 @@ export const FBLegaAdminPanel: React.FC = () => {
     const [newName, setNewName] = useState('');
     const [newFee, setNewFee] = useState(1);
     const [newDuration, setNewDuration] = useState(5);
+    const [underdogEnabled, setUnderdogEnabled] = useState(false);
+    const [comebackEnabled, setComebackEnabled] = useState(false);
+
 
     useEffect(() => {
         loadLeagues();
@@ -50,7 +53,13 @@ export const FBLegaAdminPanel: React.FC = () => {
                 name: newName,
                 entry_fee: newFee,
                 duration: newDuration,
-                scoring_rules: { "1": 1, "X": 2, "2": 1 },
+                scoring_rules: {
+                    "1": 1,
+                    "X": 2,
+                    "2": 1,
+                    "underdog_enabled": underdogEnabled,
+                    "monthly_comeback_enabled": comebackEnabled
+                },
                 prize_dist: [0.7, 0.3] // Default: 70% 1st, 30% 2nd
             });
 
@@ -58,6 +67,8 @@ export const FBLegaAdminPanel: React.FC = () => {
                 toast.success('Lega creata con successo!');
                 setShowCreateForm(false);
                 setNewName('');
+                setUnderdogEnabled(false);
+                setComebackEnabled(false);
                 loadLeagues();
             } else {
                 toast.error(result.message);
@@ -110,6 +121,7 @@ export const FBLegaAdminPanel: React.FC = () => {
             setActionLoading(null);
         }
     };
+
 
     if (loading) {
         return (
@@ -164,6 +176,37 @@ export const FBLegaAdminPanel: React.FC = () => {
                             />
                         </div>
                     </div>
+
+                    <div className="mt-6 flex flex-wrap gap-6">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    checked={underdogEnabled}
+                                    onChange={(e) => setUnderdogEnabled(e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-10 h-5 bg-white/10 rounded-full peer peer-checked:bg-[#dfff00] transition-all"></div>
+                                <div className="absolute left-1 top-1 w-3 h-3 bg-white/40 rounded-full peer-checked:left-6 peer-checked:bg-black transition-all"></div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-gray-400 group-hover:text-white transition-colors">Bonus Underdog (+2 PT)</span>
+                        </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    checked={comebackEnabled}
+                                    onChange={(e) => setComebackEnabled(e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-10 h-5 bg-white/10 rounded-full peer peer-checked:bg-[#dfff00] transition-all"></div>
+                                <div className="absolute left-1 top-1 w-3 h-3 bg-white/40 rounded-full peer-checked:left-6 peer-checked:bg-black transition-all"></div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-gray-400 group-hover:text-white transition-colors">Rimonta del Mese (+10 PT)</span>
+                        </label>
+                    </div>
+
                     <div className="mt-8 p-4 bg-[#5d8aa8]/10 rounded-2xl border border-[#5d8aa8]/20">
                         <p className="text-[9px] text-[#5d8aa8] font-black uppercase tracking-wider mb-2">Regole Applicate Automaticamente:</p>
                         <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-bold text-gray-400">
@@ -241,6 +284,7 @@ export const FBLegaAdminPanel: React.FC = () => {
                     ))}
                 </div>
             )}
+
         </div>
     );
 };

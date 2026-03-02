@@ -117,7 +117,7 @@ export const fbLegaService = {
         name: string;
         entry_fee: number;
         duration: number;
-        scoring_rules: Record<string, number>;
+        scoring_rules: Record<string, number | boolean>;
         prize_dist: number[];
     }) {
         const { data, error } = await supabase.rpc('create_fb_league', {
@@ -143,6 +143,15 @@ export const fbLegaService = {
     async distributePrizes(leagueId: number) {
         const { data, error } = await supabase.rpc('distribute_fb_league_prizes', {
             p_league_id: leagueId
+        });
+        if (error) throw error;
+        return data;
+    },
+
+    async awardCard(username: string, cardTitle: string) {
+        const { data, error } = await supabase.rpc('award_card_to_user', {
+            p_username: username,
+            p_card_title: cardTitle
         });
         if (error) throw error;
         return data;

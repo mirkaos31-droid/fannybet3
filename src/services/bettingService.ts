@@ -398,6 +398,34 @@ export const bettingService = {
 
         const winnersUsernames = [...new Set([...standardWinnersUsernames, ...superJackpotWinners.map(w => w.username)])];
 
+        // 2.2 🏆 AWARD 1X2 WINNER CARD
+        if (winnersUsernames.length > 0) {
+            const { data: cardData } = await supabase
+                .from('collectible_cards')
+                .select('id')
+                .eq('title', '1x2 Winner')
+                .single();
+
+            if (cardData) {
+                for (const username of winnersUsernames) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('username', username)
+                        .single();
+
+                    if (profile) {
+                        await supabase
+                            .from('user_cards')
+                            .upsert(
+                                { user_id: profile.id, card_id: cardData.id },
+                                { onConflict: 'user_id,card_id' }
+                            );
+                    }
+                }
+            }
+        }
+
         // 2.5 UPDATE USER TOTAL POINTS, ACCURACY & LEVEL
         for (const bet of currentBets) {
             let s = 0;
