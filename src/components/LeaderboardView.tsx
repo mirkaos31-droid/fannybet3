@@ -189,7 +189,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
 
                                         <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-4 p-1.5 bg-black/40 overflow-hidden transition-transform duration-500 group-hover:scale-110 
                                             ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
-                                                ? 'border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.4)] animate-pulse' // Winner Style
+                                                ? 'winner-card-glow border-yellow-400' // Winner Style
                                                 : 'border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)]' // Standard Leader Style
                                             }`}>
                                             {podium[0].avatarUrl ? (
@@ -299,9 +299,9 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                                 <span className="text-2xl font-display font-black text-white leading-none">
                                                     {user.score}<span className="text-[10px] text-gray-500 font-sans font-black uppercase ml-1">{user.extra}</span>
                                                 </span>
-                                                {viewType === 'MATCHDAY' && user.score >= 7 && (
+                                                {viewType === 'MATCHDAY' && user.score >= 7 && (idx + 3 < currentRankingData.length && user.score === currentRankingData[0].score) && (
                                                     <span className="text-[7px] font-black text-brand-purple uppercase tracking-[0.2em] mt-1 animate-pulse bg-brand-purple/20 px-2 py-0.5 rounded-full border border-brand-purple/40">
-                                                        🏆 ZONA PREMIO
+                                                        🏆 VINCITORE
                                                     </span>
                                                 )}
                                             </div>

@@ -157,6 +157,9 @@ export const bettingService = {
 
     // --- ADMIN ACTIONS ---
     createMatchday: async (): Promise<{ success: boolean, message: string }> => {
+        // 1. Cleanup old bets before creating new matchday (to keep DB lean and reset rankings)
+        await supabase.from('bets').delete().neq('id', 0); // Delete all existing bets
+
         const { data, error } = await supabase.rpc('admin_create_matchday');
         if (error) return { success: false, message: error.message };
         const result = data as { success: boolean, message: string };
@@ -278,125 +281,101 @@ export const bettingService = {
             };
         });
 
+        const results = (md.results || []) as (string | null)[];
         let maxScore = 0;
         currentBets.forEach(bet => {
             let s = 0;
-            md.results.forEach((res, idx) => {
+            results.forEach((res, idx) => {
                 if (res && res === bet.predictions[idx]) s++;
             });
             if (s > maxScore) maxScore = s;
         });
 
-        const currentTotalPot = md.currentPot || 0;
-        const currentSuper = md.superJackpot || 0;
+        const currentTotalPot = (md as any).current_pot || 0;
+        const currentSuper = (md as any).super_jackpot || 0;
         let nextRollover = 0;
         let winnerMsg = "";
-
-        // --- STANDARD POT DISTRIBUTION (Score >= 7) ---
         let standardWinnersUsernames: string[] = [];
-        let standardShare = 0;
 
-        if (maxScore >= 7) {
+        // --- PRIZE AGGREGATION & DISTRIBUTION ---
+        const userEarnings = new Map<string, { tokens: number; wins: number }>();
+
+        // Process Standard Winners
+        if (maxScore >= 7 && currentTotalPot > 0) {
             console.log("STANDARD POT WINNER(S) FOUND");
-
-            // Identify winners (exactly those with maxScore)
             const winners = currentBets.filter(bet => {
                 let s = 0;
-                md.results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
+                results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
                 return s === maxScore;
             });
 
-            const winnersCount = winners.length;
+            if (winners.length > 0) {
+                const totalPayout = Math.floor(currentTotalPot);
+                const share = Math.floor(totalPayout / winners.length);
+                const remainder = totalPayout % winners.length;
 
-            // Distribute STANDARD POT equally among winners; burn remainder if odd
-            const totalPayout = Math.floor(currentTotalPot);
-            standardShare = winnersCount > 0 ? Math.floor(totalPayout / winnersCount) : 0;
-            const remainder = winnersCount > 0 ? (totalPayout % winnersCount) : totalPayout;
+                winners.forEach(w => {
+                    const current = userEarnings.get(w.username) || { tokens: 0, wins: 0 };
+                    userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins + 1 });
+                });
 
-            standardWinnersUsernames = winners.map(w => w.username);
-
-            // Update each winner profile for Standard Pot
-            for (const w of standardWinnersUsernames) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id, tokens, wins1x2, total_tokens_won')
-                    .eq('username', w)
-                    .single();
-
-                if (!profile) continue;
-
-                const newTokens = (profile.tokens || 0) + standardShare;
-                const newWins = (profile.wins1x2 || 0) + 1;
-                const newTotalWon = (profile.total_tokens_won || 0) + standardShare;
-
-                await supabase
-                    .from('profiles')
-                    .update({ tokens: newTokens, wins1x2: newWins, total_tokens_won: newTotalWon })
-                    .eq('id', profile.id);
+                standardWinnersUsernames = winners.map(w => w.username);
+                winnerMsg += `VINCITORI 1X2: ${standardWinnersUsernames.join(', ')} (+${share}FTK)`;
+                if (remainder > 0) winnerMsg += ` (bruciati: ${remainder})`;
+                nextRollover = 0;
+            } else {
+                nextRollover = currentTotalPot;
             }
-
-            nextRollover = 0; // Pot distributed
-            winnerMsg += `VINCITORI 1X2: ${standardWinnersUsernames.join(', ')} (+${standardShare}FTK)`;
-            if (remainder > 0) winnerMsg += ` (bruciati: ${remainder})`;
-
         } else {
             console.log("NO STANDARD WINNER, ROLLOVER");
             winnerMsg += "NESSUN VINCITORE 1X2 (Rollover)";
             nextRollover = currentTotalPot;
         }
 
-        // --- SUPER JACKPOT DISTRIBUTION (Score >= 10 AND includeSuperJackpot) ---
-        // Verify eligibility: Must have played SuperJackpot bet AND scored >= 10 (regardless of if they were maxScore or not, though usually they would be)
-        // Wait, "Verrà assegnato solo a chi gioca il superjackpot e totalizza 10 o più punti."
-        // Logic: Find all bets with score >= 10 AND includeSuperJackpot == true.
-
-        const superJackpotWinners = currentBets.filter(bet => {
+        // Process Super Jackpot
+        const sjWinners = currentBets.filter(bet => {
             if (!bet.includeSuperJackpot) return false;
             let s = 0;
-            md.results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
+            results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
             return s >= 10;
         });
 
-        if (superJackpotWinners.length > 0 && currentSuper > 0) {
+        if (sjWinners.length > 0 && currentSuper > 0) {
             console.log("SUPER JACKPOT WINNER(S) FOUND");
-            const sjShare = Math.floor(currentSuper / superJackpotWinners.length);
-            const sjWinnersUsernames = superJackpotWinners.map(w => w.username);
+            const share = Math.floor(currentSuper / sjWinners.length);
+            sjWinners.forEach(w => {
+                const current = userEarnings.get(w.username) || { tokens: 0, wins: 0 };
+                userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins }); // SJ doesn't count as extra "win" for level?
+            });
+            const sjNames = sjWinners.map(w => w.username);
+            winnerMsg += ` | 💎 SUPER JACKPOT: ${sjNames.join(', ')} (+${share}FTK)`;
+        }
 
-            // Update winners with Super Jackpot prize
-            for (const w of sjWinnersUsernames) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id, tokens, wins1x2, total_tokens_won') // We track SJ wins as 1x2 wins or maybe separate? For now 1x2 wins.
-                    .eq('username', w)
-                    .single();
+        const winnersUsernames = Array.from(userEarnings.keys());
 
-                if (!profile) continue;
+        // EXECUTE PROFILE UPDATES (One per winner)
+        for (const [username, earnings] of userEarnings.entries()) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('username', username)
+                .single();
 
-                const newTokens = (profile.tokens || 0) + sjShare;
-                // Note: we might have already updated this user above if they also won Standard Pot. 
-                // To avoid race condition/overwriting, we should have probably done one update per user.
-                // However, since we await the update above, fetching again here gets the UPDATED values.
-                // So it is safe, just slightly inefficient (2 updates for same user).
-
-                const newTotalWon = (profile.total_tokens_won || 0) + sjShare;
-                // Optional: Increment wins again? Or is SJ considered a "bonus"? 
-                // Let's NOT increment wins1x2 again for the same matchday to avoid double counting "victories".
-                // Just Tokens.
+            if (profile) {
+                const newTokens = (profile.tokens || 0) + earnings.tokens;
+                const newWins = (profile.wins1x2 || 0) + earnings.wins;
+                const newTotalWon = (profile.total_tokens_won || 0) + earnings.tokens;
 
                 await supabase
                     .from('profiles')
-                    .update({ tokens: newTokens, total_tokens_won: newTotalWon })
+                    .update({
+                        tokens: newTokens,
+                        wins1x2: newWins,
+                        total_tokens_won: newTotalWon
+                    })
                     .eq('id', profile.id);
             }
-            winnerMsg += ` | 💎 SUPER JACKPOT: ${sjWinnersUsernames.join(', ')} (+${sjShare}FTK)`;
-        } else {
-            // No Super Jackpot winners. 
-            // The Jackpot is NOT rolled over to 'rollover_pot' (which is for 1x2). 
-            // It effectively stays in the 'System' (or resets to 0 by default admin_create logic).
-            // We just don't pay it out.
         }
-
-        const winnersUsernames = [...new Set([...standardWinnersUsernames, ...superJackpotWinners.map(w => w.username)])];
 
         // 2.2 🏆 AWARD 1X2 WINNER CARD
         if (winnersUsernames.length > 0) {
@@ -426,10 +405,39 @@ export const bettingService = {
             }
         }
 
+        // 2.3 🏆 AWARD SUPERJ CARD
+        const sjNames = sjWinners.map(w => w.username);
+        if (sjNames.length > 0) {
+            const { data: superJCard } = await supabase
+                .from('collectible_cards')
+                .select('id')
+                .eq('title', 'SuperJ')
+                .single();
+
+            if (superJCard) {
+                for (const username of sjNames) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('username', username)
+                        .single();
+
+                    if (profile) {
+                        await supabase
+                            .from('user_cards')
+                            .upsert(
+                                { user_id: profile.id, card_id: superJCard.id },
+                                { onConflict: 'user_id,card_id' }
+                            );
+                    }
+                }
+            }
+        }
+
         // 2.5 UPDATE USER TOTAL POINTS, ACCURACY & LEVEL
         for (const bet of currentBets) {
             let s = 0;
-            md.results.forEach((res, idx) => {
+            results.forEach((res, idx) => {
                 if (res && res === bet.predictions[idx]) s++;
             });
 
@@ -489,17 +497,10 @@ export const bettingService = {
                 super_jackpot: 0,
                 winners: winnersUsernames,
                 winner_animation: (winnersUsernames.length > 0),
-                leaderboard_animation: (winnersUsernames.length > 0),
-                matches: [], // Clear matches to keep record lean
-                results: []  // Clear results
+                leaderboard_animation: (winnersUsernames.length > 0)
+                // matches and results kept for leaderboard persistence
             })
             .eq('id', md.id);
-
-        // 4. CLEANUP: Delete bets for this matchday now that they are processed
-        await supabase
-            .from('bets')
-            .delete()
-            .eq('matchday_id', md.id);
 
         return {
             success: true,
