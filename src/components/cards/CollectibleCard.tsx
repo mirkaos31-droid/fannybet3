@@ -7,6 +7,7 @@ interface CollectibleCardProps {
     imageUrl?: string;
     rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
     unlocked?: boolean;
+    unlockedAt?: string; // timestamp of when the card was unlocked
     isNew?: boolean; // Trigger flip animation
 }
 
@@ -16,6 +17,7 @@ export const CollectibleCard: React.FC<CollectibleCardProps> = ({
     imageUrl,
     rarity,
     unlocked = false,
+    unlockedAt,
     isNew = false
 }) => {
     const [isFlipped, setIsFlipped] = useState(!isNew);
@@ -71,6 +73,11 @@ export const CollectibleCard: React.FC<CollectibleCardProps> = ({
                         <p className="text-[8px] md:text-[9px] text-gray-300 font-bold tracking-tight leading-tight line-clamp-2 mt-0.5 opacity-80">
                             {unlocked ? description : 'Contenuto Secretato'}
                         </p>
+                        {unlocked && unlockedAt && (
+                            <p className="text-[6px] text-gray-400 mt-1">
+                                Sbloccato: {new Date(unlockedAt).toLocaleDateString()}
+                            </p>
+                        )}
                     </div>
 
                     <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest ${unlocked ? 'bg-black/80 text-white border border-white/10' : 'bg-white/5 text-white/20'}`}>
