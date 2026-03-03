@@ -7,7 +7,6 @@ interface CollectibleCardProps {
     imageUrl?: string;
     rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
     unlocked?: boolean;
-    unlockedAt?: string;
     isNew?: boolean; // Trigger flip animation
 }
 
@@ -17,7 +16,6 @@ export const CollectibleCard: React.FC<CollectibleCardProps> = ({
     imageUrl,
     rarity,
     unlocked = false,
-    unlockedAt,
     isNew = false
 }) => {
     const [isFlipped, setIsFlipped] = useState(!isNew);
@@ -34,19 +32,19 @@ export const CollectibleCard: React.FC<CollectibleCardProps> = ({
         if (!unlocked) return 'border-gray-800';
         switch (rarity) {
             case 'LEGENDARY': return 'border-[#ff8800]';
-            case 'EPIC': return 'border-[#ff00ff]';
-            case 'RARE': return 'border-[#00ffff]';
-            default: return 'border-white/20';
+            case 'EPIC': return 'border-[#cc00ff]';
+            case 'RARE': return 'border-[#00e5ff]';
+            default: return 'border-white/40';
         }
     };
 
     const getGlowColor = () => {
         if (!unlocked) return 'none';
         switch (rarity) {
-            case 'LEGENDARY': return '0 0 25px rgba(255,136,0,0.5)';
-            case 'EPIC': return '0 0 25px rgba(255,0,255,0.5)';
-            case 'RARE': return '0 0 25px rgba(0,255,255,0.5)';
-            default: return 'none';
+            case 'LEGENDARY': return '0 0 12px rgba(255,136,0,0.9), 0 0 40px rgba(255,136,0,0.55), 0 0 80px rgba(255,136,0,0.25)';
+            case 'EPIC': return '0 0 12px rgba(200,0,255,0.9), 0 0 40px rgba(200,0,255,0.55), 0 0 80px rgba(200,0,255,0.25)';
+            case 'RARE': return '0 0 12px rgba(0,229,255,0.9), 0 0 40px rgba(0,229,255,0.55), 0 0 80px rgba(0,229,255,0.25)';
+            default: return '0 0 10px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.18)';
         }
     };
 
@@ -58,28 +56,21 @@ export const CollectibleCard: React.FC<CollectibleCardProps> = ({
                 <div className={`absolute inset-0 backface-hidden rounded-[1.5rem] border-[6px] md:border-[8px] ${getBorderColor()} bg-black overflow-hidden shadow-2xl transition-all duration-300`}
                     style={{ boxShadow: getGlowColor() }}>
                     {unlocked && imageUrl ? (
-                        <img src={imageUrl} alt={title} className="w-full h-full object-cover opacity-80" />
+                        <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
                             <Lock className="text-white/10" size={48} />
                         </div>
                     )}
 
-                    <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-4 ${unlocked ? 'opacity-100' : 'opacity-40'}`}>
+                    {/* Overlay solo nella fascia bassa */}
+                    <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-8 pb-3 px-3 flex flex-col justify-end ${unlocked ? 'opacity-100' : 'opacity-40'}`}>
                         <h3 className="text-white font-black italic uppercase text-sm md:text-base leading-tight drop-shadow-lg">
                             {unlocked ? title : '???'}
                         </h3>
-                        <div className="mt-1">
-                            <p className="text-[8px] md:text-[9px] text-[#ff8800] font-black uppercase tracking-tighter mb-0.5">Obiettivo:</p>
-                            <p className="text-[9px] md:text-[10px] text-gray-300 font-bold uppercase tracking-tight leading-tight line-clamp-2">
-                                {unlocked ? description : 'Contenuto Secretato'}
-                            </p>
-                        </div>
-                        {unlockedAt && (
-                            <div className="mt-2 py-0.5 px-2 bg-white/10 rounded-full w-fit">
-                                <span className="text-[7px] font-black text-white/50 uppercase">Sbloccata: {new Date(unlockedAt).toLocaleDateString()}</span>
-                            </div>
-                        )}
+                        <p className="text-[8px] md:text-[9px] text-gray-300 font-bold tracking-tight leading-tight line-clamp-2 mt-0.5 opacity-80">
+                            {unlocked ? description : 'Contenuto Secretato'}
+                        </p>
                     </div>
 
                     <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest ${unlocked ? 'bg-black/80 text-white border border-white/10' : 'bg-white/5 text-white/20'}`}>
