@@ -37,11 +37,12 @@ function App() {
     setAdminTab('USERS');
   };
 
-  // Real-time Notifications
+  // Real-time Notifications & Profile Sync
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
+    // 1. Global Matchday Notifications
+    const globalChannel = supabase
       .channel('global-notifications')
       .on(
         'postgres_changes',
@@ -51,7 +52,6 @@ function App() {
           table: 'matchdays'
         },
         (payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
-          // Check if results changed
           if (payload.new && payload.new.results && JSON.stringify(payload.new.results) !== JSON.stringify(payload.old.results)) {
             toast("⚽ Risultati Aggiornati!", {
               description: "Controlla la classifica per vedere i punteggi.",
@@ -61,8 +61,27 @@ function App() {
       )
       .subscribe();
 
+    // 2. Personal Profile Sync (Tokens, Level, Wins)
+    const profileChannel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        },
+        () => {
+          console.log("Profile updated in real-time, refreshing...");
+          refreshUser();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(globalChannel);
+      supabase.removeChannel(profileChannel);
     };
   }, [user]);
 

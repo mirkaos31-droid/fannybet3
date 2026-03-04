@@ -172,6 +172,24 @@
       transform: rotate(360deg);
     }
   }
+
+  @keyframes scanline {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    50% {
+      opacity: 0.5;
+    }
+
+    to {
+      transform: translateY(1000%);
+      opacity: 0;
+    }
+  }
+
+  --animate-scanline: scanline 4s linear infinite;
 }
 
 @layer base {
@@ -376,10 +394,10 @@
 
   .glass-card {
     background: rgba(10, 10, 12, 0.85);
-    border: 4px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(20px);
     @apply rounded-2xl md:rounded-[2rem] p-5 md:p-6 transition-all duration-500 hover:-translate-y-2 relative;
-    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(255, 255, 255, 0.1) inset, 0 0 30px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     z-index: 1;
   }
 

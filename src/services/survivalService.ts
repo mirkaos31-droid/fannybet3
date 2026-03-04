@@ -158,11 +158,6 @@ export const survivalService = {
         const { season, players } = await survivalService.getSurvivalState();
         if (!season) return { success: false, message: "No active season" };
 
-        // Fetch strict season data to get entry_fee (as it might not be in the public type yet)
-        const { data: seasonData } = await supabase.from('survival_seasons').select('entry_fee, prize_pool').eq('id', season.id).single();
-        const entryFee = seasonData?.entry_fee || 2; // Default 2 if not found
-        const currentPool = seasonData?.prize_pool || 0;
-
         // 3. Get all picks for this matchday
         const { data: picks } = await supabase
             .from('survival_picks')
@@ -231,40 +226,22 @@ export const survivalService = {
         // If exactly ONE player remains ALIVE
         if (advancedCount === 1 && survivors.length === 1) {
             const winner = survivors[0];
-            const prize = Math.max(0, currentPool - entryFee); // Prize = Total - Entry
+            console.log(`🏆 SURVIVAL WINNER FOUND: ${winner.username}. Closing season via RPC.`);
 
-            console.log(`🏆 SURVIVAL WINNER FOUND: ${winner.username}. Prize: ${prize}`);
+            const closeRes = await survivalService.closeSurvivalSeason(season.id);
 
-            // A. Mark Season Completed
-            await supabase.from('survival_seasons').update({
-                status: 'COMPLETED',
-                finished_at: new Date().toISOString()
-            }).eq('id', season.id);
-
-            // B. Mark Player as Winner
-            await supabase.from('survival_players').update({ status: 'WINNER' }).eq('id', winner.id);
-
-            // C. Award Prize to Profile
-            // We need the profile ID. winner.userId should be it (auth id).
-            // Actually survivalService maps userId to p.user_id.
-
-            // Let's get the profile first to be sure
-            const { data: profile } = await supabase.from('profiles').select('id, tokens, wins_survival, total_tokens_won').eq('id', winner.userId).single();
-
-            if (profile) {
-                await supabase.from('profiles').update({
-                    tokens: (profile.tokens || 0) + prize,
-                    wins_survival: (profile.wins_survival || 0) + 1,
-                    total_tokens_won: (profile.total_tokens_won || 0) + prize
-                }).eq('id', profile.id);
+            if (closeRes.success) {
+                return {
+                    success: true,
+                    message: closeRes.message,
+                    eliminated: eliminatedIds.length,
+                    advanced: advancedCount
+                };
+            } else {
+                console.error("Error closing survival season:", closeRes.message);
+                // Fallback or just report error
+                return { success: false, message: "Errore nella chiusura automatica del torneo: " + closeRes.message };
             }
-
-            return {
-                success: true,
-                message: `Round completato. 👑 VINCITORE: ${winner.username} (+${prize} token)! Campionato concluso.`,
-                eliminated: eliminatedIds.length,
-                advanced: advancedCount
-            };
         }
 
         return { success: true, message: `Round processato. Eliminati: ${eliminatedIds.length}, Avanzano: ${advancedCount}`, eliminated: eliminatedIds.length, advanced: advancedCount };

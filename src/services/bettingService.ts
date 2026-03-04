@@ -90,19 +90,18 @@ export const bettingService = {
 
         if (!data) return [];
 
-        return data.map(b => {
-            const profile = Array.isArray(b.profiles) ? b.profiles[0] : b.profiles;
-            return {
-                id: b.id,
-                username: profile?.username || 'Sconosciuto',
-                avatarUrl: profile?.avatar_url,
-                level: profile?.level || 1,
-                matchdayId: b.matchday_id,
-                predictions: b.predictions,
-                includeSuperJackpot: b.include_super_jackpot,
-                timestamp: b.created_at || new Date().toISOString()
-            };
-        });
+        return data.map(b => ({
+            id: b.id,
+            userId: b.user_id,
+            username: b.profiles?.username || 'Sconosciuto',
+            avatarUrl: b.profiles?.avatar_url,
+            matchdayId: b.matchday_id,
+            predictions: b.predictions,
+            includeSuperJackpot: b.include_super_jackpot,
+            timestamp: b.created_at,
+            amount: b.amount,
+            level: b.profiles?.level || 1
+        }));
     },
 
     getUserBets: async (username: string): Promise<Bet[]> => {
@@ -277,7 +276,8 @@ export const bettingService = {
                 matchdayId: b.matchday_id,
                 predictions: b.predictions,
                 includeSuperJackpot: b.include_super_jackpot,
-                timestamp: b.created_at || new Date().toISOString()
+                timestamp: b.created_at || new Date().toISOString(),
+                userId: b.user_id // Add userId for direct profile updates
             };
         });
 
@@ -298,7 +298,7 @@ export const bettingService = {
         let standardWinnersUsernames: string[] = [];
 
         // --- PRIZE AGGREGATION & DISTRIBUTION ---
-        const userEarnings = new Map<string, { tokens: number; wins: number }>();
+        const userEarnings = new Map<string, { tokens: number; wins: number; userId: string }>();
 
         // Process Standard Winners
         if (maxScore >= 7 && currentTotalPot > 0) {
@@ -315,8 +315,8 @@ export const bettingService = {
                 const remainder = totalPayout % winners.length;
 
                 winners.forEach(w => {
-                    const current = userEarnings.get(w.username) || { tokens: 0, wins: 0 };
-                    userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins + 1 });
+                    const current = userEarnings.get(w.username) || { tokens: 0, wins: 0, userId: w.userId };
+                    userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins + 1, userId: w.userId });
                 });
 
                 standardWinnersUsernames = winners.map(w => w.username);
@@ -344,8 +344,8 @@ export const bettingService = {
             console.log("SUPER JACKPOT WINNER(S) FOUND");
             const share = Math.floor(currentSuper / sjWinners.length);
             sjWinners.forEach(w => {
-                const current = userEarnings.get(w.username) || { tokens: 0, wins: 0 };
-                userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins }); // SJ doesn't count as extra "win" for level?
+                const current = userEarnings.get(w.username) || { tokens: 0, wins: 0, userId: w.userId };
+                userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins, userId: w.userId }); // SJ doesn't count as extra "win" for level?
             });
             const sjNames = sjWinners.map(w => w.username);
             winnerMsg += ` | 💎 SUPER JACKPOT: ${sjNames.join(', ')} (+${share}FTK)`;
@@ -353,32 +353,29 @@ export const bettingService = {
 
         const winnersUsernames = Array.from(userEarnings.keys());
 
-        // EXECUTE PROFILE UPDATES (One per winner)
-        for (const [username, earnings] of userEarnings.entries()) {
-            const { data: profile } = await supabase
+        // EXECUTE PROFILE UPDATES (One per winner: give tokens and register win)
+        for (const [_, earnings] of userEarnings.entries()) {
+            const { data: profile, error: pError } = await supabase
                 .from('profiles')
-                .select('*')
-                .eq('username', username)
+                .select('id, tokens, wins_1x2, total_tokens_won, level')
+                .eq('id', earnings.userId)
                 .single();
 
-            if (profile) {
+            if (profile && !pError) {
+                const newWins1x2 = (profile.wins_1x2 || 0) + earnings.wins;
                 const newTokens = (profile.tokens || 0) + earnings.tokens;
-                const newWins = (profile.wins1x2 || 0) + earnings.wins;
                 const newTotalWon = (profile.total_tokens_won || 0) + earnings.tokens;
 
-                await supabase
-                    .from('profiles')
-                    .update({
-                        tokens: newTokens,
-                        wins1x2: newWins,
-                        total_tokens_won: newTotalWon
-                    })
-                    .eq('id', profile.id);
+                await supabase.from('profiles').update({
+                    tokens: newTokens,
+                    wins_1x2: newWins1x2,
+                    total_tokens_won: newTotalWon
+                }).eq('id', profile.id);
             }
         }
 
         // 2.2 🏆 AWARD 1X2 WINNER CARD
-        if (winnersUsernames.length > 0) {
+        if (userEarnings.size > 0) {
             const { data: cardData } = await supabase
                 .from('collectible_cards')
                 .select('id')
@@ -386,28 +383,19 @@ export const bettingService = {
                 .single();
 
             if (cardData) {
-                for (const username of winnersUsernames) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('id')
-                        .eq('username', username)
-                        .single();
-
-                    if (profile) {
-                        await supabase
-                            .from('user_cards')
-                            .upsert(
-                                { user_id: profile.id, card_id: cardData.id },
-                                { onConflict: 'user_id,card_id' }
-                            );
-                    }
+                for (const earnings of userEarnings.values()) {
+                    await supabase
+                        .from('user_cards')
+                        .upsert(
+                            { user_id: earnings.userId, card_id: cardData.id },
+                            { onConflict: 'user_id,card_id' }
+                        );
                 }
             }
         }
 
         // 2.3 🏆 AWARD SUPERJ CARD
-        const sjNames = sjWinners.map(w => w.username);
-        if (sjNames.length > 0) {
+        if (sjWinners.length > 0) {
             const { data: superJCard } = await supabase
                 .from('collectible_cards')
                 .select('id')
@@ -415,21 +403,13 @@ export const bettingService = {
                 .single();
 
             if (superJCard) {
-                for (const username of sjNames) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('id')
-                        .eq('username', username)
-                        .single();
-
-                    if (profile) {
-                        await supabase
-                            .from('user_cards')
-                            .upsert(
-                                { user_id: profile.id, card_id: superJCard.id },
-                                { onConflict: 'user_id,card_id' }
-                            );
-                    }
+                for (const winner of sjWinners) {
+                    await supabase
+                        .from('user_cards')
+                        .upsert(
+                            { user_id: winner.userId, card_id: superJCard.id },
+                            { onConflict: 'user_id,card_id' }
+                        );
                 }
             }
         }
@@ -441,30 +421,29 @@ export const bettingService = {
                 if (res && res === bet.predictions[idx]) s++;
             });
 
-            // Fetch current profile to get current points, wins, and calculate new stats
+            // Fetch current profile to get updated stats (tokens & wins already updated for winners)
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('username', bet.username)
+                .eq('id', bet.userId)
                 .single();
 
             if (profile) {
                 const newPoints = (profile.total_points || 0) + s;
-
                 const newAccuracy = (profile.bets_placed || 0) > 0
                     ? Math.round((newPoints / (profile.bets_placed * 12)) * 100)
                     : 0;
 
-                // Level milestones
+                // Level milestones (Level 1: 0 req, Level 2: 5 bets + 1 win + 100 tokens, etc.)
                 const milestones = [
                     { level: 1, req: { bets: 0, wins: 0, tokens: 0 } },
-                    { level: 2, req: { bets: 5, wins: 1, tokens: 100 } },
+                    { level: 2, req: { bets: 5, wins: 1, tokens: 50 } },
                     { level: 3, req: { bets: 15, wins: 3, tokens: 500 } },
                     { level: 4, req: { bets: 30, wins: 7, tokens: 1500 } },
                     { level: 5, req: { bets: 50, wins: 15, tokens: 5000 } },
                 ];
 
-                const currentWins = (profile.wins_1x2 || 0) + (profile.wins_survival || 0) + (s >= 7 ? 1 : 0);
+                const currentWins = (profile.wins_1x2 || 0) + (profile.wins_survival || 0); // profile.wins_1x2 already has the current win if they won
                 const currentTokens = profile.total_tokens_won || 0;
                 let newLevel = 1;
 
@@ -481,7 +460,7 @@ export const bettingService = {
                     .update({
                         total_points: newPoints,
                         prediction_accuracy: newAccuracy,
-                        level: newLevel
+                        level: Math.max(profile.level || 1, newLevel)
                     })
                     .eq('id', profile.id);
             }
