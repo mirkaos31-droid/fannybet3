@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>En-Plein Card Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        canvas {
+            border-radius: 24px;
+            box-shadow: 0 0 60px rgba(255, 170, 0, 0.3);
+        }
+
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 16px;
+        }
+
+        button {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #d4a017, #f5c842);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            opacity: 0.6;
+            font-size: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>En-Plein Card Preview</h2>
+    <canvas id="card" width="720" height="960"></canvas>
+    <div class="actions">
+        <button onclick="downloadCard()">⬇ Scarica PNG</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('card');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        // --- Utility ---
+        function randomRange(min, max) { return Math.random() * (max - min) + min; }
+
+        function hslToRgba(h, s, l, a) {
+            s /= 100; l /= 100;
+            const k = n => (n + h / 30) % 12;
+            const f = n => l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+            return `rgba(${Math.round(f(0) * 255)},${Math.round(f(8) * 255)},${Math.round(f(4) * 255)},${a})`;
+        }
+
+        // --- Background: Deep gradient ---
+        function drawBackground() {
+            const grad = ctx.createRadialGradient(W / 2, H * 0.35, 0, W / 2, H * 0.35, H * 0.85);
+            grad.addColorStop(0, '#2a1f00');
+            grad.addColorStop(0.3, '#1a1200');
+            grad.addColorStop(0.7, '#0d0a00');
+            grad.addColorStop(1, '#050300');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        // --- Low-poly geometric mesh ---
+        function drawGeometricMesh() {
+            const points = [];
+            const cols = 8;
+            const rows = 11;
+            const cellW = W / (cols - 1);
+            const cellH = H / (rows - 1);
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const jitterX = (c === 0 || c === cols - 1) ? 0 : randomRange(-cellW * 0.35, cellW * 0.35);
+                    const jitterY = (r === 0 || r === rows - 1) ? 0 : randomRange(-cellH * 0.35, cellH * 0.35);
+                    points.push({ x: c * cellW + jitterX, y: r * cellH + jitterY });
+                }
+            }
+
+            // Draw triangles
+            for (let r = 0; r < rows - 1; r++) {
+                for (let c = 0; c < cols - 1; c++) {
+                    const tl = r * cols + c;
+                    const tr = tl + 1;
+                    const bl = (r + 1) * cols + c;
+                    const br = bl + 1;
+
+                    drawTriangle(points[tl], points[tr], points[bl]);
+                    drawTriangle(points[tr], points[br], points[bl]);
+                }
+            }
+
+            // Draw gold edges
+            ctx.strokeStyle = 'rgba(212, 160, 23, 0.12)';
+            ctx.lineWidth = 1;
+            for (let r = 0; r < rows - 1; r++) {
+                for (let c = 0; c < cols - 1; c++) {
+                    const tl = r * cols + c;
+                    const tr = tl + 1;
+                    const bl = (r + 1) * cols + c;
+                    const br = bl + 1;
+                    drawEdge(points[tl], points[tr]);
+                    drawEdge(points[tl], points[bl]);
+                    drawEdge(points[tr], points[bl]);
+                    drawEdge(points[tr], points[br]);
+                    drawEdge(points[bl], points[br]);
+                }
+            }
+        }
+
+        function drawTriangle(a, b, c) {
+            const cx = (a.x + b.x + c.x) / 3;
+            const cy = (a.y + b.y + c.y) / 3;
+            const distFromCenter = Math.hypot(cx - W / 2, cy - H * 0.38) / (H * 0.5);
+            const brightness = Math.max(0.02, 0.12 - distFromCenter * 0.1);
+            const goldTint = Math.max(0, 0.15 - distFromCenter * 0.12);
+
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.lineTo(c.x, c.y);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(${Math.round(212 * goldTint + 30)}, ${Math.round(160 * goldTint + 20)}, ${Math.round(23 * goldTint + 5)}, ${brightness + Math.random() * 0.03})`;
+            ctx.fill();
+        }
+
+        function drawEdge(a, b) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+        }
+
+        // --- Central glow ---
+        function drawCentralGlow() {
+            // Outer glow
+            const g1 = ctx.createRadialGradient(W / 2, H * 0.36, 0, W / 2, H * 0.36, W * 0.55);
+            g1.addColorStop(0, 'rgba(255, 180, 0, 0.25)');
+            g1.addColorStop(0.3, 'rgba(255, 140, 0, 0.08)');
+            g1.addColorStop(1, 'rgba(255, 100, 0, 0)');
+            ctx.fillStyle = g1;
+            ctx.fillRect(0, 0, W, H);
+
+            // Inner bright core
+            const g2 = ctx.createRadialGradient(W / 2, H * 0.36, 0, W / 2, H * 0.36, W * 0.18);
+            g2.addColorStop(0, 'rgba(255, 220, 100, 0.5)');
+            g2.addColorStop(0.5, 'rgba(255, 170, 0, 0.15)');
+            g2.addColorStop(1, 'rgba(255, 130, 0, 0)');
+            ctx.fillStyle = g2;
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        // --- Trophy icon ---
+        function drawTrophy() {
+            const cx = W / 2;
+            const cy = H * 0.33;
+            const scale = 1.8;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+
+            // Trophy cup body
+            ctx.beginPath();
+            ctx.moveTo(-40, -50);
+            ctx.quadraticCurveTo(-50, 0, -25, 30);
+            ctx.lineTo(25, 30);
+            ctx.quadraticCurveTo(50, 0, 40, -50);
+            ctx.closePath();
+
+            const trophyGrad = ctx.createLinearGradient(-40, -50, 40, 30);
+            trophyGrad.addColorStop(0, '#f5d060');
+            trophyGrad.addColorStop(0.3, '#d4a017');
+            trophyGrad.addColorStop(0.6, '#f5c842');
+            trophyGrad.addColorStop(1, '#b8860b');
+            ctx.fillStyle = trophyGrad;
+            ctx.fill();
+
+            // Trophy shine
+            ctx.beginPath();
+            ctx.moveTo(-20, -45);
+            ctx.quadraticCurveTo(-28, -10, -15, 20);
+            ctx.lineTo(-8, 20);
+            ctx.quadraticCurveTo(-18, -10, -12, -45);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255, 255, 220, 0.35)';
+            ctx.fill();
+
+            // Left handle
+            ctx.beginPath();
+            ctx.moveTo(-40, -35);
+            ctx.quadraticCurveTo(-65, -30, -60, -5);
+            ctx.quadraticCurveTo(-55, 15, -30, 15);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#d4a017';
+            ctx.stroke();
+
+            // Right handle
+            ctx.beginPath();
+            ctx.moveTo(40, -35);
+            ctx.quadraticCurveTo(65, -30, 60, -5);
+            ctx.quadraticCurveTo(55, 15, 30, 15);
+            ctx.stroke();
+
+            // Stem
+            ctx.fillStyle = '#b8860b';
+            ctx.fillRect(-8, 30, 16, 20);
+
+            // Base
+            ctx.beginPath();
+            ctx.moveTo(-30, 50);
+            ctx.lineTo(30, 50);
+            ctx.lineTo(25, 58);
+            ctx.lineTo(-25, 58);
+            ctx.closePath();
+            const baseGrad = ctx.createLinearGradient(-30, 50, 30, 58);
+            baseGrad.addColorStop(0, '#d4a017');
+            baseGrad.addColorStop(0.5, '#f5d060');
+            baseGrad.addColorStop(1, '#b8860b');
+            ctx.fillStyle = baseGrad;
+            ctx.fill();
+
+            // Star on trophy
+            drawStar(0, -15, 5, 12, 6, 'rgba(255, 255, 200, 0.8)');
+
+            ctx.restore();
+        }
+
+        function drawStar(cx, cy, inner, outer, points, color) {
+            ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+                const angle = (Math.PI / points) * i - Math.PI / 2;
+                const r = i % 2 === 0 ? outer : inner;
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        // --- Light rays ---
+        function drawLightRays() {
+            const cx = W / 2;
+            const cy = H * 0.33;
+            const numRays = 16;
+
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            for (let i = 0; i < numRays; i++) {
+                const angle = (Math.PI * 2 / numRays) * i + Math.random() * 0.1;
+                const length = randomRange(150, 380);
+                const width = randomRange(1, 4);
+
+                const grad = ctx.createLinearGradient(cx, cy, cx + Math.cos(angle) * length, cy + Math.sin(angle) * length);
+                grad.addColorStop(0, 'rgba(255, 200, 50, 0.35)');
+                grad.addColorStop(0.5, 'rgba(255, 170, 0, 0.1)');
+                grad.addColorStop(1, 'rgba(255, 140, 0, 0)');
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + Math.cos(angle - 0.02) * length, cy + Math.sin(angle - 0.02) * length);
+                ctx.lineTo(cx + Math.cos(angle + 0.02) * length, cy + Math.sin(angle + 0.02) * length);
+                ctx.closePath();
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // --- Particles ---
+        function drawParticles() {
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            for (let i = 0; i < 120; i++) {
+                const x = randomRange(40, W - 40);
+                const y = randomRange(40, H - 80);
+                const size = randomRange(1, 4);
+                const alpha = randomRange(0.2, 0.8);
+                const distFromCenter = Math.hypot(x - W / 2, y - H * 0.36) / (H * 0.5);
+                const finalAlpha = alpha * Math.max(0.1, 1 - distFromCenter);
+
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, ${Math.round(180 + Math.random() * 75)}, ${Math.round(Math.random() * 80)}, ${finalAlpha})`;
+                ctx.fill();
+
+                // Glow around particle
+                if (size > 2) {
+                    const pg = ctx.createRadialGradient(x, y, 0, x, y, size * 4);
+                    pg.addColorStop(0, `rgba(255, 200, 50, ${finalAlpha * 0.3})`);
+                    pg.addColorStop(1, 'rgba(255, 200, 50, 0)');
+                    ctx.fillStyle = pg;
+                    ctx.fillRect(x - size * 4, y - size * 4, size * 8, size * 8);
+                }
+            }
+            ctx.restore();
+        }
+
+        // --- "EN-PLEIN" text ---
+        function drawText() {
+            const cx = W / 2;
+
+            // "EN-PLEIN" title
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Shadow
+            ctx.shadowColor = 'rgba(255, 170, 0, 0.6)';
+            ctx.shadowBlur = 30;
+
+            ctx.font = '900 italic 72px "Segoe UI", Arial, sans-serif';
+            const titleGrad = ctx.createLinearGradient(cx - 150, H * 0.58, cx + 150, H * 0.58);
+            titleGrad.addColorStop(0, '#f5d060');
+            titleGrad.addColorStop(0.3, '#fff4c2');
+            titleGrad.addColorStop(0.5, '#f5c842');
+            titleGrad.addColorStop(0.7, '#fff4c2');
+            titleGrad.addColorStop(1, '#d4a017');
+            ctx.fillStyle = titleGrad;
+            ctx.fillText('EN-PLEIN', cx, H * 0.58);
+
+            // Subtitle
+            ctx.shadowBlur = 10;
+            ctx.font = '700 22px "Segoe UI", Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 220, 130, 0.7)';
+            ctx.fillText('⚽  PERFECT SCORE  ⚽', cx, H * 0.64);
+
+            ctx.restore();
+
+            // Decorative line
+            const lineY = H * 0.68;
+            const lineGrad = ctx.createLinearGradient(cx - 180, lineY, cx + 180, lineY);
+            lineGrad.addColorStop(0, 'rgba(212, 160, 23, 0)');
+            lineGrad.addColorStop(0.3, 'rgba(212, 160, 23, 0.6)');
+            lineGrad.addColorStop(0.5, 'rgba(245, 200, 66, 0.9)');
+            lineGrad.addColorStop(0.7, 'rgba(212, 160, 23, 0.6)');
+            lineGrad.addColorStop(1, 'rgba(212, 160, 23, 0)');
+            ctx.strokeStyle = lineGrad;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx - 180, lineY);
+            ctx.lineTo(cx + 180, lineY);
+            ctx.stroke();
+
+            // Description
+            ctx.textAlign = 'center';
+            ctx.font = '600 18px "Segoe UI", Arial, sans-serif';
+            ctx.fillStyle = 'rgba(200, 180, 130, 0.5)';
+            ctx.fillText('Tutte le previsioni corrette', cx, H * 0.73);
+            ctx.fillText('in una singola giornata', cx, H * 0.77);
+        }
+
+        // --- Gold border frame ---
+        function drawFrame() {
+            const r = 24;
+            const borderWidth = 6;
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(212, 160, 23, 0.4)';
+            ctx.lineWidth = borderWidth;
+            ctx.beginPath();
+            ctx.roundRect(borderWidth / 2, borderWidth / 2, W - borderWidth, H - borderWidth, r);
+            ctx.stroke();
+
+            // Inner border
+            ctx.strokeStyle = 'rgba(212, 160, 23, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(14, 14, W - 28, H - 28, r - 4);
+            ctx.stroke();
+            ctx.restore();
+
+            // Corner accents
+            drawCornerAccent(20, 20, 1, 1);
+            drawCornerAccent(W - 20, 20, -1, 1);
+            drawCornerAccent(20, H - 20, 1, -1);
+            drawCornerAccent(W - 20, H - 20, -1, -1);
+        }
+
+        function drawCornerAccent(x, y, dx, dy) {
+            const len = 30;
+            ctx.strokeStyle = 'rgba(245, 200, 66, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y + dy * len);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x + dx * len, y);
+            ctx.stroke();
+        }
+
+        // --- Bottom vignette ---
+        function drawVignette() {
+            // Bottom
+            const vBot = ctx.createLinearGradient(0, H * 0.85, 0, H);
+            vBot.addColorStop(0, 'rgba(0,0,0,0)');
+            vBot.addColorStop(1, 'rgba(0,0,0,0.7)');
+            ctx.fillStyle = vBot;
+            ctx.fillRect(0, H * 0.85, W, H * 0.15);
+
+            // Top
+            const vTop = ctx.createLinearGradient(0, 0, 0, H * 0.08);
+            vTop.addColorStop(0, 'rgba(0,0,0,0.5)');
+            vTop.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = vTop;
+            ctx.fillRect(0, 0, W, H * 0.08);
+
+            // Edges
+            const vLeft = ctx.createLinearGradient(0, 0, W * 0.08, 0);
+            vLeft.addColorStop(0, 'rgba(0,0,0,0.4)');
+            vLeft.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = vLeft;
+            ctx.fillRect(0, 0, W * 0.08, H);
+
+            const vRight = ctx.createLinearGradient(W, 0, W * 0.92, 0);
+            vRight.addColorStop(0, 'rgba(0,0,0,0.4)');
+            vRight.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = vRight;
+            ctx.fillRect(W * 0.92, 0, W * 0.08, H);
+        }
+
+        // --- Rarity badge ---
+        function drawRarityBadge() {
+            const cx = W / 2;
+            const y = H * 0.87;
+
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.font = '800 13px "Segoe UI", Arial, sans-serif';
+            ctx.letterSpacing = '4px';
+
+            // Badge background
+            const badgeW = 120;
+            const badgeH = 26;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.beginPath();
+            ctx.roundRect(cx - badgeW / 2, y - badgeH / 2, badgeW, badgeH, 13);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(212, 160, 23, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(245, 200, 66, 0.8)';
+            ctx.fillText('★  LEGENDARY  ★', cx, y + 1);
+            ctx.restore();
+        }
+
+        // --- RENDER ---
+        function render() {
+            drawBackground();
+            drawGeometricMesh();
+            drawCentralGlow();
+            drawLightRays();
+            drawTrophy();
+            drawParticles();
+            drawVignette();
+            drawText();
+            drawRarityBadge();
+            drawFrame();
+        }
+
+        render();
+
+        function downloadCard() {
+            const link = document.createElement('a');
+            link.download = 'en-plein.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+
+</html>

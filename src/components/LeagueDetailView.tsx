@@ -277,6 +277,8 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 onClose={() => setActiveModal('NONE')}
                 participants={participants}
                 currentUserId={user?.id}
+                leagueId={league.id}
+                matchday={matchday}
             />
 
             {/* 2. PREDICTIONS MODAL */}

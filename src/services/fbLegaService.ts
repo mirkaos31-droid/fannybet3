@@ -112,6 +112,19 @@ export const fbLegaService = {
         return data || [];
     },
 
+    async getUserPicks(leagueId: number, matchdayId: number, targetUserId: string): Promise<string[] | null> {
+        const { data, error } = await supabase
+            .from('fb_league_picks')
+            .select('predictions, points_earned')
+            .eq('league_id', leagueId)
+            .eq('matchday_id', matchdayId)
+            .eq('user_id', targetUserId)
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 = 0 rows
+        return data ? data.predictions : null;
+    },
+
     // Admin Methods
     async createLeague(config: {
         name: string;
@@ -146,6 +159,15 @@ export const fbLegaService = {
         });
         if (error) throw error;
         return data;
+    },
+
+    async updateLeaguePrizeDist(leagueId: number, prizeDist: number[]) {
+        const { error } = await supabase
+            .from('fb_leagues')
+            .update({ prize_distribution: prizeDist })
+            .eq('id', leagueId);
+        if (error) throw error;
+        return { success: true, message: 'Distribuzione premi aggiornata!' };
     },
 
     async awardCard(username: string, cardTitle: string) {

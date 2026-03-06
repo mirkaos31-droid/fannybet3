@@ -1,21 +1,55 @@
-import React from 'react';
-import { Trophy, X } from 'lucide-react';
-import type { FBLeagueParticipant } from '../types';
+import React, { useState } from 'react';
+import { Trophy, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import type { FBLeagueParticipant, Matchday } from '../types';
+import { gameService } from '../services/gameService';
 
 interface LeaderboardModalProps {
     isOpen: boolean;
     onClose: () => void;
     participants: FBLeagueParticipant[];
     currentUserId?: string;
+    leagueId?: number;
+    matchday?: Matchday | null;
 }
 
 export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     isOpen,
     onClose,
     participants,
-    currentUserId
+    currentUserId,
+    leagueId,
+    matchday
 }) => {
+    const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+    const [expandedPicks, setExpandedPicks] = useState<string[] | null>(null);
+    const [loadingPicks, setLoadingPicks] = useState(false);
+
     if (!isOpen) return null;
+
+    const handleExpandUser = async (userId: string) => {
+        // Toggle off if already open
+        if (expandedUserId === userId) {
+            setExpandedUserId(null);
+            return;
+        }
+
+        // Must have context to fetch picks
+        if (!leagueId || !matchday) return;
+
+        setExpandedUserId(userId);
+        setLoadingPicks(true);
+        setExpandedPicks(null);
+
+        try {
+            const picks = await gameService.getUserPicks(leagueId, matchday.id, userId);
+            setExpandedPicks(picks);
+        } catch (error) {
+            console.error('Error fetching user picks:', error);
+            setExpandedPicks(null);
+        } finally {
+            setLoadingPicks(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -35,36 +69,74 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
                 <div className="overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                     {participants.map((p, idx) => (
-                        <div
-                            key={p.user_id}
-                            className={`flex items-center justify-between p-4 rounded-2xl transition-all ${p.user_id === currentUserId
-                                ? 'bg-[#5d8aa8]/20 border border-[#5d8aa8]/40 shadow-[0_0_15px_rgba(93,138,168,0.1)]'
-                                : 'bg-white/5 border border-white/5 hover:border-white/10'
-                                }`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${idx === 0 ? 'bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]' :
-                                    idx === 1 ? 'bg-gray-300 text-black' :
-                                        idx === 2 ? 'bg-amber-600 text-black' : 'bg-white/5 text-gray-500'
-                                    }`}>
-                                    {idx + 1}
+                        <div key={p.user_id} className="flex flex-col">
+                            {/* Main Row */}
+                            <div
+                                onClick={() => handleExpandUser(p.user_id)}
+                                className={`flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer select-none ${p.user_id === currentUserId
+                                    ? 'bg-[#5d8aa8]/20 border border-[#5d8aa8]/40 shadow-[0_0_15px_rgba(93,138,168,0.1)]'
+                                    : 'bg-white/5 border border-white/5 hover:border-white/10'
+                                    } ${expandedUserId === p.user_id ? 'rounded-b-none border-b-0' : ''}`}
+                            >
+                                <div className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${idx === 0 ? 'bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]' :
+                                        idx === 1 ? 'bg-gray-300 text-black' :
+                                            idx === 2 ? 'bg-amber-600 text-black' : 'bg-white/5 text-gray-500'
+                                        }`}>
+                                        {idx + 1}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-black uppercase text-sm tracking-tight">{p.username}</span>
+                                        <span className="text-gray-600 text-[9px] font-bold uppercase tracking-widest flex items-center gap-1">
+                                            {expandedUserId === p.user_id ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                                            Vedi Schedina
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-white font-black uppercase text-sm tracking-tight">{p.username}</span>
-                                    <span className="text-gray-600 text-[9px] font-bold uppercase tracking-widest">RANKING ATTUALE</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className={`${idx < 3 ? 'text-[#bfff00]' : 'text-gray-400'} font-black italic text-lg leading-none`}>
-                                    {p.total_points}
-                                </span>
-                                {p.live_points !== undefined && p.live_points > 0 && (
-                                    <span className="text-[9px] font-black text-[#bfff00] animate-pulse">
-                                        +{p.live_points} LIVE
+                                <div className="flex flex-col items-end">
+                                    <span className={`${idx < 3 ? 'text-[#bfff00]' : 'text-gray-400'} font-black italic text-lg leading-none`}>
+                                        {p.total_points}
                                     </span>
-                                )}
-                                <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest mt-1">PUNTI</span>
+                                    {p.live_points !== undefined && p.live_points > 0 && (
+                                        <span className="text-[9px] font-black text-[#bfff00] animate-pulse">
+                                            +{p.live_points} LIVE
+                                        </span>
+                                    )}
+                                    <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest mt-1">PUNTI</span>
+                                </div>
                             </div>
+
+                            {/* Expanded Predictions View */}
+                            {expandedUserId === p.user_id && (
+                                <div className="bg-black/40 border border-white/5 border-t-0 p-4 rounded-b-2xl animate-in slide-in-from-top-2 duration-300">
+                                    {loadingPicks ? (
+                                        <div className="flex justify-center py-4">
+                                            <Loader2 size={24} className="text-[#5d8aa8] animate-spin" />
+                                        </div>
+                                    ) : expandedPicks === null ? (
+                                        <div className="text-center py-4">
+                                            <span className="text-gray-500 text-[10px] uppercase font-black tracking-widest">Schedina Non Giocata / Nascosta</span>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                            {expandedPicks.map((pick, i) => (
+                                                <div key={i} className="bg-white/5 p-2 rounded-lg flex flex-col items-center justify-center border border-white/5">
+                                                    <span className="text-[8px] uppercase font-black text-gray-600 mb-1 truncate w-full text-center tracking-tighter">
+                                                        {matchday?.matches[i]?.home || `Match ${i + 1}`}
+                                                    </span>
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${pick === '1' ? 'bg-[#5d8aa8] text-white' :
+                                                            pick === 'X' ? 'bg-gray-600 text-white' :
+                                                                pick === '2' ? 'bg-[#bfff00] text-black' :
+                                                                    'bg-gray-800 text-transparent'
+                                                        }`}>
+                                                        {pick || '-'}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

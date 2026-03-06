@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, ChevronRight, PlusCircle, ArrowLeft, Loader2, Coins } from 'lucide-react';
 import { gameService } from '../services/gameService';
-import type { FBLeague, User } from '../types';
+import type { FBLeague } from '../types';
 import { toast } from 'sonner';
 import { LeagueDetailView } from './LeagueDetailView';
+
+const PRIZE_PRESETS: Record<string, { label: string; desc: string; dist: number[] }> = {
+    top1: { label: '🥇 Solo 1°', desc: '100% al primo', dist: [1.0] },
+    top2: { label: '🥇🥈 1° e 2°', desc: '70% primo · 30% secondo', dist: [0.7, 0.3] },
+    top3: { label: '🥇🥈🥉 Top 3', desc: '50% primo · 30% secondo · 20% terzo', dist: [0.5, 0.3, 0.2] },
+};
 
 export const FBLegaView: React.FC = () => {
     const [leagues, setLeagues] = useState<FBLeague[]>([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<'DISCOVER' | 'MY_LEAGUES' | 'CREATE'>('DISCOVER');
     const [selectedLeagueId, setSelectedLeagueId] = useState<number | null>(null);
-    const [user, setUser] = useState<User | null>(null);
 
     // Create Form State
     const [newLeague, setNewLeague] = useState({
@@ -19,6 +24,7 @@ export const FBLegaView: React.FC = () => {
         duration: 5,
         bonusX: 1
     });
+    const [prizePreset, setPrizePreset] = useState<string>('top2');
 
     useEffect(() => {
         loadData();
@@ -27,12 +33,8 @@ export const FBLegaView: React.FC = () => {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [leaguesData, userData] = await Promise.all([
-                gameService.getLeagues(),
-                gameService.getCurrentUser()
-            ]);
+            const leaguesData = await gameService.getLeagues();
             setLeagues(leaguesData);
-            setUser(userData);
         } catch (error) {
             console.error('Error loading FB Lega data:', error);
             toast.error('Errore nel caricamento delle leghe');
@@ -50,7 +52,7 @@ export const FBLegaView: React.FC = () => {
                 entry_fee: newLeague.entryFee,
                 duration: newLeague.duration,
                 scoring_rules,
-                prize_dist: [0.7, 0.3] // Default 70/30 split
+                prize_dist: PRIZE_PRESETS[prizePreset].dist
             });
             if (result.success) {
                 toast.success(result.message);
@@ -148,6 +150,28 @@ export const FBLegaView: React.FC = () => {
                                 <option value={2}>2 PT (Bonus)</option>
                                 <option value={3}>3 PT (Extreme)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    {/* Prize Distribution Selector */}
+                    <div className="mt-6">
+                        <label className="block text-gray-500 font-black uppercase text-[10px] mb-3 tracking-widest">🏆 Distribuzione Premi</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {Object.entries(PRIZE_PRESETS).map(([key, preset]) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setPrizePreset(key)}
+                                    className={`p-3 rounded-xl border-2 text-center transition-all ${prizePreset === key
+                                        ? 'border-[#bfff00] bg-[#bfff00]/10 shadow-[0_0_12px_rgba(191,255,0,0.15)]'
+                                        : 'border-white/10 bg-black/30 hover:border-white/20'
+                                        }`}
+                                >
+                                    <div className="text-sm mb-1">{preset.label}</div>
+                                    <div className={`text-[9px] font-bold uppercase tracking-wider ${prizePreset === key ? 'text-[#bfff00]' : 'text-gray-500'
+                                        }`}>{preset.desc}</div>
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -283,8 +307,8 @@ export const FBLegaView: React.FC = () => {
                 )}
             </div>
 
-            {/* Admin Controls */}
-            {user?.role === 'ADMIN' && view === 'DISCOVER' && leagues.length === 0 && (
+            {/* Create League Button - visible to all */}
+            {view === 'DISCOVER' && (
                 <div className="mt-12 flex justify-center">
                     <button
                         onClick={() => setView('CREATE')}

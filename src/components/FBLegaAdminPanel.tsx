@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react';
 import { gameService } from '../services/gameService';
 import type { FBLeague, Matchday } from '../types';
 import { toast } from 'sonner';
-import { Trophy, Play, Gift, Loader2 } from 'lucide-react';
+import { Trophy, Play, Gift, Loader2, Settings2 } from 'lucide-react';
+
+const PRIZE_PRESETS: Record<string, { label: string; desc: string; dist: number[] }> = {
+    top1: { label: '🥇 Solo 1°', desc: '100% al primo', dist: [1.0] },
+    top2: { label: '🥇🥈 1° e 2°', desc: '70% primo · 30% secondo', dist: [0.7, 0.3] },
+    top3: { label: '🥇🥈🥉 Top 3', desc: '50% primo · 30% secondo · 20% terzo', dist: [0.5, 0.3, 0.2] },
+};
 
 export const FBLegaAdminPanel = () => {
     const [leagues, setLeagues] = useState<FBLeague[]>([]);
@@ -17,6 +23,10 @@ export const FBLegaAdminPanel = () => {
     const [newDuration, setNewDuration] = useState(5);
     const [underdogEnabled, setUnderdogEnabled] = useState(false);
     const [comebackEnabled, setComebackEnabled] = useState(false);
+    const [prizePreset, setPrizePreset] = useState<string>('top2');
+
+    // Edit prize dist state per league
+    const [editingPrizeDist, setEditingPrizeDist] = useState<number | null>(null);
 
 
     useEffect(() => {
@@ -47,8 +57,6 @@ export const FBLegaAdminPanel = () => {
 
         try {
             setLoading(true);
-            // The rules are now FIXED as per implementation: 1pt base, X=2, Strike=+3, EnPlein=+10
-            // Jolly is handled by the matchday index
             const result = await gameService.createLeague({
                 name: newName,
                 entry_fee: newFee,
@@ -60,7 +68,7 @@ export const FBLegaAdminPanel = () => {
                     "underdog_enabled": underdogEnabled,
                     "monthly_comeback_enabled": comebackEnabled
                 },
-                prize_dist: [0.7, 0.3] // Default: 70% 1st, 30% 2nd
+                prize_dist: PRIZE_PRESETS[prizePreset].dist
             });
 
             if (result.success) {
@@ -69,6 +77,7 @@ export const FBLegaAdminPanel = () => {
                 setNewName('');
                 setUnderdogEnabled(false);
                 setComebackEnabled(false);
+                setPrizePreset('top2');
                 loadLeagues();
             } else {
                 toast.error(result.message);
@@ -121,6 +130,50 @@ export const FBLegaAdminPanel = () => {
             setActionLoading(null);
         }
     };
+
+    const handleUpdatePrizeDist = async (leagueId: number, presetKey: string) => {
+        try {
+            setActionLoading(leagueId);
+            const result = await gameService.updateLeaguePrizeDist(leagueId, PRIZE_PRESETS[presetKey].dist);
+            if (result.success) {
+                toast.success(result.message);
+                setEditingPrizeDist(null);
+                loadLeagues();
+            }
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore aggiornamento distribuzione');
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const getPresetKeyFromDist = (dist: number[]): string => {
+        if (!dist || dist.length === 0) return 'top1';
+        if (dist.length === 1) return 'top1';
+        if (dist.length === 3) return 'top3';
+        return 'top2';
+    };
+
+    const PrizeDistSelector = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+        <div className="grid grid-cols-3 gap-2">
+            {Object.entries(PRIZE_PRESETS).map(([key, preset]) => (
+                <button
+                    key={key}
+                    type="button"
+                    onClick={() => onChange(key)}
+                    className={`p-3 rounded-xl border-2 text-center transition-all ${value === key
+                            ? 'border-[#dfff00] bg-[#dfff00]/10 shadow-[0_0_12px_rgba(223,255,0,0.15)]'
+                            : 'border-white/10 bg-black/30 hover:border-white/20'
+                        }`}
+                >
+                    <div className="text-sm mb-1">{preset.label}</div>
+                    <div className={`text-[9px] font-bold uppercase tracking-wider ${value === key ? 'text-[#dfff00]' : 'text-gray-500'
+                        }`}>{preset.desc}</div>
+                </button>
+            ))}
+        </div>
+    );
 
 
     if (loading) {
@@ -175,6 +228,14 @@ export const FBLegaAdminPanel = () => {
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-black"
                             />
                         </div>
+                    </div>
+
+                    {/* Prize Distribution Selector */}
+                    <div className="mt-6">
+                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-3 block">
+                            🏆 Distribuzione Premi
+                        </label>
+                        <PrizeDistSelector value={prizePreset} onChange={setPrizePreset} />
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-6">
@@ -246,40 +307,65 @@ export const FBLegaAdminPanel = () => {
             ) : (
                 <div className="grid gap-4">
                     {leagues.map(league => (
-                        <div key={league.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className={`p-4 rounded-xl ${league.status === 'COMPLETED' ? 'bg-gray-800' : 'bg-[#5d8aa8]/20'}`}>
-                                    <Trophy className={league.status === 'COMPLETED' ? 'text-gray-500' : 'text-[#5d8aa8]'} size={24} />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-black uppercase italic text-lg">{league.name}</h4>
-                                    <div className="flex gap-3 mt-1">
-                                        <span className="text-[9px] font-bold uppercase text-gray-500">Status: <span className="text-[#bfff00]">{league.status}</span></span>
-                                        <span className="text-[9px] font-bold uppercase text-gray-500">Round: <span className="text-white">{league.current_round}/{league.duration_matchdays}</span></span>
-                                        <span className="text-[9px] font-bold uppercase text-gray-500">Pool: <span className="text-white">{league.prize_pool} FTK</span></span>
+                        <div key={league.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-4 rounded-xl ${league.status === 'COMPLETED' ? 'bg-gray-800' : 'bg-[#5d8aa8]/20'}`}>
+                                        <Trophy className={league.status === 'COMPLETED' ? 'text-gray-500' : 'text-[#5d8aa8]'} size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black uppercase italic text-lg">{league.name}</h4>
+                                        <div className="flex gap-3 mt-1 flex-wrap">
+                                            <span className="text-[9px] font-bold uppercase text-gray-500">Status: <span className="text-[#bfff00]">{league.status}</span></span>
+                                            <span className="text-[9px] font-bold uppercase text-gray-500">Round: <span className="text-white">{league.current_round}/{league.duration_matchdays}</span></span>
+                                            <span className="text-[9px] font-bold uppercase text-gray-500">Pool: <span className="text-white">{league.prize_pool} FTK</span></span>
+                                            <span className="text-[9px] font-bold uppercase text-gray-500">Premi: <span className="text-[#dfff00]">{PRIZE_PRESETS[getPresetKeyFromDist(league.prize_distribution)]?.label || 'Custom'}</span></span>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <div className="flex gap-2 w-full md:w-auto flex-wrap">
+                                    {league.status !== 'COMPLETED' && (
+                                        <button
+                                            onClick={() => setEditingPrizeDist(editingPrizeDist === league.id ? null : league.id)}
+                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-white/10 text-gray-400 rounded-xl font-black uppercase text-[10px] tracking-widest hover:border-[#dfff00]/30 hover:text-[#dfff00] transition-all"
+                                        >
+                                            <Settings2 size={14} />
+                                            Premi
+                                        </button>
+                                    )}
+                                    <button
+                                        disabled={actionLoading === league.id || league.status === 'COMPLETED' || league.current_round >= league.duration_matchdays}
+                                        onClick={() => handleResolveRound(league.id)}
+                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#5d8aa8] text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:brightness-110 disabled:opacity-30 transition-all"
+                                    >
+                                        {actionLoading === league.id ? <Loader2 className="animate-spin" size={14} /> : <Play size={14} />}
+                                        Risolvi Round
+                                    </button>
+
+                                    <button
+                                        disabled={actionLoading === league.id || league.status === 'COMPLETED'}
+                                        onClick={() => handleDistributePrizes(league.id)}
+                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#bfff00] text-black rounded-xl font-black uppercase text-[10px] tracking-widest hover:brightness-110 disabled:opacity-30 transition-all"
+                                    >
+                                        {actionLoading === league.id ? <Loader2 className="animate-spin" size={14} /> : <Gift size={14} />}
+                                        Chiudi & Paga
+                                    </button>
+                                </div>
                             </div>
 
-                            <div className="flex gap-2 w-full md:w-auto">
-                                <button
-                                    disabled={actionLoading === league.id || league.status === 'COMPLETED' || league.current_round >= league.duration_matchdays}
-                                    onClick={() => handleResolveRound(league.id)}
-                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#5d8aa8] text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:brightness-110 disabled:opacity-30 transition-all"
-                                >
-                                    {actionLoading === league.id ? <Loader2 className="animate-spin" size={14} /> : <Play size={14} />}
-                                    Risolvi Round
-                                </button>
-
-                                <button
-                                    disabled={actionLoading === league.id || league.status === 'COMPLETED'}
-                                    onClick={() => handleDistributePrizes(league.id)}
-                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#bfff00] text-black rounded-xl font-black uppercase text-[10px] tracking-widest hover:brightness-110 disabled:opacity-30 transition-all"
-                                >
-                                    {actionLoading === league.id ? <Loader2 className="animate-spin" size={14} /> : <Gift size={14} />}
-                                    Chiudi & Paga
-                                </button>
-                            </div>
+                            {/* Inline prize dist editor */}
+                            {editingPrizeDist === league.id && (
+                                <div className="pt-4 border-t border-white/5 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-3 block">
+                                        🏆 Modifica Distribuzione Premi
+                                    </label>
+                                    <PrizeDistSelector
+                                        value={getPresetKeyFromDist(league.prize_distribution)}
+                                        onChange={(key) => handleUpdatePrizeDist(league.id, key)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
