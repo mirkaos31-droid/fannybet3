@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, X, Star, Zap, Trophy, Award } from 'lucide-react';
+import { Info, X, Star, Zap, Trophy, Award, Target } from 'lucide-react';
 
 interface LeagueRulesModalProps {
     isOpen: boolean;
@@ -59,6 +59,14 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                             <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Strike 🔥</span>
                             <span className="text-orange-500 font-black text-3xl italic">+3 PT</span>
                             <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">3 Corretti Filati</span>
+                        </div>
+
+                        {/* Underdog Bonus */}
+                        <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
+                            <Target size={20} className="text-[#bfff00] mb-2" />
+                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Underdog 🎯</span>
+                            <span className="text-[#bfff00] font-black text-3xl italic">+2 PT</span>
+                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Scelto dal &lt;15%</span>
                         </div>
                     </div>
 

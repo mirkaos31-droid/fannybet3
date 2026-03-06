@@ -255,7 +255,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                 {/* I FANNIES (SPY) */}
                                 <button
                                     onClick={() => setView('SPY')}
-                                    className="glass-card card-bright-yellow col-span-4 group h-[10rem] sm:h-[16rem] md:h-[20rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:scale-[1.01]"
+                                    className="glass-card card-bright-yellow col-span-4 group h-[9rem] sm:h-[14.5rem] md:h-[18rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:scale-[1.01]"
                                 >
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ffee00]/5 blur-[60px] rounded-full group-hover:bg-[#ffee00]/10 transition-all duration-700"></div>
                                     <div className="flex items-center gap-6">

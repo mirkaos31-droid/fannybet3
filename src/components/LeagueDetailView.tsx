@@ -157,23 +157,33 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             </div>
 
             {/* Compact Header Card */}
-            <div className="glass-card card-lega-alieno card-scudetto-active p-8 border-none overflow-hidden relative mb-8">
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-1 bg-[#5d8aa8] rounded-full"></div>
-                        <span className="text-gray-500 font-black uppercase text-[8px] tracking-[0.3em]">Campionato Attivo</span>
+            <div className="glass-card card-lega-alieno card-scudetto-active p-8 md:p-12 border-none overflow-hidden relative mb-8">
+                <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-1 bg-[#5d8aa8] rounded-full"></div>
+                        <span className="text-gray-400 font-black uppercase text-[10px] tracking-[0.4em]">Campionato Ufficiale</span>
+                        <div className="w-10 h-1 bg-[#5d8aa8] rounded-full"></div>
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-black italic text-white uppercase tracking-tighter mb-4 leading-none">{league.name}</h2>
 
-                    <div className="flex items-center gap-6">
-                        <div className="flex flex-col">
-                            <span className="text-[#bfff00] font-black italic text-xl">{league.prize_pool} FTK</span>
-                            <span className="text-gray-600 text-[8px] font-black uppercase tracking-widest">MONTEPREMI</span>
+                    <h2 className="text-6xl md:text-[6.5rem] font-black italic text-white uppercase tracking-tighter mb-8 leading-none border-b-[10px] border-[#5d8aa8] pb-6 px-6 drop-shadow-2xl">
+                        {league.name}
+                    </h2>
+
+                    <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16 mt-2">
+                        <div className="flex flex-col items-center">
+                            <span className="text-[#bfff00] font-black italic text-4xl md:text-6xl mb-1 drop-shadow-[0_0_15px_rgba(191,255,0,0.4)]">
+                                {league.prize_pool} FTK
+                            </span>
+                            <span className="text-gray-500 text-[9px] font-black uppercase tracking-[0.3em]">Montepremi Totale</span>
                         </div>
-                        <div className="w-px h-6 bg-white/10"></div>
-                        <div className="flex flex-col">
-                            <span className="text-white font-black italic text-xl">{participants.length}</span>
-                            <span className="text-gray-600 text-[8px] font-black uppercase tracking-widest">MEMBRI</span>
+
+                        <div className="w-16 h-px md:w-px md:h-16 bg-white/10"></div>
+
+                        <div className="flex flex-col items-center">
+                            <span className="text-white font-black italic text-3xl md:text-5xl mb-1">
+                                {participants.length}
+                            </span>
+                            <span className="text-gray-500 text-[9px] font-black uppercase tracking-[0.3em]">Membri</span>
                         </div>
                     </div>
                 </div>

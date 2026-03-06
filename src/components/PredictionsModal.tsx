@@ -53,8 +53,8 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                         <div
                             key={match.id}
                             className={`p-5 rounded-3xl border transition-all duration-300 ${matchday.jollyMatchIndex === idx
-                                    ? 'bg-[#5d8aa8]/10 border-[#5d8aa8]/30 shadow-[inset_0_0_20px_rgba(93,138,168,0.1)]'
-                                    : 'bg-white/[0.03] border-white/5 shadow-lg'
+                                ? 'bg-[#5d8aa8]/10 border-[#5d8aa8]/30 shadow-[inset_0_0_20px_rgba(93,138,168,0.1)]'
+                                : 'bg-white/[0.03] border-white/5 shadow-lg'
                                 }`}
                         >
                             <div className="flex flex-col gap-4">
@@ -67,9 +67,17 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                                     </div>
                                     <div className="flex flex-col items-center">
                                         {matchday.jollyMatchIndex === idx ? (
-                                            <div className="flex flex-col items-center">
-                                                <Star size={16} className="text-[#5d8aa8] animate-spin-slow mb-1" />
-                                                <span className="text-[8px] font-black text-[#5d8aa8] uppercase">JOLLY</span>
+                                            <div className="flex flex-col items-center relative">
+                                                {/* Backlit Glow Aura */}
+                                                <div className="absolute inset-0 bg-[#bfff00]/20 blur-xl rounded-full animate-aura pointer-events-none"></div>
+
+                                                <Star
+                                                    size={20}
+                                                    className="text-[#bfff00] fill-[#bfff00]/30 drop-shadow-[0_0_12px_rgba(191,255,0,0.9)] animate-pulse-slow relative z-10"
+                                                />
+                                                <span className="text-[8px] font-black text-[#bfff00] uppercase mt-1 tracking-widest drop-shadow-[0_0_5px_rgba(191,255,0,0.5)] relative z-10">
+                                                    JOLLY
+                                                </span>
                                             </div>
                                         ) : (
                                             <span className="text-gray-700 font-black italic text-[10px]">VS</span>
@@ -89,8 +97,8 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                                             key={sign}
                                             onClick={() => onPickChange(idx, sign)}
                                             className={`py-4 rounded-xl font-black text-lg transition-all transform active:scale-90 ${myPicks[idx] === sign
-                                                    ? 'bg-[#5d8aa8] text-white shadow-[0_0_15px_rgba(93,138,168,0.5)] scale-[1.02]'
-                                                    : 'text-gray-500 bg-white/5 hover:bg-white/10'
+                                                ? 'bg-[#5d8aa8] text-white shadow-[0_0_15px_rgba(93,138,168,0.5)] scale-[1.02]'
+                                                : 'text-gray-500 bg-white/5 hover:bg-white/10'
                                                 }`}
                                         >
                                             {sign}
