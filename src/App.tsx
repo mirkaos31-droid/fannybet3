@@ -37,6 +37,12 @@ function App() {
     setAdminTab('USERS');
   };
 
+  const refreshUser = async () => {
+    const u = await gameService.getCurrentUser();
+    // Force a new object reference to trigger re-render if properties changed
+    if (u) setUser({ ...u });
+  };
+
   // Real-time Notifications & Profile Sync
   useEffect(() => {
     if (!user) return;
@@ -52,7 +58,11 @@ function App() {
           table: 'matchdays'
         },
         (payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
-          if (payload.new && payload.new.results && JSON.stringify(payload.new.results) !== JSON.stringify(payload.old.results)) {
+          const newResults = payload.new?.results;
+          const oldResults = payload.old?.results;
+          
+          if (newResults && oldResults && Array.isArray(newResults) && Array.isArray(oldResults) && 
+              JSON.stringify(newResults) !== JSON.stringify(oldResults)) {
             toast("⚽ Risultati Aggiornati!", {
               description: "Controlla la classifica per vedere i punteggi.",
             });
@@ -84,12 +94,6 @@ function App() {
       supabase.removeChannel(profileChannel);
     };
   }, [user]);
-
-  const refreshUser = async () => {
-    const u = await gameService.getCurrentUser();
-    // Force a new object reference to trigger re-render if properties changed
-    if (u) setUser({ ...u });
-  };
 
   const showAdminDashboard = user?.role === 'ADMIN' && !adminInUserMode;
 

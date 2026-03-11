@@ -14,14 +14,24 @@ DECLARE
     v_current_matchday_id BIGINT;
     v_results TEXT[];
     v_jolly_idx INTEGER;
+    v_current_round INTEGER;
 BEGIN
-    -- 1. Identify current matchday for the league (the one they are currently picking for)
-    -- We assume the "live" matchday is the one that is currently OPEN or the latest one that is not yet resolved for this league.
-    -- For simplicity, we use the currently active matchday in the system.
-    SELECT id, results, jolly_match_index INTO v_current_matchday_id, v_results, v_jolly_idx
-    FROM public.matchdays
-    WHERE status IN ('OPEN', 'CLOSED') -- Can be currently picking or being resolved
-    ORDER BY id DESC LIMIT 1;
+    -- 1. Get the current round for this specific league
+    SELECT current_round INTO v_current_round FROM public.fb_leagues WHERE id = p_league_id;
+    
+    -- 2. Get the matchday ID for the current round of THIS league (not global)
+    -- round_number is 1-indexed: 1st round, 2nd round, etc.
+    -- current_round is 0-indexed: starts at 0 for first incomplete round
+    SELECT matchday_id INTO v_current_matchday_id 
+    FROM public.get_fb_league_matchdays(p_league_id) 
+    WHERE round_number = v_current_round + 1;
+
+    -- 3. Get results and jolly index for that specific matchday
+    IF v_current_matchday_id IS NOT NULL THEN
+        SELECT results, jolly_match_index INTO v_results, v_jolly_idx
+        FROM public.matchdays
+        WHERE id = v_current_matchday_id;
+    END IF;
 
     RETURN QUERY
     WITH participant_picks AS (

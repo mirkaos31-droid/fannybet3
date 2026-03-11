@@ -123,6 +123,7 @@ export interface FBLeagueParticipant {
     joined_at: string;
     username?: string;
     live_points?: number;
+    active_bonuses?: string[];
 }
 
 export interface FBLeaguePick {

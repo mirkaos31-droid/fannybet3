@@ -74,12 +74,13 @@ export const fbLegaService = {
 
         if (error) throw error;
 
-        return data.map((p: { user_id: string; username: string; grand_total: number; total_points: number; live_points: number }) => ({
+        return data.map((p: { user_id: string; username: string; grand_total: number; total_points: number; live_points: number; active_bonuses: string[] }) => ({
             user_id: p.user_id,
             username: p.username,
             total_points: p.grand_total, // Show calculated grand total
             accumulated_points: p.total_points,
-            live_points: p.live_points
+            live_points: p.live_points,
+            active_bonuses: p.active_bonuses
         })) as FBLeagueParticipant[];
     },
 

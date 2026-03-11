@@ -7,6 +7,7 @@ import { LeaderboardModal } from './LeaderboardModal';
 import { PredictionsModal } from './PredictionsModal';
 import { LeagueRulesModal } from './LeagueRulesModal';
 import { supabase } from '../supabaseClient';
+import { useBonusNotifications } from '../hooks/useBonusNotifications';
 
 interface LeagueDetailViewProps {
     leagueId: number;
@@ -24,8 +25,15 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const [saving, setSaving] = useState(false);
     const [user, setUser] = useState<User | null>(null);
 
-    // Modal States
     const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES'>('NONE');
+
+    // Bonus Notifications Hook - deve essere chiamato sempre, prima di qualsiasi return condizionale
+    useBonusNotifications({
+        leagueId,
+        userId: user?.id,
+        participants: data?.participants || [],
+        matchdayId: matchday?.id
+    });
 
     const loadLeagueData = useCallback(async () => {
         try {

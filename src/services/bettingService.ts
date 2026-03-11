@@ -198,6 +198,34 @@ export const bettingService = {
         await supabase.from('matchdays').update({ super_jackpot: amount }).eq('id', md.id);
     },
 
+    // Verify and fix pot synchronization
+    verifyAndFixPot: async () => {
+        const md = await bettingService.getMatchday();
+        if (!md) return { success: false, message: 'No open matchday found' };
+
+        const { data: bets } = await supabase
+            .from('bets')
+            .select('amount')
+            .eq('matchday_id', md.id);
+
+        const actualPot = bets ? bets.reduce((sum, bet) => sum + (bet.amount || 0), 0) : 0;
+
+        if (md.currentPot !== actualPot) {
+            await supabase
+                .from('matchdays')
+                .update({ current_pot: actualPot })
+                .eq('id', md.id);
+
+            return {
+                success: true,
+                message: `Pot corrected: ${md.currentPot} → ${actualPot}`,
+                wasFixed: true
+            };
+        }
+
+        return { success: true, message: 'Pot is synchronized', wasFixed: false };
+    },
+
     updateDeadline: async (deadline: string) => {
         const md = await bettingService.getMatchday();
         if (!md) return;
@@ -345,7 +373,7 @@ export const bettingService = {
             const share = Math.floor(currentSuper / sjWinners.length);
             sjWinners.forEach(w => {
                 const current = userEarnings.get(w.username) || { tokens: 0, wins: 0, userId: w.userId };
-                userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins, userId: w.userId }); // SJ doesn't count as extra "win" for level?
+                userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins, userId: w.userId });
             });
             const sjNames = sjWinners.map(w => w.username);
             winnerMsg += ` | 💎 SUPER JACKPOT: ${sjNames.join(', ')} (+${share}FTK)`;
@@ -473,7 +501,7 @@ export const bettingService = {
                 status: 'ARCHIVED',
                 rollover_pot: nextRollover,
                 current_pot: 0,
-                super_jackpot: 0,
+                super_jackpot: 0, // Always reset to 0 - rollover is handled separately
                 winners: winnersUsernames,
                 winner_animation: (winnersUsernames.length > 0),
                 leaderboard_animation: (winnersUsernames.length > 0)

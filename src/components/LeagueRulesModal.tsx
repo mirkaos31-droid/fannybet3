@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, X, Star, Zap, Trophy, Award, Target } from 'lucide-react';
+import { Info, X, Star, Zap, Trophy, Target } from 'lucide-react';
 
 interface LeagueRulesModalProps {
     isOpen: boolean;
@@ -30,7 +30,7 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                     <div className="grid grid-cols-2 gap-3">
                         {/* Standard Point */}
                         <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
-                            <Zap size={20} className="text-gray-500 mb-2 group-hover:text-white transition-colors" />
+                            <Target size={20} className="text-gray-500 mb-2 group-hover:text-white transition-colors" />
                             <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Segno 1 o 2</span>
                             <span className="text-[#bfff00] font-black text-3xl italic">1 PT</span>
                         </div>
@@ -48,23 +48,23 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                         {/* Jolly */}
                         <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
                             <Star size={20} className="text-[#5d8aa8] mb-2 animate-pulse" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Jolly ⭐</span>
+                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Jolly</span>
                             <span className="text-[#5d8aa8] font-black text-3xl italic">X2</span>
                             <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Punti Raddoppiati</span>
                         </div>
 
                         {/* Strike */}
                         <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
-                            <Award size={20} className="text-orange-500 mb-2" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Strike 🔥</span>
+                            <Zap size={20} className="text-orange-500 mb-2" />
+                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Strike</span>
                             <span className="text-orange-500 font-black text-3xl italic">+3 PT</span>
                             <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">3 Corretti Filati</span>
                         </div>
 
                         {/* Underdog Bonus */}
                         <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
-                            <Target size={20} className="text-[#bfff00] mb-2" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Underdog 🎯</span>
+                            <span className="text-2xl mb-1.5 grayscale group-hover:grayscale-0 transition-all">🦴</span>
+                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Underdog</span>
                             <span className="text-[#bfff00] font-black text-3xl italic">+2 PT</span>
                             <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Scelto dal &lt;15%</span>
                         </div>
@@ -74,7 +74,7 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
                             <Trophy size={64} className="text-[#bfff00]" />
                         </div>
-                        <span className="block text-[#bfff00] text-sm font-black uppercase tracking-[0.3em] mb-1 italic">🌟 EN PLEIN 🌟</span>
+                        <span className="block text-[#bfff00] text-sm font-black uppercase tracking-[0.3em] mb-1 italic">🎯 EN PLEIN 🎯</span>
                         <p className="text-gray-400 text-[10px] font-bold uppercase mb-2">Indovina tutti i 10 pronostici per</p>
                         <div className="text-white font-black text-3xl italic">+10 PT EXTRA</div>
                     </div>

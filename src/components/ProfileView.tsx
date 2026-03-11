@@ -134,6 +134,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                         )}
                     </div>
                 </div>
+                <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-brand-purple/60 italic animate-pulse">Personalizza la tua immagine profilo qui</p>
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
 
                 <div className="mt-4 flex flex-col items-center text-center px-4">
@@ -286,6 +287,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                 </div>
             </div>
 
+            {/* Collection Incentive Banner */}
+            <div className="glass-card border-brand-gold/20 bg-gradient-to-br from-brand-gold/10 to-yellow-900/10 !p-8 mb-8 relative overflow-hidden group hover:scale-[1.01] transition-transform shadow-[0_0_30px_rgba(255,191,0,0.05)]">
+                <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 transition-transform">
+                    <Trophy size={80} className="text-brand-gold" />
+                </div>
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                    <div className="w-16 h-16 rounded-2xl bg-brand-gold/20 flex items-center justify-center shadow-[0_0_20px_rgba(255,191,0,0.2)]">
+                        <span className="text-3xl">🎯</span>
+                    </div>
+                    <div className="text-center md:text-left">
+                        <h4 className="text-xl font-black italic text-brand-gold uppercase tracking-tighter mb-2">Colleziona Card Esclusive!</h4>
+                        <p className="text-gray-400 text-sm font-bold leading-relaxed max-w-xl">
+                            Gioca e vinci in <span className="text-white">tutte le modalità</span> per sbloccare card uniche e completare il tuo archivio personale. Ogni traguardo è un'opportunità di distinguerti!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             {/* Action Buttons: Install & Logout */}
             <div className="mt-12 space-y-4 max-w-sm mx-auto">
                 <button
@@ -322,8 +341,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                     <X size={18} /> Logout Sessione
                 </button>
             </div>
-
-
         </div>
     );
 };

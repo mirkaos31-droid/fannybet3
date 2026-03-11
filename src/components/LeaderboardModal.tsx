@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trophy, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import type { FBLeagueParticipant, Matchday } from '../types';
 import { gameService } from '../services/gameService';
+import { BonusBadges } from './BonusBadges';
 
 interface LeaderboardModalProps {
     isOpen: boolean;
@@ -54,7 +55,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onClose}></div>
-            <div className="relative z-10 w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-[2.5rem] p-6 md:p-8 animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+            <div className="relative z-10 w-full max-w-4xl bg-[#0a0a0c] border border-white/10 rounded-[2.5rem] p-6 md:p-10 animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
                 <button
                     onClick={onClose}
                     className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors"
@@ -67,13 +68,13 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                     <h3 className="text-2xl font-black italic uppercase text-white">Classifica</h3>
                 </div>
 
-                <div className="overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+                <div className="overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                     {participants.map((p, idx) => (
                         <div key={p.user_id} className="flex flex-col">
                             {/* Main Row */}
                             <div
                                 onClick={() => handleExpandUser(p.user_id)}
-                                className={`flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer select-none ${p.user_id === currentUserId
+                                className={`flex items-center justify-between px-6 md:px-10 py-4 rounded-xl transition-all cursor-pointer select-none ${p.user_id === currentUserId
                                     ? 'bg-[#5d8aa8]/20 border border-[#5d8aa8]/40 shadow-[0_0_15px_rgba(93,138,168,0.1)]'
                                     : 'bg-white/5 border border-white/5 hover:border-white/10'
                                     } ${expandedUserId === p.user_id ? 'rounded-b-none border-b-0' : ''}`}
@@ -91,6 +92,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                             {expandedUserId === p.user_id ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
                                             Vedi Schedina
                                         </span>
+                                        <BonusBadges bonuses={p.active_bonuses || []} />
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end">
@@ -125,9 +127,9 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                                         {matchday?.matches[i]?.home || `Match ${i + 1}`}
                                                     </span>
                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${pick === '1' ? 'bg-[#5d8aa8] text-white' :
-                                                            pick === 'X' ? 'bg-gray-600 text-white' :
-                                                                pick === '2' ? 'bg-[#bfff00] text-black' :
-                                                                    'bg-gray-800 text-transparent'
+                                                        pick === 'X' ? 'bg-gray-600 text-white' :
+                                                            pick === '2' ? 'bg-[#bfff00] text-black' :
+                                                                'bg-gray-800 text-transparent'
                                                         }`}>
                                                         {pick || '-'}
                                                     </div>
