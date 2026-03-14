@@ -44,7 +44,7 @@ export const BonusBadges: React.FC<BonusBadgesProps> = ({ bonuses }) => {
                     <div
                         key={bonusKey}
                         title={config.label}
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-tighter ${config.color} ${config.glow} animate-in fade-in zoom-in duration-500`}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-tighter ${config.color} ${config.glow}`}
                     >
                         <span>{config.icon}</span>
                         <span className="hidden md:inline">{config.label}</span>
