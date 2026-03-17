@@ -14,6 +14,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
     const [predictions, setPredictions] = useState<string[]>(Array(12).fill(''));
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
+    const [msgSuccess, setMsgSuccess] = useState(false);
 
     const togglePrediction = (matchIndex: number, val: string) => {
         setPredictions(prev => {
@@ -31,6 +32,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
         setLoading(true);
         const res = await gameService.placeBet(predictions, isSuper);
         setMsg(res.message);
+        setMsgSuccess(res.success);
         setLoading(false);
         if (res.success) {
             onBetPlaced();
@@ -127,7 +129,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
 
                 <div className="mt-8 p-6 md:p-10 border-t border-white/10 flex flex-col items-center gap-6 bg-black/40">
                     {msg && (
-                        <div className={`text-center text-[10px] md:text-base font-mono font-black uppercase tracking-[0.2em] px-6 py-4 rounded-2xl border-2 animate-bounce ${msg.includes('Giocata') ? 'text-acid-glow border-acid-glow/40 bg-acid-glow/5' : 'text-red-500 border-red-500/40 bg-red-500/5'}`}>
+                        <div className={`text-center text-[10px] md:text-base font-mono font-black uppercase tracking-[0.2em] px-6 py-4 rounded-2xl border-2 animate-bounce ${msgSuccess ? 'text-green-400 border-green-500/40 bg-green-500/5' : 'text-red-500 border-red-500/40 bg-red-500/5'}`}>
                             {msg}
                         </div>
                     )}
