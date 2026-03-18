@@ -74,14 +74,39 @@ export const fbLegaService = {
 
         if (error) throw error;
 
-        return data.map((p: { user_id: string; username: string; grand_total: number; total_points: number; live_points: number; active_bonuses: string[] }) => ({
+        return data.map((p: { user_id: string; username: string; grand_total: number; total_points: number; live_points: number; active_bonuses: string[] | null }) => ({
             user_id: p.user_id,
             username: p.username,
             total_points: p.grand_total, // Show calculated grand total
             accumulated_points: p.total_points,
             live_points: p.live_points,
-            active_bonuses: p.active_bonuses
+            active_bonuses: p.active_bonuses || []
         })) as FBLeagueParticipant[];
+    },
+
+    async getHistoricalLeaderboard(leagueId: number, matchdayId: number): Promise<FBLeagueParticipant[]> {
+        const { data, error } = await supabase.rpc('get_fb_league_historical_leaderboard', {
+            p_league_id: leagueId,
+            p_matchday_id: matchdayId
+        });
+
+        if (error) throw error;
+
+        return data.map((p: { user_id: string; username: string; points_total: number; points_matchday: number; active_bonuses: string[] | null }) => ({
+            user_id: p.user_id,
+            username: p.username,
+            total_points: p.points_total,
+            live_points: p.points_matchday, // Repurposing live_points for daily points
+            active_bonuses: p.active_bonuses || []
+        })) as FBLeagueParticipant[];
+    },
+
+    async getLeagueMatchdays(leagueId: number): Promise<{ matchday_id: number; round_number: number }[]> {
+        const { data, error } = await supabase.rpc('get_fb_league_matchdays', {
+            p_league_id: leagueId
+        });
+        if (error) throw error;
+        return data;
     },
 
     async joinLeague(leagueId: number) {

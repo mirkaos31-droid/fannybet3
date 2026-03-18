@@ -11,6 +11,7 @@ interface LeaderboardModalProps {
     currentUserId?: string;
     leagueId?: number;
     matchday?: Matchday | null;
+    title?: string; // [NEW] Optional title for historical views
 }
 
 interface ParticipantRowProps {
@@ -114,7 +115,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     participants,
     currentUserId,
     leagueId,
-    matchday
+    matchday,
+    title = "Classifica"
 }) => {
     const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
     const [expandedPicks, setExpandedPicks] = useState<string[] | null>(null);
@@ -160,7 +162,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
                 <div className="flex items-center gap-3 mb-8">
                     <Trophy size={24} className="text-[#bfff00]" />
-                    <h3 className="text-2xl font-black italic uppercase text-white">Classifica</h3>
+                    <h3 className="text-2xl font-black italic uppercase text-white">{title}</h3>
                 </div>
 
                 <div className="overflow-y-auto pr-2 space-y-3 custom-scrollbar">

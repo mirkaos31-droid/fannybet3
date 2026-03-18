@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight } from 'lucide-react';
+import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight, Lock } from 'lucide-react';
 import { gameService } from '../services/gameService';
 import type { FBLeague, FBLeagueParticipant, Matchday, User } from '../types';
 import { toast } from 'sonner';
 import { LeaderboardModal } from './LeaderboardModal';
 import { PredictionsModal } from './PredictionsModal';
 import { LeagueRulesModal } from './LeagueRulesModal';
+import { LeagueArchiveModal } from './LeagueArchiveModal';
 import { supabase } from '../supabaseClient';
 import { useBonusNotifications } from '../hooks/useBonusNotifications';
 
@@ -25,7 +26,11 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const [saving, setSaving] = useState(false);
     const [user, setUser] = useState<User | null>(null);
 
-    const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES'>('NONE');
+    const [archiveMatchdays, setArchiveMatchdays] = useState<{ matchday_id: number; round_number: number }[]>([]);
+    const [historicalParticipants, setHistoricalParticipants] = useState<FBLeagueParticipant[]>([]);
+    const [selectedHistoryMd, setSelectedHistoryMd] = useState<{ id: number; round: number } | null>(null);
+
+    const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES' | 'HISTORICAL_LEADERBOARD' | 'ARCHIVE_LIST'>('NONE');
 
     // Bonus Notifications Hook - deve essere chiamato sempre, prima di qualsiasi return condizionale
     useBonusNotifications({
@@ -60,6 +65,13 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 if (currentMdPick) {
                     setMyPicks(currentMdPick.predictions);
                 }
+            }
+
+            // Fetch archive list
+            if (details.league.current_round > 0) {
+                const allMds = await gameService.getLeagueMatchdays(leagueId);
+                const pastMds = allMds.filter(m => m.round_number <= details.league.current_round);
+                setArchiveMatchdays(pastMds);
             }
         } catch (error) {
             console.error('Error loading league details:', error);
@@ -127,6 +139,21 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             toast.error(err.message || 'Errore durante il salvataggio');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleShowHistory = async (mdId: number, roundNum: number) => {
+        try {
+            setLoading(true);
+            const histParticipants = await gameService.getHistoricalLeaderboard(leagueId, mdId);
+            setHistoricalParticipants(histParticipants);
+            setSelectedHistoryMd({ id: mdId, round: roundNum });
+            setActiveModal('HISTORICAL_LEADERBOARD');
+        } catch (err) {
+            console.error('Error loading history:', err);
+            toast.error('Errore nel caricamento dell\'archivio');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -212,8 +239,8 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 </div>
             </button>
 
-            {/* 2. MAIN ACTIONS GRID (2 Columns, Side-by-Side always) */}
-            <div className="grid grid-cols-2 gap-3 md:gap-6">
+            {/* 2. MAIN ACTIONS GRID (3 Columns on Desktop) */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {/* LA SCHEDINA */}
                 <button
                     onClick={() => setActiveModal('PREDICTIONS')}
@@ -275,11 +302,46 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                         </div>
                     </div>
                 </button>
+
+                {/* ARCHIVIO */}
+                <button
+                    onClick={() => setActiveModal('ARCHIVE_LIST')}
+                    className="card-interstellar-action group relative h-48 md:h-60 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left col-span-2 lg:col-span-1"
+                >
+                    <div className="technical-corner corner-tl"></div>
+                    <div className="technical-corner corner-tr"></div>
+                    <div className="technical-corner corner-bl"></div>
+                    <div className="technical-corner corner-br"></div>
+
+                    <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Lock size={160} className="text-[#5d8aa8]" />
+                    </div>
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                            <div className="p-2.5 bg-[#bfff00]/10 rounded-lg group-hover:bg-[#bfff00]/20 transition-colors border border-[#bfff00]/30 shadow-[0_0_15px_rgba(191,255,0,0.2)]">
+                                <Lock size={20} className="text-[#bfff00]" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[#bfff00] text-[10px] font-black uppercase tracking-tight">
+                                    {archiveMatchdays.length}
+                                </span>
+                                <span className="text-[#bfff00] text-[9px] font-black uppercase tracking-widest opacity-80">
+                                    giornate archiviate
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-white font-black italic uppercase text-lg md:text-2xl leading-none mb-1">Archivio</h3>
+                            <p className="text-gray-600 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate">Dati Storici</p>
+                        </div>
+                    </div>
+                </button>
             </div>
+
 
             {/* MODALS */}
 
-            {/* 1. LEADERBOARD MODAL */}
+            {/* 1. LEADERBOARD MODAL (LIVE) */}
             <LeaderboardModal
                 isOpen={activeModal === 'LEADERBOARD'}
                 onClose={() => setActiveModal('NONE')}
@@ -287,7 +349,21 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 currentUserId={user?.id}
                 leagueId={league.id}
                 matchday={matchday}
+                title="Classifica Generale"
             />
+
+            {/* 2. HISTORICAL LEADERBOARD MODAL */}
+            {selectedHistoryMd && (
+                <LeaderboardModal
+                    isOpen={activeModal === 'HISTORICAL_LEADERBOARD'}
+                    onClose={() => setActiveModal('NONE')}
+                    participants={historicalParticipants}
+                    currentUserId={user?.id}
+                    leagueId={league.id}
+                    matchday={matchday ? { ...matchday, id: selectedHistoryMd.id } : null} // Minimal matchday for pick fetching
+                    title={`Classifica Giornata ${selectedHistoryMd.round}`}
+                />
+            )}
 
             {/* 2. PREDICTIONS MODAL */}
             <PredictionsModal
@@ -309,6 +385,14 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 isOpen={activeModal === 'RULES'}
                 onClose={() => setActiveModal('NONE')}
                 bonusX={bonusX}
+            />
+
+            {/* 4. ARCHIVE LIST MODAL */}
+            <LeagueArchiveModal
+                isOpen={activeModal === 'ARCHIVE_LIST'}
+                onClose={() => setActiveModal('NONE')}
+                matchdays={archiveMatchdays}
+                onSelectMatchday={handleShowHistory}
             />
 
             {/* Footer Notice if not joined */}
