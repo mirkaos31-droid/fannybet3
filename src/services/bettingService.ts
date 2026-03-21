@@ -36,6 +36,31 @@ export const bettingService = {
             jollyMatchIndex: data.jolly_match_index
         };
     },
+    getMatchdayById: async (id: number): Promise<Matchday | null> => {
+        const { data, error } = await supabase
+            .from('matchdays')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error || !data) return null;
+
+        return {
+            id: data.id,
+            matches: data.matches as Match[],
+            results: data.results as (string | null)[],
+            superJackpot: data.super_jackpot,
+            currentPot: data.current_pot,
+            rolloverPot: data.rollover_pot,
+            status: data.status as 'OPEN' | 'CLOSED' | 'ARCHIVED',
+            deadline: data.deadline,
+            betsLocked: data.bets_locked || false,
+            winners: data.winners || [],
+            winnerAnimation: data.winner_animation || false,
+            leaderboardAnimation: data.leaderboard_animation || false,
+            jollyMatchIndex: data.jolly_match_index
+        };
+    },
 
     getArchivedMatchdays: async (): Promise<Matchday[]> => {
         const { data } = await supabase

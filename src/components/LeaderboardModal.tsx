@@ -66,8 +66,8 @@ const ParticipantRow: React.FC<ParticipantRowProps> = React.memo(({
                         {p.total_points}
                     </span>
                     {p.live_points !== undefined && p.live_points > 0 && (
-                        <span className="text-[9px] font-black text-[#bfff00] animate-pulse">
-                            +{p.live_points} LIVE
+                        <span className={`text-[9px] font-black ${matchday?.status === 'ARCHIVED' ? 'text-gray-500' : 'text-[#bfff00] animate-pulse'}`}>
+                            +{p.live_points} {matchday?.status === 'ARCHIVED' ? 'PT' : 'LIVE'}
                         </span>
                     )}
                     <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest mt-1">PUNTI</span>

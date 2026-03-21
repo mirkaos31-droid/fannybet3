@@ -28,7 +28,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
     const [archiveMatchdays, setArchiveMatchdays] = useState<{ matchday_id: number; round_number: number }[]>([]);
     const [historicalParticipants, setHistoricalParticipants] = useState<FBLeagueParticipant[]>([]);
-    const [selectedHistoryMd, setSelectedHistoryMd] = useState<{ id: number; round: number } | null>(null);
+    const [selectedHistoryMd, setSelectedHistoryMd] = useState<{ matchday: Matchday; round: number } | null>(null);
 
     const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES' | 'HISTORICAL_LEADERBOARD' | 'ARCHIVE_LIST'>('NONE');
 
@@ -145,9 +145,18 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const handleShowHistory = async (mdId: number, roundNum: number) => {
         try {
             setLoading(true);
-            const histParticipants = await gameService.getHistoricalLeaderboard(leagueId, mdId);
+            const [histParticipants, fullMatchday] = await Promise.all([
+                gameService.getHistoricalLeaderboard(leagueId, mdId),
+                gameService.getMatchdayById(mdId)
+            ]);
+
+            if (!fullMatchday) {
+                toast.error('Dati giornata non trovati');
+                return;
+            }
+
             setHistoricalParticipants(histParticipants);
-            setSelectedHistoryMd({ id: mdId, round: roundNum });
+            setSelectedHistoryMd({ matchday: fullMatchday, round: roundNum });
             setActiveModal('HISTORICAL_LEADERBOARD');
         } catch (err) {
             console.error('Error loading history:', err);
@@ -360,7 +369,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                     participants={historicalParticipants}
                     currentUserId={user?.id}
                     leagueId={league.id}
-                    matchday={matchday ? { ...matchday, id: selectedHistoryMd.id } : null} // Minimal matchday for pick fetching
+                    matchday={selectedHistoryMd.matchday}
                     title={`Classifica Giornata ${selectedHistoryMd.round}`}
                 />
             )}
