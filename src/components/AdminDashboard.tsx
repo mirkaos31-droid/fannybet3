@@ -223,7 +223,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                     <button
                                         onClick={async () => {
                                             if (confirm("Archiviare giornata? Questo PROCESSERÀ AUTOMATICAMENTE anche il round Survival!")) {
-                                                const res = await gameService.archiveMatchday();
+                                                const res = await gameService.archiveMatchday(matchday.id);
                                                 let msg = res.message;
                                                 if (res.survivalStats) {
                                                     msg += `\n\n💀 SURVIVAL:\n- Eliminati: ${res.survivalStats.eliminated}\n- Avanzati: ${res.survivalStats.advanced}`;

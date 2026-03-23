@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { gameService } from '../services/gameService';
+import { fbLegaService } from '../services/fbLegaService';
+
 import type { FBLeague, Matchday } from '../types';
 import { toast } from 'sonner';
 import { Trophy, Play, Gift, Loader2, Settings2 } from 'lucide-react';
@@ -91,21 +93,34 @@ export const FBLegaAdminPanel = () => {
     };
 
     const handleResolveRound = async (leagueId: number) => {
-        if (!matchday) return;
-        if (!confirm('Vuoi calcolare i punti per questo round della lega? Assicurati che i risultati ufficiali siano corretti.')) return;
+        const league = leagues.find(l => l.id === leagueId);
+        if (!league) return;
+        
+        if (!confirm(`Vuoi calcolare i punti per il Round ${league.current_round + 1} della lega "${league.name}"?`)) return;
 
         try {
             setActionLoading(leagueId);
-            const result = await gameService.resolveRound(leagueId, matchday.id);
+            
+            // 1. Get the matchdays for this league to find the correct ID for the current_round + 1
+            const leagueMatchdays = await fbLegaService.getLeagueMatchdays(leagueId);
+            const nextRound = league.current_round + 1;
+            const targetMD = leagueMatchdays.find((m: any) => m.round_number === nextRound);
+
+
+            if (!targetMD) {
+                toast.error(`Impossibile trovare la giornata per il Round ${nextRound}`);
+                return;
+            }
+
+            const result = await gameService.resolveRound(leagueId, targetMD.matchday_id);
             if (result.success) {
                 toast.success(`${result.message} (${result.resolved_count} pronostici processati)`);
                 loadLeagues();
             } else {
                 toast.error(result.message);
             }
-        } catch (error) {
-            const err = error as { message?: string };
-            toast.error(err.message || 'Errore durante la risoluzione');
+        } catch (error: any) {
+            toast.error(error.message || 'Errore durante la risoluzione');
         } finally {
             setActionLoading(null);
         }

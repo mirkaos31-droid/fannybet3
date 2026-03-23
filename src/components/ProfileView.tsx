@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { User } from '../types';
 import { gameService } from '../services/gameService';
-import { Camera, Edit2, Check, X, Trophy, Skull, Activity, Target, ArrowLeft } from 'lucide-react';
+import { Camera, Edit2, Check, X, Trophy, Skull, Activity, Target, ArrowLeft, Gem } from 'lucide-react';
 
 interface ProfileViewProps {
     user: User | null;
@@ -82,6 +82,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
             value: user?.winsSurvival || 0,
             icon: <Skull className="text-white" size={24} />,
             color: 'bg-gradient-to-br from-red-600 to-red-900 shadow-red-600/20'
+        },
+        {
+            label: 'Token Vinti',
+            value: user?.totalTokensWon || 0,
+            icon: <Gem className="text-white" size={24} />,
+            color: 'bg-gradient-to-br from-cyan-400 to-blue-600 shadow-cyan-400/20'
         },
         {
             label: 'Livello',
@@ -174,7 +180,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
             </div>
 
             {/* Stats Grid - Reduced Size & More Color */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 mb-10">
                 {stats.map((stat, idx) => (
                     <div key={idx} className={`${stat.color} p-5 md:p-8 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>

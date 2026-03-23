@@ -105,13 +105,19 @@ export const bettingService = {
         }));
     },
 
-    getAllBets: async (): Promise<Bet[]> => {
-        const { data } = await supabase
+    getAllBets: async (matchdayId?: number): Promise<Bet[]> => {
+        let query = supabase
             .from('bets')
             .select(`
                 *,
                 profiles (username, avatar_url, level)
             `);
+
+        if (matchdayId) {
+            query = query.eq('matchday_id', matchdayId);
+        }
+        
+        const { data } = await query;
 
         if (!data) return [];
 
@@ -181,8 +187,7 @@ export const bettingService = {
 
     // --- ADMIN ACTIONS ---
     createMatchday: async (): Promise<{ success: boolean, message: string }> => {
-        // 1. Cleanup old bets before creating new matchday (to keep DB lean and reset rankings)
-        await supabase.from('bets').delete().neq('id', 0); // Delete all existing bets
+        // 1. Cleanup removed - we keep historical bets for the archive/leaderboard
 
         const { data, error } = await supabase.rpc('admin_create_matchday');
         if (error) return { success: false, message: error.message };
@@ -286,9 +291,15 @@ export const bettingService = {
     },
 
 
-    archiveMatchday: async (): Promise<{ success: boolean; message: string; survivalStats?: { eliminated: number; advanced: number } }> => {
-        const md = await bettingService.getMatchday();
-        if (!md) return { success: false, message: "Nessuna giornata attiva" };
+    archiveMatchday: async (matchdayId?: number): Promise<{ success: boolean; message: string; survivalStats?: { eliminated: number; advanced: number } }> => {
+        let md = null;
+        if (matchdayId) {
+            md = await bettingService.getMatchdayById(matchdayId);
+        } else {
+            md = await bettingService.getMatchday();
+        }
+
+        if (!md) return { success: false, message: "Nessuna giornata attiva trovato." };
 
         let survivalStats = undefined;
 
@@ -344,7 +355,7 @@ export const bettingService = {
             if (s > maxScore) maxScore = s;
         });
 
-        const currentTotalPot = (md as any).current_pot || 0;
+        const currentTotalPot = ((md as any).current_pot || 0) + ((md as any).rollover_pot || 0);
         const currentSuper = (md as any).super_jackpot || 0;
         let nextRollover = 0;
         let winnerMsg = "";
@@ -519,7 +530,7 @@ export const bettingService = {
             }
         }
 
-        // 3. ARCHIVE MATCHDAY: close the day, clear pots, zero jackpot, record winners and set animations (reset happens on next admin_create_matchday)
+        // 3. ARCHIVE MATCHDAY: close the day, clear pots, zero jackpot, record winners and set animations
         await supabase
             .from('matchdays')
             .update({
@@ -533,6 +544,24 @@ export const bettingService = {
                 // matches and results kept for leaderboard persistence
             })
             .eq('id', md.id);
+
+        // 4. ROBUST ROLLOVER: If there is an OPEN matchday, push the rollover to it immediately
+        if (nextRollover > 0) {
+            const { data: openMd } = await supabase
+                .from('matchdays')
+                .select('id, current_pot, rollover_pot')
+                .eq('status', 'OPEN')
+                .order('id', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (openMd) {
+                await supabase.from('matchdays').update({
+                    rollover_pot: (openMd.rollover_pot || 0) + nextRollover,
+                    current_pot: (openMd.current_pot || 0) + nextRollover
+                }).eq('id', openMd.id);
+            }
+        }
 
         return {
             success: true,

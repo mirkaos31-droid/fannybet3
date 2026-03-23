@@ -14,18 +14,18 @@ export const FanniesView: React.FC<FanniesViewProps> = ({ matchday }) => {
     const [selectedHistoryMd, setSelectedHistoryMd] = useState<Matchday | null>(null);
     const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 
+    // Determine which matchday to show (Current or Selected from History)
+    const activeMatchday = viewMode === 'CURRENT' ? matchday : (selectedHistoryMd || matchday);
+    // Filter bets for the active matchday
+    const displayedBets = bets;
+
     useEffect(() => {
-        gameService.getAllBets().then(setBets);
+        gameService.getAllBets(activeMatchday.id).then(setBets);
         gameService.getArchivedMatchdays().then(setHistory);
         gameService.getCurrentUser().then(user => {
             if (user) setCurrentUsername(user.username);
         });
-    }, [matchday, viewMode]);
-
-    // Determine which matchday to show (Current or Selected from History)
-    const activeMatchday = viewMode === 'CURRENT' ? matchday : (selectedHistoryMd || matchday);
-    // Filter bets for the active matchday
-    const displayedBets = bets.filter(b => b.matchdayId === activeMatchday.id);
+    }, [activeMatchday.id, viewMode]);
 
     // Privacy Logic: Bets are locked if it's the current matchday AND the deadline hasn't passed
     const isDeadlinePassed = new Date() > new Date(activeMatchday.deadline);

@@ -45,8 +45,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                         return;
                     }
 
-                    const bets = await gameService.getAllBets();
-                    const currentBets = bets.filter(b => b.matchdayId === targetMatchday!.id);
+                    const bets = await gameService.getAllBets(targetMatchday!.id);
+                    const currentBets = bets;
 
                     const ranked: RankedUser[] = currentBets.map(bet => {
                         let score = 0;
