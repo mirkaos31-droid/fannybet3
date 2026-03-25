@@ -42,6 +42,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [userBets, setUserBets] = useState<Bet[]>([]);
     const [view, setView] = useState<ViewMode>('HOME');
     const [survivalStatus, setSurvivalStatus] = useState<'ALIVE' | 'ELIMINATED' | 'WINNER' | null>(null);
+    const [isSurvivalOpen, setIsSurvivalOpen] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
@@ -55,12 +56,20 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
             const bets = await gameService.getUserBets(user.username);
             setUserBets(bets);
 
-            const { players } = await gameService.getSurvivalState();
+            const { season, players } = await gameService.getSurvivalState();
             const me = players.find(p =>
                 (p.userId && user.id && p.userId.toString().toLowerCase() === user.id.toString().toLowerCase()) ||
                 (p.username && user.username && p.username.toLowerCase() === user.username.toLowerCase())
             );
             if (me) setSurvivalStatus(me.status);
+
+            // Check if registrations are open
+            if (season && season.status === 'OPEN') {
+                const deadline = season.startMatchdayDeadline ? new Date(season.startMatchdayDeadline) : null;
+                setIsSurvivalOpen(!deadline || new Date() < deadline);
+            } else {
+                setIsSurvivalOpen(false);
+            }
         }
         setLoading(false);
     }, [user]);
@@ -280,7 +289,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                     className="glass-card card-bright-red col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:-rotate-1"
                                 >
                                     {survivalStatus === 'ALIVE' && (
-                                        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-red-500 text-black text-[10px] font-black animate-pulse"> IN VITA </div>
+                                        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-green-500/20 border border-green-500/30 text-green-500 text-[10px] font-black animate-pulse uppercase italic"> IN VITA </div>
+                                    )}
+                                    {isSurvivalOpen && !survivalStatus && (
+                                        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-yellow-500/20 border border-yellow-500/30 text-yellow-500 text-[10px] font-black animate-pulse uppercase italic shadow-[0_0_15px_rgba(234,179,8,0.3)]"> ISCRIZIONI APERTE </div>
                                     )}
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ff2200]/5 blur-[60px] rounded-full group-hover:bg-[#ff2200]/10 transition-all duration-700"></div>
                                     <div className="mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500">
