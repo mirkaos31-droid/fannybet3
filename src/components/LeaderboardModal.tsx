@@ -87,20 +87,37 @@ const ParticipantRow: React.FC<ParticipantRowProps> = React.memo(({
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                            {expandedPicks.map((pick, i) => (
-                                <div key={i} className="bg-white/5 p-2 rounded-lg flex flex-col items-center justify-center border border-white/5">
-                                    <span className="text-[8px] uppercase font-black text-gray-600 mb-1 truncate w-full text-center tracking-tighter">
-                                        {matchday?.matches[i]?.home || `Match ${i + 1}`}
-                                    </span>
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${pick === '1' ? 'bg-[#5d8aa8] text-white' :
-                                        pick === 'X' ? 'bg-gray-600 text-white' :
-                                            pick === '2' ? 'bg-[#bfff00] text-black' :
-                                                'bg-gray-800 text-transparent'
-                                        }`}>
-                                        {pick || '-'}
+                            {expandedPicks.map((pick, i) => {
+                                const result = matchday?.results?.[i];
+                                const hasResult = result !== null && result !== undefined && result !== '';
+                                const isCorrect = hasResult && pick === result;
+
+                                // Determine styles based on result
+                                const baseStyles = pick === '1' ? 'bg-[#5d8aa8] text-white' :
+                                    pick === 'X' ? 'bg-gray-600 text-white' :
+                                        pick === '2' ? 'bg-[#bfff00] text-black' :
+                                            'bg-gray-800 text-transparent';
+
+                                let resultStyles = '';
+                                if (hasResult) {
+                                    resultStyles = isCorrect
+                                        ? 'border-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]'
+                                        : 'border-2 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)]';
+                                } else {
+                                    resultStyles = 'border border-white/10';
+                                }
+
+                                return (
+                                    <div key={i} className="bg-white/5 p-2 rounded-lg flex flex-col items-center justify-center border border-white/5">
+                                        <span className="text-[8px] uppercase font-black text-gray-600 mb-1 truncate w-full text-center tracking-tighter">
+                                            {matchday?.matches[i]?.home || `Match ${i + 1}`}
+                                        </span>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black transition-all duration-300 ${baseStyles} ${resultStyles}`}>
+                                            {pick || '-'}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
