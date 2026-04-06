@@ -114,6 +114,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
     return (
         <>
+            <div className="noise-overlay"></div>
             {showProfile && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/90 backdrop-blur-xl animate-fade-in" onClick={() => setShowProfile(false)}></div>
@@ -140,8 +141,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                         ></div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.03)_0%,transparent_70%)]"></div>
-                        <div className="mesh-glow bg-brand-purple/10 -top-48 -left-48 animate-pulse-slow"></div>
-                        <div className="mesh-glow bg-brand-orange/5 bottom-0 -right-48 animate-float"></div>
+                        <div className="mesh-glow bg-brand-purple/10 -top-48 -left-48 animate-aura-slow"></div>
+                        <div className="mesh-glow bg-brand-orange/5 bottom-0 -right-48 animate-aura-slow"></div>
                     </div>
                 )}
 
@@ -160,9 +161,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'HOME' && (
                     <div className="relative pt-[6.4rem] pb-6 md:pt-[7.2rem] md:pb-16 text-center animate-fade-in px-2">
-                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.6em] mb-1 md:mb-3 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">benvenuto su</p>
-                        <h1 className="!text-[4.94rem] sm:!text-[8.65rem] md:!text-[18.5rem] font-display font-black italic tracking-tighter leading-[0.72] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_120px_rgba(157,0,255,0.9)] transform-gpu scale-[1.02] md:scale-[1.05]">
+                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.6em] mb-1 md:mb-3 opacity-60">benvenuto su</p>
+                        <h1 className="!text-[4.94rem] sm:!text-[8.65rem] md:!text-[18.5rem] font-display font-black italic tracking-tighter leading-[0.72] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_120px_rgba(157,0,255,0.5)] transform-gpu scale-[1.02] md:scale-[1.05] relative">
                             FANNY<br className="md:hidden" /> BET
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] translate-x-[-200%] animate-shimmer pointer-events-none opacity-30"></div>
                         </h1>
                         <div className="mt-1 md:mt-8 flex justify-center gap-2">
                             <div className="h-[1px] w-6 md:w-20 bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent"></div>
@@ -238,7 +240,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                 {/* 1x2 MODE BUTTON */}
                                 <button
                                     onClick={() => setView('BETTING')}
-                                    className="glass-card card-acid-green col-span-2 group h-[12rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:rotate-1"
+                                    style={{ animationDelay: '0.1s' }}
+                                    className="glass-card card-acid-green col-span-2 group h-[12rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#bfff00]/5 blur-[60px] rounded-full group-hover:bg-[#bfff00]/10 transition-all duration-700"></div>
                                     <div className="mb-2 group-hover:scale-110 transition-transform duration-500">
@@ -251,7 +254,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                 {/* CLASSIFICA BUTTON */}
                                 <button
                                     onClick={() => setView('LEADERBOARD')}
-                                    className="glass-card card-purple col-span-2 group h-[12rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:-rotate-1"
+                                    style={{ animationDelay: '0.2s' }}
+                                    className="glass-card card-purple col-span-2 group h-[12rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#9d00ff]/5 blur-[60px] rounded-full group-hover:bg-[#9d00ff]/10 transition-all duration-700"></div>
                                     <div className="mb-2 group-hover:scale-110 transition-transform duration-500">
@@ -264,7 +268,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                 {/* I FANNIES (SPY) */}
                                 <button
                                     onClick={() => setView('SPY')}
-                                    className="glass-card card-bright-yellow col-span-4 group h-[9rem] sm:h-[14.5rem] md:h-[18rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:scale-[1.01]"
+                                    style={{ animationDelay: '0.3s' }}
+                                    className="glass-card card-bright-yellow col-span-4 group h-[9rem] sm:h-[14.5rem] md:h-[18rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ffee00]/5 blur-[60px] rounded-full group-hover:bg-[#ffee00]/10 transition-all duration-700"></div>
                                     <div className="flex items-center gap-6">
@@ -286,7 +291,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             <div className="grid grid-cols-4 gap-3 md:gap-8">
                                 <button
                                     onClick={() => setView('SURVIVAL')}
-                                    className="glass-card card-bright-red col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:-rotate-1"
+                                    style={{ animationDelay: '0.4s' }}
+                                    className="glass-card card-bright-red col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
                                     {survivalStatus === 'ALIVE' && (
                                         <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-green-500/20 border border-green-500/30 text-green-500 text-[10px] font-black animate-pulse uppercase italic"> IN VITA </div>
@@ -303,14 +309,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                 </button>
                                 <button
                                     onClick={() => setView('FB_LEGA')}
-                                    className="glass-card card-lega-alieno col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 hover:rotate-1"
+                                    style={{ animationDelay: '0.5s' }}
+                                    className="glass-card card-lega-alieno col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#5d8aa8]/20 blur-[60px] rounded-full group-hover:opacity-100 transition-all duration-700"></div>
                                     <div className="mb-2 md:mb-4 group-hover:rotate-12 transition-transform duration-500">
                                         <Shield size={36} className="text-[#5d8aa8] md:w-20 md:h-20 drop-shadow-[0_0_12px_rgba(93,138,168,0.9)] group-hover:text-acid-glow transition-colors" strokeWidth={2.5} />
                                     </div>
                                     <h3 className="text-sm sm:text-2xl md:text-4xl font-black italic tracking-tighter text-white/90 uppercase">FB Lega</h3>
-                                    <p className="text-gray-500 text-[7px] sm:text-xs md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-acid-glow transition-colors">campionati a scontri.</p>
+                                    <p className="text-gray-500 text-[6px] sm:text-[10px] md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-acid-glow transition-colors">partecipa o crea la tua lega.</p>
                                 </button>
                             </div>
                         </div>

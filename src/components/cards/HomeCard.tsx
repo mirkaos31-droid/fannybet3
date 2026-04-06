@@ -13,9 +13,10 @@ export const HomeCard: React.FC<HomeCardProps> = ({ title, subtitle, onClick, cl
   return (
     <button
       onClick={onClick}
-      className={`glass-card ${className} group h-40 sm:h-64 md:h-96 flex flex-col justify-center items-center text-center relative overflow-hidden touch-target`}
+      className={`glass-card ${className} group h-40 sm:h-64 md:h-96 flex-col justify-center items-center text-center relative overflow-hidden touch-target flex`}
     >
-      {badge && <div className="absolute top-2 right-2 z-10">{badge}</div>}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none"></div>
+      {badge && <div className="absolute top-4 right-4 z-10">{badge}</div>}
 
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 blur-[60px] rounded-full group-hover:opacity-100 transition-all duration-700" />
 
