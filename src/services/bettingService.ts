@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import type { Matchday, Match, Bet } from '../types';
+import type { Match, Bet } from '../types';
 import { commonService } from './commonService';
 
 export const bettingService = {
