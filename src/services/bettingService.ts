@@ -1,92 +1,9 @@
 import { supabase } from '../supabaseClient';
 import type { Matchday, Match, Bet } from '../types';
-import { survivalService } from './survivalService'; // Warning: Circular dependency risk if not careful, but processSurvivalRound uses getMatchday.
-// We should probably decouple this. 
-// For now, let's keep getMatchday here and pass it to survivalService where needed, OR duplicate/move logic.
-// In the original gameService, survivalService.processSurvivalRound called gameService.getMatchday.
-// I will keep getMatchday here.
+import { commonService } from './commonService';
 
 export const bettingService = {
     // --- DATA ACCESS ---
-    getMatchday: async (): Promise<Matchday | null> => {
-        // Get the active OPEN matchday
-        const { data, error } = await supabase
-            .from('matchdays')
-            .select('*')
-            .eq('status', 'OPEN')
-            .order('id', { ascending: false })
-            .limit(1)
-            .single();
-
-        if (error || !data) return null;
-
-        return {
-            id: data.id,
-            matches: data.matches as Match[],
-            results: data.results as (string | null)[],
-            superJackpot: data.super_jackpot,
-            currentPot: data.current_pot,
-            rolloverPot: data.rollover_pot,
-            status: data.status as 'OPEN' | 'CLOSED' | 'ARCHIVED',
-            deadline: data.deadline,
-            betsLocked: data.bets_locked || false,
-            winners: data.winners || [],
-            winnerAnimation: data.winner_animation || false,
-            leaderboardAnimation: data.leaderboard_animation || false,
-            jollyMatchIndex: data.jolly_match_index
-        };
-    },
-    getMatchdayById: async (id: number): Promise<Matchday | null> => {
-        const { data, error } = await supabase
-            .from('matchdays')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error || !data) return null;
-
-        return {
-            id: data.id,
-            matches: data.matches as Match[],
-            results: data.results as (string | null)[],
-            superJackpot: data.super_jackpot,
-            currentPot: data.current_pot,
-            rolloverPot: data.rollover_pot,
-            status: data.status as 'OPEN' | 'CLOSED' | 'ARCHIVED',
-            deadline: data.deadline,
-            betsLocked: data.bets_locked || false,
-            winners: data.winners || [],
-            winnerAnimation: data.winner_animation || false,
-            leaderboardAnimation: data.leaderboard_animation || false,
-            jollyMatchIndex: data.jolly_match_index
-        };
-    },
-
-    getArchivedMatchdays: async (): Promise<Matchday[]> => {
-        const { data } = await supabase
-            .from('matchdays')
-            .select('*')
-            .eq('status', 'ARCHIVED')
-            .order('id', { ascending: false });
-
-        if (!data) return [];
-
-        return data.map(d => ({
-            id: d.id,
-            matches: d.matches as Match[],
-            results: d.results as (string | null)[],
-            superJackpot: d.super_jackpot,
-            currentPot: d.current_pot,
-            rolloverPot: d.rollover_pot,
-            status: d.status as 'ARCHIVED',
-            deadline: d.deadline,
-            betsLocked: d.bets_locked || false,
-            winners: d.winners || [],
-            winnerAnimation: d.winner_animation || false,
-            leaderboardAnimation: d.leaderboard_animation || false,
-            jollyMatchIndex: d.jolly_match_index
-        }));
-    },
 
     getGlobalRanking: async (): Promise<{ username: string; totalPoints: number; level: number; avatarUrl?: string }[]> => {
         const { data } = await supabase
@@ -127,16 +44,16 @@ export const bettingService = {
             username: b.profiles?.username || 'Sconosciuto',
             avatarUrl: b.profiles?.avatar_url,
             matchdayId: b.matchday_id,
-            predictions: b.predictions,
+            predictions: b.predictions || Array(12).fill('?'),
             includeSuperJackpot: b.include_super_jackpot,
-            timestamp: b.created_at,
+            timestamp: b.created_at || new Date().toISOString(),
             amount: b.amount,
             level: b.profiles?.level || 1
         }));
     },
 
     getUserBets: async (username: string): Promise<Bet[]> => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return [];
 
         const { data: profile } = await supabase
@@ -160,7 +77,7 @@ export const bettingService = {
             id: bet.id,
             username: username,
             matchdayId: bet.matchday_id,
-            predictions: bet.predictions,
+            predictions: bet.predictions || Array(12).fill('?'),
             includeSuperJackpot: bet.include_super_jackpot,
             timestamp: bet.created_at || new Date().toISOString()
         }));
@@ -196,7 +113,7 @@ export const bettingService = {
     },
 
     updateMatch: async (idx: number, newMatch: Match) => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return;
 
         const updatedMatches = [...md.matches];
@@ -209,7 +126,7 @@ export const bettingService = {
     },
 
     updateMatchResult: async (idx: number, result: string | null) => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return;
 
         const updatedResults = [...md.results];
@@ -222,7 +139,7 @@ export const bettingService = {
     },
 
     updateSuperJackpot: async (amount: number) => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return;
 
         await supabase.from('matchdays').update({ super_jackpot: amount }).eq('id', md.id);
@@ -230,7 +147,7 @@ export const bettingService = {
 
     // Verify and fix pot synchronization
     verifyAndFixPot: async () => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return { success: false, message: 'No open matchday found' };
 
         const { data: bets } = await supabase
@@ -257,7 +174,7 @@ export const bettingService = {
     },
 
     updateDeadline: async (deadline: string) => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return;
 
         // Set the deadline; bets remain allowed until that timestamp (server-time comparison)
@@ -265,7 +182,7 @@ export const bettingService = {
     },
 
     setBetLock: async (lock: boolean) => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return { success: false, message: 'No active matchday' };
 
         const { error } = await supabase.from('matchdays').update({ bets_locked: lock }).eq('id', md.id);
@@ -274,7 +191,7 @@ export const bettingService = {
     },
 
     resetMatchday: async () => {
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md) return;
 
         // Clear results
@@ -294,9 +211,9 @@ export const bettingService = {
     archiveMatchday: async (matchdayId?: number): Promise<{ success: boolean; message: string; survivalStats?: { eliminated: number; advanced: number } }> => {
         let md = null;
         if (matchdayId) {
-            md = await bettingService.getMatchdayById(matchdayId);
+            md = await commonService.getMatchdayById(matchdayId);
         } else {
-            md = await bettingService.getMatchday();
+            md = await commonService.getMatchday();
         }
 
         if (!md) return { success: false, message: "Nessuna giornata attiva trovato." };
@@ -306,6 +223,8 @@ export const bettingService = {
         // 1. AUTO-PROCESS SURVIVAL ROUND
         try {
             console.log("Auto-processing Survival Round...");
+            // Use local import to break circular dependency
+            const { survivalService } = await import('./survivalService');
             const survivalRes = await survivalService.processSurvivalRound(md.id);
             if (survivalRes.success) {
                 console.log("Survival Round Processed:", survivalRes);

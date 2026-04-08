@@ -1,12 +1,14 @@
 import { authService } from './authService';
 import { bettingService } from './bettingService';
 import { survivalService } from './survivalService';
+import { commonService } from './commonService';
 import { fbLegaService } from './fbLegaService';
 import { supabase } from '../supabaseClient';
 
 // Facade pattern: Re-export everything as a sigle gameService object
 export const gameService = {
     ...authService,
+    ...commonService,
     ...bettingService,
     ...survivalService,
     ...fbLegaService,

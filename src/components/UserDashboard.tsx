@@ -14,6 +14,7 @@ import { Zap, Eye, Trophy, Skull, Shield } from 'lucide-react';
 import { FBLegaView } from './FBLegaView';
 import { CardGallery } from './CardGallery';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const SectionHeader: React.FC<{ title: string; subtitle?: string; color?: string }> = ({ title, subtitle, color = "border-white/10" }) => (
     <div className={`flex flex-col mb-4 md:mb-8 border-l-4 ${color} pl-4 md:pl-6 py-1 md:py-2`}>
@@ -331,8 +332,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
                 {view === 'SPY' && matchday && (
-                    <div className="relative animate-fade-in">
-                        <FanniesView matchday={matchday} />
+                    <div className="relative animate-fade-in group">
+                        <ErrorBoundary>
+                            <FanniesView matchday={matchday} />
+                        </ErrorBoundary>
                     </div>
                 )}
                 {view === 'LEADERBOARD' && (

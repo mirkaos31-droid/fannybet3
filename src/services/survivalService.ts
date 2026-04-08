@@ -1,6 +1,6 @@
 import { supabase } from '../supabaseClient';
 import type { SurvivalSeason, SurvivalPlayer, SurvivalPick } from '../types';
-import { bettingService } from './bettingService'; // Use the new service
+import { commonService } from './commonService'; // Use the new service
 
 // Database record interfaces
 interface DbSurvivalPlayerRecord {
@@ -70,7 +70,7 @@ export const survivalService = {
         console.log('Raw players from DB:', players);
 
         // 3. Get current matchday
-        const openMD = await bettingService.getMatchday();
+        const openMD = await commonService.getMatchday();
 
         // 4. Get all picks for current matchday
         let picks: SurvivalPick[] = [];
@@ -149,7 +149,7 @@ export const survivalService = {
     // --- SURVIVAL ADMIN ---
     processSurvivalRound: async (matchdayId: number): Promise<{ success: boolean; message: string; eliminated?: number; advanced?: number }> => {
         // 1. Get Matchday Results
-        const md = await bettingService.getMatchday();
+        const md = await commonService.getMatchday();
         if (!md || md.id !== matchdayId) return { success: false, message: "Matchday not found or not active" };
 
         // 2. Get active season
