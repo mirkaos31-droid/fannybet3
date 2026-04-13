@@ -274,8 +274,8 @@ export const bettingService = {
             if (s > maxScore) maxScore = s;
         });
 
-        const currentTotalPot = ((md as any).current_pot || 0) + ((md as any).rollover_pot || 0);
-        const currentSuper = (md as any).super_jackpot || 0;
+        const currentTotalPot = (md.currentPot || 0) + (md.rolloverPot || 0);
+        const currentSuper = md.superJackpot || 0;
         let nextRollover = 0;
         let winnerMsg = "";
         let standardWinnersUsernames: string[] = [];
@@ -284,7 +284,7 @@ export const bettingService = {
         const userEarnings = new Map<string, { tokens: number; wins: number; userId: string }>();
 
         // Process Standard Winners
-        if (maxScore >= 7 && currentTotalPot > 0) {
+        if (maxScore >= 8 && currentTotalPot > 0) {
             console.log("STANDARD POT WINNER(S) FOUND");
             const winners = currentBets.filter(bet => {
                 let s = 0;
@@ -391,6 +391,32 @@ export const bettingService = {
                         .from('user_cards')
                         .upsert(
                             { user_id: winner.userId, card_id: superJCard.id },
+                            { onConflict: 'user_id,card_id' }
+                        );
+                }
+            }
+        }
+
+        // 2.7 🏆 AWARD "UN PUNTO" CARD
+        const onePointUsers = currentBets.filter(bet => {
+            let s = 0;
+            results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
+            return s === 1;
+        });
+
+        if (onePointUsers.length > 0) {
+            const { data: onePointCard } = await supabase
+                .from('collectible_cards')
+                .select('id')
+                .eq('title', 'Un Punto')
+                .single();
+
+            if (onePointCard) {
+                for (const user of onePointUsers) {
+                    await supabase
+                        .from('user_cards')
+                        .upsert(
+                            { user_id: user.userId, card_id: onePointCard.id },
                             { onConflict: 'user_id,card_id' }
                         );
                 }

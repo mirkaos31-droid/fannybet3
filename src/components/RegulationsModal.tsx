@@ -31,7 +31,7 @@ export const RegulationsModal: React.FC<RegulationsModalProps> = ({ isOpen, onCl
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm">
                             Scommetti sull'esito delle partite selezionate per la giornata.
-                            Indovinare almeno <span className="text-white">7 risultati su 10</span> ti permette di vincere il <span className="text-brand-gold">MONTE PREMI</span>.
+                            Indovinare almeno <span className="text-white">8 risultati su 10</span> ti permette di vincere il <span className="text-brand-gold">MONTE PREMI</span>.
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500 text-[10px] md:text-xs">
                             <li><span className="text-white font-bold">1</span>: Vittoria Casa | <span className="text-white font-bold">X</span>: Pareggio | <span className="text-white font-bold">2</span>: Vittoria Trasferta</li>
