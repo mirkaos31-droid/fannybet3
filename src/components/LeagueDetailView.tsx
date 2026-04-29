@@ -32,6 +32,28 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
     const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES' | 'HISTORICAL_LEADERBOARD' | 'ARCHIVE_LIST'>('NONE');
 
+    // [NEW] History Management for Modals
+    useEffect(() => {
+        const handlePopState = (event: PopStateEvent) => {
+            const modalInState = event.state?.activeModal || 'NONE';
+            setActiveModal(modalInState);
+        };
+
+        // Initialize history state if not present
+        if (!window.history.state) {
+            window.history.replaceState({ activeModal: 'NONE' }, '');
+        }
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const updateModal = (newModal: typeof activeModal) => {
+        if (newModal === activeModal) return;
+        window.history.pushState({ activeModal: newModal }, '');
+        setActiveModal(newModal);
+    };
+
     // Bonus Notifications Hook - deve essere chiamato sempre, prima di qualsiasi return condizionale
     useBonusNotifications({
         leagueId,
@@ -129,7 +151,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             const result = await gameService.submitPicks(leagueId, matchday.id, myPicks);
             if (result.success) {
                 toast.success(result.message);
-                setActiveModal('NONE');
+                updateModal('NONE');
                 loadLeagueData(); // Refresh to see updated status
             } else {
                 toast.error(result.message);
@@ -157,7 +179,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
             setHistoricalParticipants(histParticipants);
             setSelectedHistoryMd({ matchday: fullMatchday, round: roundNum });
-            setActiveModal('HISTORICAL_LEADERBOARD');
+            updateModal('HISTORICAL_LEADERBOARD');
         } catch (err) {
             console.error('Error loading history:', err);
             toast.error('Errore nel caricamento dell\'archivio');
@@ -235,7 +257,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
             {/* 1. HORIZONTAL RULES BAR (Thin, under header) */}
             <button
-                onClick={() => setActiveModal('RULES')}
+                onClick={() => updateModal('RULES')}
                 className="w-full mb-4 group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#1a2c38] border border-white/10 transition-all duration-300"
             >
                 <div className="flex items-center gap-3">
@@ -252,7 +274,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {/* LA SCHEDINA */}
                 <button
-                    onClick={() => setActiveModal('PREDICTIONS')}
+                    onClick={() => updateModal('PREDICTIONS')}
                     className={`card-interstellar-action group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left ${filledPicksCount === 10
                         ? 'border-[#bfff00]/30'
                         : 'border-white/5'
@@ -287,7 +309,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
                 {/* CLASSIFICA */}
                 <button
-                    onClick={() => setActiveModal('LEADERBOARD')}
+                    onClick={() => updateModal('LEADERBOARD')}
                     className="card-interstellar-action group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left"
                 >
                     <div className="technical-corner corner-tl"></div>
@@ -314,7 +336,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
                 {/* ARCHIVIO */}
                 <button
-                    onClick={() => setActiveModal('ARCHIVE_LIST')}
+                    onClick={() => updateModal('ARCHIVE_LIST')}
                     className="card-interstellar-action group relative h-48 md:h-60 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left col-span-2 lg:col-span-1"
                 >
                     <div className="technical-corner corner-tl"></div>
@@ -353,7 +375,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             {/* 1. LEADERBOARD MODAL (LIVE) */}
             <LeaderboardModal
                 isOpen={activeModal === 'LEADERBOARD'}
-                onClose={() => setActiveModal('NONE')}
+                onClose={() => window.history.back()}
                 participants={participants}
                 currentUserId={user?.id}
                 leagueId={league.id}
@@ -365,19 +387,20 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             {selectedHistoryMd && (
                 <LeaderboardModal
                     isOpen={activeModal === 'HISTORICAL_LEADERBOARD'}
-                    onClose={() => setActiveModal('NONE')}
+                    onClose={() => window.history.back()}
                     participants={historicalParticipants}
                     currentUserId={user?.id}
                     leagueId={league.id}
                     matchday={selectedHistoryMd.matchday}
                     title={`Classifica Giornata ${selectedHistoryMd.round}`}
+                    showBackButton={true}
                 />
             )}
 
             {/* 2. PREDICTIONS MODAL */}
             <PredictionsModal
                 isOpen={activeModal === 'PREDICTIONS'}
-                onClose={() => setActiveModal('NONE')}
+                onClose={() => window.history.back()}
                 matchday={matchday}
                 myPicks={myPicks}
                 onPickChange={(idx, sign) => {
@@ -392,14 +415,14 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             {/* 3. RULES MODAL */}
             <LeagueRulesModal
                 isOpen={activeModal === 'RULES'}
-                onClose={() => setActiveModal('NONE')}
+                onClose={() => window.history.back()}
                 bonusX={bonusX}
             />
 
             {/* 4. ARCHIVE LIST MODAL */}
             <LeagueArchiveModal
                 isOpen={activeModal === 'ARCHIVE_LIST'}
-                onClose={() => setActiveModal('NONE')}
+                onClose={() => window.history.back()}
                 matchdays={archiveMatchdays}
                 onSelectMatchday={handleShowHistory}
             />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trophy, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Trophy, X, ChevronDown, ChevronUp, Loader2, ArrowLeft } from 'lucide-react';
 import type { FBLeagueParticipant, Matchday } from '../types';
 import { gameService } from '../services/gameService';
 import { BonusBadges } from './BonusBadges';
@@ -12,6 +12,7 @@ interface LeaderboardModalProps {
     leagueId?: number;
     matchday?: Matchday | null;
     title?: string; // [NEW] Optional title for historical views
+    showBackButton?: boolean; // [NEW] If true, shows an arrow instead of X
 }
 
 interface ParticipantRowProps {
@@ -133,7 +134,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     currentUserId,
     leagueId,
     matchday,
-    title = "Classifica"
+    title = "Classifica",
+    showBackButton = false
 }) => {
     const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
     const [expandedPicks, setExpandedPicks] = useState<string[] | null>(null);
@@ -172,9 +174,13 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             <div className="relative z-10 w-full max-w-4xl bg-[#0a0a0c] border border-white/10 rounded-[2.5rem] p-6 md:p-10 animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col [will-change:transform]">
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+                    className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors group"
                 >
-                    <X size={20} className="text-gray-400" />
+                    {showBackButton ? (
+                        <ArrowLeft size={20} className="text-[#5d8aa8] group-hover:-translate-x-1 transition-transform" />
+                    ) : (
+                        <X size={20} className="text-gray-400" />
+                    )}
                 </button>
 
                 <div className="flex items-center gap-3 mb-8">

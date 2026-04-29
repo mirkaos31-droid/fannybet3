@@ -147,188 +147,200 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
             </div>
 
             {loading ? (
-                <div className="flex justify-center py-20">
-                    <div className="w-10 h-10 border-4 border-brand-purple/20 border-t-brand-purple rounded-full animate-spin"></div>
+                <div className="flex flex-col items-center justify-center py-24">
+                    <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 border-4 border-brand-purple/20 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-t-brand-purple rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 bg-brand-purple/10 blur-xl rounded-full animate-pulse"></div>
+                    </div>
+                    <p className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-pulse">Sincronizzazione Classifica...</p>
                 </div>
             ) : (
                 <>
-                    {/* MINI PODIO */}
+                    {/* MODERNISED PODIUM WITH PEDESTALS */}
                     {currentRankingData.length > 0 && (
-                        <div className="flex justify-center items-end gap-2 md:gap-8 pt-8 pb-4 relative">
+                        <div className="flex justify-center items-end gap-3 md:gap-12 pt-16 pb-12 relative px-2">
+                            {/* Ambient Glow behind podium */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-brand-purple/5 blur-[120px] rounded-full pointer-events-none"></div>
+
                             {/* 2nd Place (Left) */}
                             {podium[1] && (
-                                <div className="flex flex-col items-center group scale-90 md:scale-95 translate-y-2">
-                                    <div className="relative mb-3">
-                                        <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full border-4 p-1 bg-black/40 overflow-hidden shadow-[0_0_20px_rgba(148,163,184,0.3)] group-hover:scale-110 transition-transform duration-500
-                                            ${displayMatchday?.status === 'ARCHIVED' && podium[1].score >= 10 ? 'super-jackpot-crown' : 
-                                              displayMatchday?.status === 'ARCHIVED' && podium[1].score >= 7 ? 'grand-jackpot-glow' : 'border-slate-400'}`}>
+                                <div className="flex flex-col items-center group flex-1 max-w-[140px] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+                                    <div className="relative mb-0 z-10 transition-transform duration-500 group-hover:scale-110">
+                                        <div className={`w-16 h-16 md:w-24 md:h-24 rounded-2xl border-2 p-1 bg-black/60 rotate-[-4deg] overflow-hidden shadow-[0_0_30px_rgba(148,163,184,0.2)] 
+                                            ${displayMatchday?.status === 'ARCHIVED' && podium[1].score >= 10 ? 'super-jackpot-crown border-brand-diamond' : 'border-slate-400/40'}`}>
                                             {podium[1].avatarUrl ? (
                                                 <img src={podium[1].avatarUrl} alt={podium[1].username} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center font-black text-slate-400 bg-slate-900">
+                                                <div className="w-full h-full flex items-center justify-center font-black text-2xl text-slate-400 bg-slate-900/50">
                                                     {podium[1].username.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        {displayMatchday?.status === 'ARCHIVED' && podium[1].score >= 10 && (
-                                            <div className="absolute -top-3 -left-3 animate-super-pulse text-lg">💎</div>
-                                        )}
-                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-400 text-black flex items-center justify-center font-black text-xs">2</div>
+                                        <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-lg bg-slate-400 text-black flex items-center justify-center font-black text-xs shadow-xl border border-white/20 rotate-[4deg]">2</div>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-tighter truncate max-w-[80px]">{podium[1].username}</span>
-                                        {podium[1].includeSuperJackpot && <Gem size={10} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
+                                    {/* Pedestal */}
+                                    <div className="w-full h-24 md:h-32 bg-gradient-to-b from-slate-400/10 to-transparent border-t-2 border-slate-400/30 rounded-t-2xl backdrop-blur-sm -mt-4 pt-8 flex flex-col items-center">
+                                        <div className="px-2 text-center">
+                                            <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-tight truncate w-full mb-1">{podium[1].username}</div>
+                                            <div className="text-xl md:text-2xl font-display font-black text-white leading-none">
+                                                {podium[1].score}<span className="text-[8px] opacity-40 ml-0.5">/12</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span className="text-lg md:text-xl font-display font-black text-white">{podium[1].score}<span className="text-[10px] opacity-40">{podium[1].extra}</span></span>
                                 </div>
                             )}
 
                             {/* 1st Place (Center) */}
                             {podium[0] && (
-                                <div className="flex flex-col items-center group relative z-10 -translate-y-4">
-                                    <div className="relative mb-4">
-                                        {/* Crown & Glow ONLY for Official Winners in Archived Matchdays */}
+                                <div className="flex flex-col items-center group flex-1 max-w-[160px] relative z-20 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+                                    <div className="relative mb-0 z-30 transition-transform duration-700 group-hover:scale-115">
+                                        {/* Crown logic preserved */}
                                         {viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username) && (
-                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">👑</div>
+                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 animate-bounce drop-shadow-[0_0_15px_rgba(250,204,21,0.8)] text-3xl">👑</div>
                                         )}
 
-                                        <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-4 p-1.5 bg-black/40 overflow-hidden transition-transform duration-500 group-hover:scale-110 
+                                        <div className={`w-20 h-20 md:w-32 md:h-32 rounded-3xl border-2 p-1.5 bg-black/80 rotate-[0deg] overflow-hidden shadow-[0_0_50px_rgba(255,204,0,0.3)]
                                             ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
-                                                ? 'winner-card-glow border-yellow-400' // Winner Style
-                                                : displayMatchday?.status === 'ARCHIVED' && podium[0].score >= 10 ? 'super-jackpot-crown'
-                                                : displayMatchday?.status === 'ARCHIVED' && podium[0].score >= 7 ? 'grand-jackpot-glow'
-                                                : 'border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)]' // Standard Leader Style
+                                                ? 'winner-card-glow border-yellow-400' 
+                                                : 'border-brand-gold/40' 
                                             }`}>
                                             {podium[0].avatarUrl ? (
                                                 <img src={podium[0].avatarUrl} alt={podium[0].username} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className={`w-full h-full flex items-center justify-center font-black text-2xl 
+                                                <div className={`w-full h-full flex items-center justify-center font-black text-4xl 
                                                     ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
                                                         ? 'text-yellow-400 bg-yellow-950/20'
-                                                        : 'text-white/40 bg-white/5'
+                                                        : 'text-brand-gold/60 bg-brand-gold/5'
                                                     }`}>
                                                     {podium[0].username.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        {displayMatchday?.status === 'ARCHIVED' && podium[0].score >= 10 && (
-                                            <div className="absolute -top-2 -left-2 animate-super-pulse text-2xl">💎</div>
-                                        )}
-                                        <div className={`absolute -bottom-2 right-0 w-8 h-8 rounded-full text-black flex items-center justify-center font-black text-sm shadow-lg
+                                        <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 w-10 h-10 rounded-xl text-black flex items-center justify-center font-black text-lg shadow-2xl border-2 border-white/20
                                             ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
                                                 ? 'bg-yellow-400'
-                                                : 'bg-white/80'
+                                                : 'bg-brand-gold'
                                             }`}>1</div>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <span className={`text-xs md:text-sm font-black uppercase tracking-tighter truncate max-w-[120px] 
-                                            ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
-                                                ? 'text-yellow-500'
-                                                : 'text-white/60'
-                                            }`}>
-                                            {podium[0].username}
-                                        </span>
-                                        {podium[0].includeSuperJackpot && <Gem size={12} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
+                                    {/* Pedestal - HIGHER */}
+                                    <div className="w-full h-32 md:h-44 bg-gradient-to-b from-brand-gold/20 to-transparent border-t-2 border-brand-gold/40 rounded-t-3xl backdrop-blur-md -mt-6 pt-10 flex flex-col items-center">
+                                        <div className="px-2 text-center">
+                                            <div className={`text-xs md:text-sm font-black uppercase tracking-widest truncate w-full mb-1 
+                                                ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
+                                                    ? 'text-yellow-400' : 'text-white'}`}>
+                                                {podium[0].username}
+                                            </div>
+                                            <div className="text-3xl md:text-4xl font-display font-black text-white leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                                                {podium[0].score}<span className="text-xs opacity-40 ml-1">/12</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span className="text-2xl md:text-3xl font-display font-black text-white">{podium[0].score}<span className="text-[10px] opacity-40">{podium[0].extra}</span></span>
                                 </div>
                             )}
 
                             {/* 3rd Place (Right) */}
                             {podium[2] && (
-                                <div className="flex flex-col items-center group scale-80 md:scale-90 translate-y-4">
-                                    <div className="relative mb-2">
-                                        <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-4 p-1 bg-black/40 overflow-hidden shadow-[0_0_20px_rgba(194,65,12,0.3)] group-hover:scale-110 transition-transform duration-500
-                                            ${displayMatchday?.status === 'ARCHIVED' && podium[2].score >= 10 ? 'super-jackpot-crown' : 
-                                              displayMatchday?.status === 'ARCHIVED' && podium[2].score >= 7 ? 'grand-jackpot-glow' : 'border-orange-700'}`}>
+                                <div className="flex flex-col items-center group flex-1 max-w-[140px] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                                    <div className="relative mb-0 z-10 transition-transform duration-500 group-hover:scale-110">
+                                        <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl border-2 p-1 bg-black/60 rotate-[4deg] overflow-hidden shadow-[0_0_30px_rgba(180,83,9,0.2)] 
+                                            ${displayMatchday?.status === 'ARCHIVED' && podium[2].score >= 10 ? 'super-jackpot-crown border-brand-diamond' : 'border-orange-700/40'}`}>
                                             {podium[2].avatarUrl ? (
                                                 <img src={podium[2].avatarUrl} alt={podium[2].username} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center font-black text-orange-700 bg-orange-950/20">
+                                                <div className="w-full h-full flex items-center justify-center font-black text-xl text-orange-700 bg-orange-950/30">
                                                     {podium[2].username.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        {displayMatchday?.status === 'ARCHIVED' && podium[2].score >= 10 && (
-                                            <div className="absolute -top-3 -left-3 animate-super-pulse text-base">💎</div>
-                                        )}
-                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-orange-700 text-white flex items-center justify-center font-black text-[10px]">3</div>
+                                        <div className="absolute -bottom-2 -left-2 w-6 h-6 rounded-lg bg-orange-700 text-white flex items-center justify-center font-black text-[10px] shadow-xl border border-white/10 rotate-[-4deg]">3</div>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-[9px] md:text-[11px] font-black text-orange-900 uppercase tracking-tighter truncate max-w-[70px]">{podium[2].username}</span>
-                                        {podium[2].includeSuperJackpot && <Gem size={10} className="text-cyan-400 fill-cyan-400/20 animate-pulse" />}
+                                    {/* Pedestal */}
+                                    <div className="w-full h-20 md:h-28 bg-gradient-to-b from-orange-700/10 to-transparent border-t-2 border-orange-700/30 rounded-t-2xl backdrop-blur-sm -mt-4 pt-8 flex flex-col items-center">
+                                        <div className="px-2 text-center">
+                                            <div className="text-[8px] md:text-[9px] font-black text-orange-400 uppercase tracking-tight truncate w-full mb-1">{podium[2].username}</div>
+                                            <div className="text-lg md:text-xl font-display font-black text-white leading-none">
+                                                {podium[2].score}<span className="text-[7px] opacity-40 ml-0.5">/12</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span className="text-base md:text-lg font-display font-black text-white">{podium[2].score}<span className="text-[10px] opacity-40">{podium[2].extra}</span></span>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* REST OF THE LIST - Thinner Cards with Purple Glow */}
-                    <div className="max-w-2xl mx-auto space-y-2 mt-8">
+                    {/* PREMIUM LIST VIEW */}
+                    <div className="max-w-3xl mx-auto space-y-3 mt-4 relative">
                         {list.length === 0 && currentRankingData.length <= 3 ? (
-                            <div className="text-center py-10">
-                                {currentRankingData.length === 0 && (
-                                    <div className="text-gray-500 text-sm italic font-mono uppercase tracking-[0.2em]">Ancora nessuna giocata valida.</div>
-                                )}
+                            <div className="text-center py-20 bg-white/5 rounded-[2.5rem] border border-dashed border-white/10">
+                                <p className="text-gray-500 text-xs font-black uppercase tracking-[0.3em] italic">In attesa dei primi sfidanti...</p>
                             </div>
                         ) : (
                             list.map((user, idx) => {
                                 const actualRank = idx + 4;
-                                // Level based styles with much more prominent glow
-                                const levelStyles: Record<number, string> = {
-                                    1: 'border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.1)]',
-                                    2: 'border-green-400 shadow-[0_0_25px_rgba(34,197,94,0.4)] bg-green-500/10',
-                                    3: 'border-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.5)] bg-blue-500/10',
-                                    4: 'border-brand-purple shadow-[0_0_35px_rgba(157,0,255,0.6)] bg-brand-purple/10',
-                                    5: 'border-red-400 shadow-[0_0_40px_rgba(239,68,68,0.7)] bg-red-500/15 ring-1 ring-red-400/50'
-                                };
-
-                                // Reward animations for archived matchdays
-                                let rewardStyle = "";
-                                if (displayMatchday?.status === "ARCHIVED" && viewType === "MATCHDAY") {
-                                    if (user.score >= 10) rewardStyle = "super-jackpot-crown";
-                                    else if (user.score >= 7) rewardStyle = "grand-jackpot-glow";
-                                }
+                                const delay = Math.min(idx * 50, 1000); // Stagger effect
 
                                 return (
                                     <div
                                         key={`${user.username}-${idx}`}
-                                        className={`group flex items-center px-6 py-3 bg-black/60 backdrop-blur-md rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] ${rewardStyle || levelStyles[user.level] || levelStyles[1]}`}
+                                        style={{ animationDelay: `${delay}ms` }}
+                                        className="group flex items-center px-6 py-4 bg-white/[0.02] hover:bg-white/[0.05] backdrop-blur-xl rounded-2xl border border-white/5 hover:border-brand-purple/30 transition-all duration-500 transform hover:-translate-y-1 animate-in fade-in slide-in-from-right-4 fill-mode-both"
                                     >
-                                        <div className="w-8 font-mono font-black text-sm text-white/90 mr-2 relative">
-                                            #{actualRank}
-                                            {rewardStyle === "super-jackpot-crown" && (
-                                                <span className="absolute -top-3 -left-3 animate-super-pulse text-xs">💎</span>
-                                            )}
+                                        {/* Rank Info */}
+                                        <div className="w-12 flex flex-col items-center justify-center mr-4 border-r border-white/10 pr-4">
+                                            <span className="text-[10px] font-mono font-black text-gray-500 uppercase leading-none mb-1">POS</span>
+                                            <span className="text-lg font-display font-black text-white/80 group-hover:text-brand-purple transition-colors">#{actualRank}</span>
                                         </div>
 
-                                        <div className="flex-1 flex items-center gap-3">
-                                            <div className="w-11 h-11 rounded-full border-2 border-white/20 p-[2px] overflow-hidden group-hover:border-white/50 transition-colors">
-                                                {user.avatarUrl ? (
-                                                    <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-black text-xs text-brand-purple bg-brand-purple/10 uppercase">
-                                                        {user.username.charAt(0)}
+                                        {/* Avatar \u0026 Name */}
+                                        <div className="flex-1 flex items-center gap-4">
+                                            <div className="relative">
+                                                <div className="w-12 h-12 rounded-xl border border-white/10 p-0.5 overflow-hidden bg-black/40 group-hover:border-brand-purple/50 transition-colors">
+                                                    {user.avatarUrl ? (
+                                                        <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center font-black text-sm text-brand-purple bg-brand-purple/10">
+                                                            {user.username.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {user.level > 1 && (
+                                                    <div className="absolute -top-2 -right-2 bg-brand-purple text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-white/20">
+                                                        L{user.level}
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="font-display font-black italic text-white uppercase tracking-tighter text-lg flex items-center gap-2">
-                                                {user.username}
-                                                {user.includeSuperJackpot && <Gem size={14} className="text-cyan-400 fill-cyan-400/20 shadow-[0_0_10px_rgba(34,211,238,0.5)]" />}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="font-display font-black italic text-white uppercase tracking-tight text-lg leading-tight flex items-center gap-2">
+                                                    {user.username}
+                                                    {user.includeSuperJackpot && <Gem size={12} className="text-cyan-400 animate-pulse" />}
+                                                </span>
+                                                <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Sfidante Elite</span>
+                                            </div>
                                         </div>
 
+                                        {/* Score Section */}
                                         <div className="flex items-center gap-6">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-2xl font-display font-black text-white leading-none">
-                                                    {user.score}<span className="text-[10px] text-gray-500 font-sans font-black uppercase ml-1">{user.extra}</span>
-                                                </span>
-                                                {viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && user.score >= 7 && (
-                                                    <span className={`text-[7px] font-black uppercase tracking-[0.2em] mt-1 animate-pulse px-2 py-0.5 rounded-full border ${user.score >= 10 ? 'bg-cyan-500/20 text-cyan-400 border-cyan-400/40' : 'bg-brand-purple/20 text-brand-purple border-brand-purple/40'}`}>
-                                                        🏆 {user.score >= 10 ? 'SUPERJACKPOT' : 'WINNER'}
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-3xl font-display font-black text-white tabular-nums">
+                                                        {user.score}
                                                     </span>
+                                                    <span className="text-[10px] font-black text-gray-500 uppercase">{user.extra}</span>
+                                                </div>
+                                                
+                                                {viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && user.score >= 7 && (
+                                                    <div className={`flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md border text-[7px] font-black uppercase tracking-widest
+                                                        ${user.score >= 10 ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-brand-purple/10 text-brand-purple border-brand-purple/30'}`}>
+                                                        <Gem size={8} /> {user.score >= 10 ? 'SUPERJACKPOT' : 'WINNER'}
+                                                    </div>
                                                 )}
+                                            </div>
+                                            <div className="w-1.5 h-10 bg-white/5 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="w-full bg-brand-purple/40 transition-all duration-1000"
+                                                    style={{ height: `${(user.score / 12) * 100}%`, transitionDelay: `${delay + 300}ms` }}
+                                                ></div>
                                             </div>
                                         </div>
                                     </div>

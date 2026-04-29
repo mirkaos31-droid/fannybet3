@@ -216,14 +216,13 @@ export const bettingService = {
             md = await commonService.getMatchday();
         }
 
-        if (!md) return { success: false, message: "Nessuna giornata attiva trovato." };
+        if (!md) return { success: false, message: "Nessuna giornata attiva trovata." };
 
         let survivalStats = undefined;
 
-        // 1. AUTO-PROCESS SURVIVAL ROUND
+        // 1. AUTO-PROCESS SURVIVAL ROUND (Keep separate for now as it uses complex JS logic)
         try {
             console.log("Auto-processing Survival Round...");
-            // Use local import to break circular dependency
             const { survivalService } = await import('./survivalService');
             const survivalRes = await survivalService.processSurvivalRound(md.id);
             if (survivalRes.success) {
@@ -232,288 +231,34 @@ export const bettingService = {
                     eliminated: survivalRes.eliminated || 0,
                     advanced: survivalRes.advanced || 0
                 };
-            } else {
-                console.warn("Survival Process Warning:", survivalRes.message);
             }
         } catch (err) {
             console.error("Survival Process Error:", err);
         }
 
-
-        // 2. CALCULATE 1X2 WINNERS & SUPER JACKPOT
-        const { data: currentBetsData } = await supabase
-            .from('bets')
-            .select(`
-                *,
-                profiles (username, avatar_url, level)
-            `)
-            .eq('matchday_id', md.id);
-
-        const currentBets = (currentBetsData || []).map(b => {
-            const profile = Array.isArray(b.profiles) ? b.profiles[0] : b.profiles;
-            return {
-                id: b.id,
-                username: profile?.username || 'Sconosciuto',
-                avatarUrl: profile?.avatar_url,
-                level: profile?.level || 1,
-                matchdayId: b.matchday_id,
-                predictions: b.predictions,
-                includeSuperJackpot: b.include_super_jackpot,
-                timestamp: b.created_at || new Date().toISOString(),
-                userId: b.user_id // Add userId for direct profile updates
-            };
+        // 2. ATOMIC 1X2 ARCHIVING & PRIZE DISTRIBUTION
+        // This RPC handles winner calculation, profile updates, card awards, and matchday closure.
+        const { data, error } = await supabase.rpc('admin_archive_1x2_matchday', {
+            p_matchday_id: md.id
         });
 
-        const results = (md.results || []) as (string | null)[];
-        let maxScore = 0;
-        currentBets.forEach(bet => {
-            let s = 0;
-            results.forEach((res, idx) => {
-                if (res && res === bet.predictions[idx]) s++;
-            });
-            if (s > maxScore) maxScore = s;
-        });
-
-        const currentTotalPot = (md.currentPot || 0) + (md.rolloverPot || 0);
-        const currentSuper = md.superJackpot || 0;
-        let nextRollover = 0;
-        let winnerMsg = "";
-        let standardWinnersUsernames: string[] = [];
-
-        // --- PRIZE AGGREGATION & DISTRIBUTION ---
-        const userEarnings = new Map<string, { tokens: number; wins: number; userId: string }>();
-
-        // Process Standard Winners
-        if (maxScore >= 8 && currentTotalPot > 0) {
-            console.log("STANDARD POT WINNER(S) FOUND");
-            const winners = currentBets.filter(bet => {
-                let s = 0;
-                results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
-                return s === maxScore;
-            });
-
-            if (winners.length > 0) {
-                const totalPayout = Math.floor(currentTotalPot);
-                const share = Math.floor(totalPayout / winners.length);
-                const remainder = totalPayout % winners.length;
-
-                winners.forEach(w => {
-                    const current = userEarnings.get(w.username) || { tokens: 0, wins: 0, userId: w.userId };
-                    userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins + 1, userId: w.userId });
-                });
-
-                standardWinnersUsernames = winners.map(w => w.username);
-                winnerMsg += `VINCITORI 1X2: ${standardWinnersUsernames.join(', ')} (+${share}FTK)`;
-                if (remainder > 0) winnerMsg += ` (bruciati: ${remainder})`;
-                nextRollover = 0;
-            } else {
-                nextRollover = currentTotalPot;
-            }
-        } else {
-            console.log("NO STANDARD WINNER, ROLLOVER");
-            winnerMsg += "NESSUN VINCITORE 1X2 (Rollover)";
-            nextRollover = currentTotalPot;
+        if (error) {
+            return { success: false, message: `Errore durante l'archiviazione: ${error.message}` };
         }
 
-        // Process Super Jackpot
-        const sjWinners = currentBets.filter(bet => {
-            if (!bet.includeSuperJackpot) return false;
-            let s = 0;
-            results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
-            return s >= 10;
-        });
+        const res = data as { success: boolean; message: string; winners: string[]; next_rollover: number };
 
-        if (sjWinners.length > 0 && currentSuper > 0) {
-            console.log("SUPER JACKPOT WINNER(S) FOUND");
-            const share = Math.floor(currentSuper / sjWinners.length);
-            sjWinners.forEach(w => {
-                const current = userEarnings.get(w.username) || { tokens: 0, wins: 0, userId: w.userId };
-                userEarnings.set(w.username, { tokens: current.tokens + share, wins: current.wins, userId: w.userId });
-            });
-            const sjNames = sjWinners.map(w => w.username);
-            winnerMsg += ` | 💎 SUPER JACKPOT: ${sjNames.join(', ')} (+${share}FTK)`;
-        }
-
-        const winnersUsernames = Array.from(userEarnings.keys());
-
-        // EXECUTE PROFILE UPDATES (One per winner: give tokens and register win)
-        for (const [_, earnings] of userEarnings.entries()) {
-            const { data: profile, error: pError } = await supabase
-                .from('profiles')
-                .select('id, tokens, wins_1x2, total_tokens_won, level')
-                .eq('id', earnings.userId)
-                .single();
-
-            if (profile && !pError) {
-                const newWins1x2 = (profile.wins_1x2 || 0) + earnings.wins;
-                const newTokens = (profile.tokens || 0) + earnings.tokens;
-                const newTotalWon = (profile.total_tokens_won || 0) + earnings.tokens;
-
-                await supabase.from('profiles').update({
-                    tokens: newTokens,
-                    wins_1x2: newWins1x2,
-                    total_tokens_won: newTotalWon
-                }).eq('id', profile.id);
-            }
-        }
-
-        // 2.2 🏆 AWARD 1X2 WINNER CARD
-        if (userEarnings.size > 0) {
-            const { data: cardData } = await supabase
-                .from('collectible_cards')
-                .select('id')
-                .eq('title', '1x2 Winner')
-                .single();
-
-            if (cardData) {
-                for (const earnings of userEarnings.values()) {
-                    await supabase
-                        .from('user_cards')
-                        .upsert(
-                            { user_id: earnings.userId, card_id: cardData.id },
-                            { onConflict: 'user_id,card_id' }
-                        );
-                }
-            }
-        }
-
-        // 2.3 🏆 AWARD SUPERJ CARD
-        if (sjWinners.length > 0) {
-            const { data: superJCard } = await supabase
-                .from('collectible_cards')
-                .select('id')
-                .eq('title', 'SuperJ')
-                .single();
-
-            if (superJCard) {
-                for (const winner of sjWinners) {
-                    await supabase
-                        .from('user_cards')
-                        .upsert(
-                            { user_id: winner.userId, card_id: superJCard.id },
-                            { onConflict: 'user_id,card_id' }
-                        );
-                }
-            }
-        }
-
-        // 2.7 🏆 AWARD "UN PUNTO" CARD
-        const onePointUsers = currentBets.filter(bet => {
-            let s = 0;
-            results.forEach((res, idx) => { if (res && res === bet.predictions[idx]) s++; });
-            return s === 1;
-        });
-
-        if (onePointUsers.length > 0) {
-            const { data: onePointCard } = await supabase
-                .from('collectible_cards')
-                .select('id')
-                .eq('title', 'Un Punto')
-                .single();
-
-            if (onePointCard) {
-                for (const user of onePointUsers) {
-                    await supabase
-                        .from('user_cards')
-                        .upsert(
-                            { user_id: user.userId, card_id: onePointCard.id },
-                            { onConflict: 'user_id,card_id' }
-                        );
-                }
-            }
-        }
-
-        // 2.5 UPDATE USER TOTAL POINTS, ACCURACY & LEVEL
-        for (const bet of currentBets) {
-            let s = 0;
-            results.forEach((res, idx) => {
-                if (res && res === bet.predictions[idx]) s++;
-            });
-
-            // Fetch current profile to get updated stats (tokens & wins already updated for winners)
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', bet.userId)
-                .single();
-
-            if (profile) {
-                const newPoints = (profile.total_points || 0) + s;
-                const newAccuracy = (profile.bets_placed || 0) > 0
-                    ? Math.round((newPoints / (profile.bets_placed * 12)) * 100)
-                    : 0;
-
-                // Level milestones (Level 1: 0 req, Level 2: 5 bets + 1 win + 100 tokens, etc.)
-                const milestones = [
-                    { level: 1, req: { bets: 0, wins: 0, tokens: 0 } },
-                    { level: 2, req: { bets: 5, wins: 1, tokens: 50 } },
-                    { level: 3, req: { bets: 15, wins: 3, tokens: 500 } },
-                    { level: 4, req: { bets: 30, wins: 7, tokens: 1500 } },
-                    { level: 5, req: { bets: 50, wins: 15, tokens: 5000 } },
-                ];
-
-                const currentWins = (profile.wins_1x2 || 0) + (profile.wins_survival || 0); // profile.wins_1x2 already has the current win if they won
-                const currentTokens = profile.total_tokens_won || 0;
-                let newLevel = 1;
-
-                for (let i = milestones.length - 1; i >= 0; i--) {
-                    const m = milestones[i];
-                    if ((profile.bets_placed || 0) >= m.req.bets && currentWins >= m.req.wins && currentTokens >= m.req.tokens) {
-                        newLevel = m.level;
-                        break;
-                    }
-                }
-
-                await supabase
-                    .from('profiles')
-                    .update({
-                        total_points: newPoints,
-                        prediction_accuracy: newAccuracy,
-                        level: Math.max(profile.level || 1, newLevel)
-                    })
-                    .eq('id', profile.id);
-            }
-        }
-
-        // 3. ARCHIVE MATCHDAY: close the day, clear pots, zero jackpot, record winners and set animations
-        await supabase
-            .from('matchdays')
-            .update({
-                status: 'ARCHIVED',
-                rollover_pot: nextRollover,
-                current_pot: 0,
-                super_jackpot: 0, // Always reset to 0 - rollover is handled separately
-                winners: winnersUsernames,
-                winner_animation: (winnersUsernames.length > 0),
-                leaderboard_animation: (winnersUsernames.length > 0)
-                // matches and results kept for leaderboard persistence
-            })
-            .eq('id', md.id);
-
-        // 4. ROBUST ROLLOVER: If there is an OPEN matchday, push the rollover to it immediately
-        if (nextRollover > 0) {
-            const { data: openMd } = await supabase
-                .from('matchdays')
-                .select('id, current_pot, rollover_pot')
-                .eq('status', 'OPEN')
-                .order('id', { ascending: false })
-                .limit(1)
-                .single();
-
-            if (openMd) {
-                await supabase.from('matchdays').update({
-                    rollover_pot: (openMd.rollover_pot || 0) + nextRollover,
-                    current_pot: (openMd.current_pot || 0) + nextRollover
-                }).eq('id', openMd.id);
-            }
+        if (!res.success) {
+            return { success: false, message: res.message };
         }
 
         return {
             success: true,
-            message: `Giornata Archiviata. ${winnerMsg}`,
+            message: `Giornata Archiviata. ${res.message} (Vincitori: ${res.winners?.join(', ') || 'Nessuno'})`,
             survivalStats
         };
     },
+
 
     resetSystem: async (): Promise<{ success: boolean; message: string }> => {
         const { error } = await supabase.rpc('reset_fanny_system');
