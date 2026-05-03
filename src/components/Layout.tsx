@@ -18,7 +18,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
     const [unreadCount, setUnreadCount] = React.useState(0);
-    const [activeMatchday, setActiveMatchday] = React.useState<any>(null);
     const notificationSound = React.useRef<HTMLAudioElement | null>(null);
 
     // Initialize sound
@@ -36,13 +35,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         }
     }, []);
 
-    React.useEffect(() => {
-        const fetchMD = async () => {
-            const { data } = await supabase.from('matchdays').select('*').eq('status', 'OPEN').single();
-            if (data) setActiveMatchday(data);
-        };
-        fetchMD();
-    }, []);
+
 
     const fetchUnreadCount = React.useCallback(async () => {
         if (!user) return;
@@ -98,7 +91,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                         playNotificationSound();
                         
                         // Also show a toast for new notifications while online
-                        const newNotif = payload.new as any;
+                        const newNotif = payload.new as { title?: string; message?: string };
                         toast.success(newNotif.title || "Nuova Notifica", {
                             description: newNotif.message || "Controlla il centro notifiche.",
                             icon: "🔔",

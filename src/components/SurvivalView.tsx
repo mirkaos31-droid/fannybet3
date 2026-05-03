@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { gameService } from '../services/gameService';
+import { supabase } from '../supabaseClient';
 import type { SurvivalSeason, SurvivalPlayer, Matchday, User } from '../types';
 
 interface SurvivalViewProps {

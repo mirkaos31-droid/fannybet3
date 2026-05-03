@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, X, Check, Info, Trophy, AlertTriangle, Skull, Zap, Star, MessageSquare } from 'lucide-react';
+import { Bell, X, Check, Trophy, AlertTriangle, Skull, Zap, Star, MessageSquare } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import type { User } from '../types';
 
@@ -22,7 +22,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = React.useCallback(async () => {
         if (!user) return;
         setLoading(true);
         const { data, error } = await supabase
@@ -36,7 +36,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
             setNotifications(data as Notification[]);
         }
         setLoading(false);
-    };
+    }, [user]);
 
     const markAsRead = async (id: string) => {
         const { error } = await supabase
@@ -66,7 +66,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
         if (isOpen) {
             fetchNotifications();
         }
-    }, [isOpen, user]);
+    }, [isOpen, user, fetchNotifications]);
 
     // Real-time subscription
     useEffect(() => {

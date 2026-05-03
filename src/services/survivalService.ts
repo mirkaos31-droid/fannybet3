@@ -126,7 +126,7 @@ export const survivalService = {
                 prizePool: season.prize_pool,
                 entryFee: season.entry_fee,
                 startMatchdayId: season.start_matchday_id,
-                startMatchdayDeadline: (season.matchdays as any)?.deadline,
+                startMatchdayDeadline: (season.matchdays as { deadline?: string })?.deadline,
                 currentMatch: myPickCtx
             },
             players: parsedPlayers
