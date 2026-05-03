@@ -87,7 +87,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
                 (payload) => {
                     fetchUnreadCount();
-                    if (payload.event === 'INSERT') {
+                    if (payload.eventType === 'INSERT') {
                         playNotificationSound();
                         
                         // Also show a toast for new notifications while online
