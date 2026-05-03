@@ -207,9 +207,23 @@ export const survivalService = {
 
             if (isEliminated) {
                 eliminatedIds.push(player.id);
+                // Notification for elimination
+                await supabase.from('notifications').insert([{
+                    user_id: player.userId,
+                    title: '💀 ELIMINATO DALL\'ARENA',
+                    message: `Il risultato di ${pick?.team || 'nessuna scelta'} ti è stato fatale. La tua corsa finisce qui.`,
+                    type: 'warning'
+                }]);
             } else {
                 advancedCount++;
                 survivors.push(player);
+                // Notification for advancement
+                await supabase.from('notifications').insert([{
+                    user_id: player.userId,
+                    title: '🛡️ SOPRAVVISSUTO!',
+                    message: `Grande scelta con ${pick?.team}! Sei ancora in gioco nell'Arena Survival.`,
+                    type: 'success'
+                }]);
             }
         }
 
@@ -231,6 +245,14 @@ export const survivalService = {
             const closeRes = await survivalService.closeSurvivalSeason(season.id);
 
             if (closeRes.success) {
+                // Notification for the winner
+                await supabase.from('notifications').insert([{
+                    user_id: winner.userId,
+                    title: '🏆 CAMPIONE SURVIVAL!',
+                    message: `Incredibile! Sei l'ultimo sopravvissuto. Il montepremi è tuo!`,
+                    type: 'success'
+                }]);
+
                 return {
                     success: true,
                     message: closeRes.message,

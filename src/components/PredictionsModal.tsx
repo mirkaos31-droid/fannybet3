@@ -1,6 +1,6 @@
-import React from 'react';
 import { X, Save, Loader2, Star } from 'lucide-react';
 import type { Matchday } from '../types';
+import { useEffect } from 'react';
 
 interface PredictionsModalProps {
     isOpen: boolean;
@@ -19,8 +19,31 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
     myPicks,
     onPickChange,
     onSave,
-    saving
+    saving,
 }) => {
+    useEffect(() => {
+        const handleVoice = (e: any) => {
+            // BLOCCA SE DEADLINE SUPERATA
+            if (matchday?.betsLocked) return;
+
+            const val = e.detail.value.toString().toUpperCase();
+            let sign = '';
+            if (val.includes('1') || val.includes('UNO')) sign = '1';
+            else if (val.includes('X') || val.includes('ICS') || val.includes('PAREGGIO')) sign = 'X';
+            else if (val.includes('2') || val.includes('DUE')) sign = '2';
+
+            if (sign) {
+                // Trova la prima partita non ancora compilata
+                const nextIdx = myPicks.findIndex(p => p === '');
+                if (nextIdx !== -1) {
+                    onPickChange(nextIdx, sign);
+                }
+            }
+        };
+        window.addEventListener('fanny-voice-input', handleVoice);
+        return () => window.removeEventListener('fanny-voice-input', handleVoice);
+    }, [matchday, myPicks, onPickChange]);
+
     if (!isOpen || !matchday) return null;
 
     return (
@@ -39,12 +62,14 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                             Round {matchday.id} <span className="text-gray-600 block md:inline text-sm md:text-2xl">— 10 Match</span>
                         </h3>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-colors"
-                    >
-                        <X size={24} className="text-gray-400" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-colors"
+                        >
+                            <X size={24} className="text-gray-400" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Match List */}

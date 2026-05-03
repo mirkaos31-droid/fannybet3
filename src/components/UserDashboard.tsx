@@ -77,7 +77,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
     useEffect(() => {
         loadData();
-    }, [loadData, view]);
+    }, [loadData]);
 
     useEffect(() => {
         document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena');

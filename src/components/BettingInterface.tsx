@@ -34,10 +34,18 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({ matchday, us
         setMsg(res.message);
         setMsgSuccess(res.success);
         setLoading(false);
-        if (res.success) {
+        if (res.success && user) {
+            await supabase.from('notifications').insert([{
+                user_id: user.id,
+                title: '✅ Schedina Registrata',
+                message: 'I tuoi 12 pronostici per il Round corrente sono stati salvati correttamente.',
+                type: 'success'
+            }]);
             onBetPlaced();
         }
     };
+
+
 
     return (
         <div className="space-y-6 md:space-y-12 animate-fade-in pb-20 bg-gradient-to-br from-[#2d1b4d] via-[#120a1f] to-black min-h-screen p-0 md:p-10 border border-white/5">

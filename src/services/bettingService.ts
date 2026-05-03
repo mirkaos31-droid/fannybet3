@@ -5,16 +5,17 @@ import { commonService } from './commonService';
 export const bettingService = {
     // --- DATA ACCESS ---
 
-    getGlobalRanking: async (): Promise<{ username: string; totalPoints: number; level: number; avatarUrl?: string }[]> => {
+    getGlobalRanking: async (): Promise<{ id: string; username: string; totalPoints: number; level: number; avatarUrl?: string }[]> => {
         const { data } = await supabase
             .from('profiles')
-            .select('username, total_points, level, avatar_url')
+            .select('id, username, total_points, level, avatar_url')
             .order('total_points', { ascending: false })
             .limit(100);
 
         if (!data) return [];
 
         return data.map(d => ({
+            id: d.id,
             username: d.username,
             totalPoints: d.total_points || 0,
             level: d.level || 1,
@@ -215,8 +216,10 @@ export const bettingService = {
         } else {
             md = await commonService.getMatchday();
         }
-
         if (!md) return { success: false, message: "Nessuna giornata attiva trovata." };
+
+        // 0. PRE-ARCHIVE: Capture Rankings
+        const oldRanking = await bettingService.getGlobalRanking();
 
         let survivalStats = undefined;
 
@@ -250,6 +253,66 @@ export const bettingService = {
 
         if (!res.success) {
             return { success: false, message: res.message };
+        }
+
+        // 2.1 Notify Winners
+        if (res.winners && res.winners.length > 0) {
+            try {
+                // Fetch user IDs for these usernames to send notifications
+                const { data: winnerProfiles } = await supabase
+                    .from('profiles')
+                    .select('id, username')
+                    .in('username', res.winners);
+                
+                if (winnerProfiles) {
+                    for (const wp of winnerProfiles) {
+                        await supabase.from('notifications').insert([{
+                            user_id: wp.id,
+                            title: '💰 PREMIO VINTO!',
+                            message: `Congratulazioni! Sei uno dei vincitori del Round. I tuoi token FTK sono stati accreditati.`,
+                            type: 'success'
+                        }]);
+                    }
+                }
+            } catch (err) {
+                console.error("Winner notification error:", err);
+            }
+        }
+
+        // 3. POST-ARCHIVE: Compare Rankings and Send Notifications
+        try {
+            const newRanking = await bettingService.getGlobalRanking();
+            
+            for (let i = 0; i < newRanking.length; i++) {
+                const user = newRanking[i];
+                const oldPos = oldRanking.findIndex(p => p.id === user.id) + 1;
+                const newPos = i + 1;
+
+                if (oldPos > 0 && newPos !== oldPos) {
+                    const diff = oldPos - newPos; // positive if improved
+                    const title = diff > 0 ? '📈 SCALATA IN CLASSIFICA' : '📉 ATTENZIONE';
+                    const message = diff > 0 
+                        ? `Hai guadagnato ${diff} posizioni! Ora sei ${newPos}° nel ranking mondiale.`
+                        : `Sei sceso di ${Math.abs(diff)} posizioni. Altri gladiatori ti hanno superato!`;
+
+                    await supabase.from('notifications').insert([{
+                        user_id: user.id,
+                        title,
+                        message,
+                        type: diff > 0 ? 'success' : 'warning'
+                    }]);
+                } else if (oldPos === 0) {
+                    // New entry in leaderboard
+                    await supabase.from('notifications').insert([{
+                        user_id: user.id,
+                        title: '✨ NUOVO IN CLASSIFICA',
+                        message: `Sei entrato ufficialmente nella Top 100 alla posizione ${newPos}°!`,
+                        type: 'info'
+                    }]);
+                }
+            }
+        } catch (err) {
+            console.error("Position notification error:", err);
         }
 
         return {

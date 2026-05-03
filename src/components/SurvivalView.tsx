@@ -34,6 +34,10 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
     const isDeadlinePassed = season?.startMatchdayDeadline ? new Date() > new Date(season.startMatchdayDeadline) : false;
     const canJoin = isSeasonOpen && !isDeadlinePassed;
 
+    // Weekly Matchday Deadline
+    const isMatchdayDeadlinePassed = activeMatchday?.deadline ? new Date() > new Date(activeMatchday.deadline) : false;
+    const isMatchdayLocked = activeMatchday?.betsLocked || isMatchdayDeadlinePassed;
+
     console.log('[SurvivalView] State Update:', {
         userId: user?.id,
         username: user?.username,
@@ -72,6 +76,15 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
         setMsg(null);
         const res = await gameService.joinSurvival(season.id);
         if (res.success) {
+            // Survival Join Notification
+            if (user) {
+                await supabase.from('notifications').insert([{
+                    user_id: user.id,
+                    title: '🛡️ Arena Survival: ISCRITTO',
+                    message: 'Sei entrato ufficialmente nell\'Arena. Preparati al combattimento!',
+                    type: 'survival'
+                }]);
+            }
             setMsg({ type: 'success', text: res.message });
             onBalanceUpdate();
             loadData(); // Refresh to see myself
@@ -96,6 +109,8 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
         }
         setLoading(false);
     };
+
+
 
     // Team Colors Helper (Simplified to Steel Grey as requested)
     const getTeamStyle = () => {
@@ -274,7 +289,9 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                 <div className="glass-panel bg-black/40 backdrop-blur-xl border-white/5 p-3.5 md:p-4">
                     <div className="flex items-center justify-between mb-4 px-1">
                         <h3 className="text-sm font-black italic text-white uppercase tracking-widest opacity-80">🎯 HAI SCELTO</h3>
-                        <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.2em]">Live Status</span>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.2em]">Live Status</span>
+                        </div>
                     </div>
 
                     {activeMatchday && activeMatchday.status === 'OPEN' ? (
@@ -308,7 +325,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                                             <button
                                                 key={team}
                                                 onClick={() => handlePick(team)}
-                                                disabled={loading}
+                                                disabled={loading || isMatchdayLocked}
                                                 className={`group relative overflow-hidden border-2 p-3 rounded-xl transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center shadow-lg ${getTeamStyle()}`}
                                             >
                                                 <span className="text-sm font-black italic uppercase tracking-tight relative z-10">{team}</span>
@@ -322,7 +339,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                         </>
                     ) : (
                         <div className="text-gray-500 text-[10px] font-black text-center py-4 uppercase tracking-widest bg-black/20 rounded-2xl">
-                            {!activeMatchday ? 'In attesa di matchday aperto...' : (activeMatchday.status === 'CLOSED' ? 'Turno Chiuso' : 'Fase di elaborazione')}
+                            {!activeMatchday ? 'In attesa di matchday aperto...' : (activeMatchday.status === 'CLOSED' || isMatchdayLocked ? 'Turno Chiuso (Deadline Superata)' : 'Fase di elaborazione')}
                         </div>
                     )}
                 </div>

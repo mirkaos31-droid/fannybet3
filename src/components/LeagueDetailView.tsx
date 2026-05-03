@@ -150,6 +150,15 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             setSaving(true);
             const result = await gameService.submitPicks(leagueId, matchday.id, myPicks);
             if (result.success) {
+                // Success Notification for League
+                if (user) {
+                    await supabase.from('notifications').insert([{
+                        user_id: user.id,
+                        title: '🏁 Pronostici Lega Inviati',
+                        message: `Hai salvato i tuoi 10 pronostici per la FB Lega. In bocca al lupo!`,
+                        type: 'success'
+                    }]);
+                }
                 toast.success(result.message);
                 updateModal('NONE');
                 loadLeagueData(); // Refresh to see updated status

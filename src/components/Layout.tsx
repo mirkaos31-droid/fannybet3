@@ -1,5 +1,9 @@
 import React from 'react';
 import type { User } from '../types';
+import { NotificationDrawer } from './NotificationDrawer';
+import { Bell } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { toast } from 'sonner';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -12,6 +16,100 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onToggleView, isUserMode, onAdminUsers }) => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+    const [unreadCount, setUnreadCount] = React.useState(0);
+    const [activeMatchday, setActiveMatchday] = React.useState<any>(null);
+    const notificationSound = React.useRef<HTMLAudioElement | null>(null);
+
+    // Initialize sound
+    React.useEffect(() => {
+        notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        notificationSound.current.volume = 0.45;
+    }, []);
+
+    const playNotificationSound = React.useCallback(() => {
+        if (notificationSound.current) {
+            notificationSound.current.play().catch(() => {
+                // Autoplay blocked - will play on next interaction
+                console.log("Sound played on hold - waiting for user interaction");
+            });
+        }
+    }, []);
+
+    React.useEffect(() => {
+        const fetchMD = async () => {
+            const { data } = await supabase.from('matchdays').select('*').eq('status', 'OPEN').single();
+            if (data) setActiveMatchday(data);
+        };
+        fetchMD();
+    }, []);
+
+    const fetchUnreadCount = React.useCallback(async () => {
+        if (!user) return;
+        const { count, error } = await supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+        
+        if (!error && count !== null) {
+            if (count > unreadCount) {
+                playNotificationSound();
+            }
+            setUnreadCount(count);
+        }
+    }, [user, unreadCount, playNotificationSound]);
+
+    React.useEffect(() => {
+        const checkInitialNotifications = async () => {
+            if (!user) return;
+            
+            // First fetch unread count
+            const { count, error } = await supabase
+                .from('notifications')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id)
+                .eq('is_read', false);
+            
+            if (!error && count !== null && count > 0) {
+                setUnreadCount(count);
+                playNotificationSound();
+                
+                // Show a welcome back toast
+                toast.info("Bentornato nell'Arena!", {
+                    description: `Hai ${count} nuovi aggiornamenti che ti aspettano nel Protocol Intel.`,
+                    icon: "📡",
+                    duration: 5000,
+                });
+            }
+        };
+
+        checkInitialNotifications();
+        
+        if (!user) return;
+        const channel = supabase
+            .channel(`unread-count-${user.id}`)
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+                (payload) => {
+                    fetchUnreadCount();
+                    if (payload.event === 'INSERT') {
+                        playNotificationSound();
+                        
+                        // Also show a toast for new notifications while online
+                        const newNotif = payload.new as any;
+                        toast.success(newNotif.title || "Nuova Notifica", {
+                            description: newNotif.message || "Controlla il centro notifiche.",
+                            icon: "🔔",
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [user, fetchUnreadCount, playNotificationSound]);
 
     return (
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
@@ -44,6 +142,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                     </div>
 
                     <div className="flex items-center gap-1.5">
+                        {/* Notification Bell (Mobile) */}
+                        <button
+                            onClick={() => {
+                                setIsNotificationsOpen(true);
+                                setUnreadCount(0); // Scompare al click
+                            }}
+                            className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 text-white relative shadow-xl touch-target"
+                        >
+                            <Bell className="w-5 h-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-black animate-pulse shadow-[0_0_10px_rgba(220,38,38,0.6)]"></span>
+                            )}
+                        </button>
+
                         {user?.role === 'ADMIN' && onAdminUsers && (
                             <button
                                 onClick={onAdminUsers}
@@ -163,6 +275,23 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                                 </svg>
                             </button>
                         )}
+
+                        <div className="h-10 md:h-12 w-[1px] bg-white/10"></div>
+
+                        {/* Notification Bell (Desktop) */}
+                        <button 
+                            onClick={() => {
+                                setIsNotificationsOpen(true);
+                                setUnreadCount(0); // Scompare al click
+                            }} 
+                            className="bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 group relative touch-target"
+                            title="Protocol News"
+                        >
+                            <Bell className="w-5 h-5 text-white/70 group-hover:text-red-500 relative z-10" />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-2 right-2 w-3 h-3 bg-red-600 rounded-full border-2 border-black shadow-[0_0_10px_rgba(220,38,38,0.8)] z-20 animate-pulse"></span>
+                            )}
+                        </button>
                     </div>
                 </header>
 
@@ -173,6 +302,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                     </div>
                 </div>
             </div>
+
+            <NotificationDrawer 
+                user={user} 
+                isOpen={isNotificationsOpen} 
+                onClose={() => setIsNotificationsOpen(false)} 
+            />
         </div>
     );
 };
