@@ -28,11 +28,31 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
 
     const playNotificationSound = React.useCallback(() => {
         if (notificationSound.current) {
-            notificationSound.current.play().catch(() => {
-                // Autoplay blocked - will play on next interaction
-                console.log("Sound played on hold - waiting for user interaction");
+            notificationSound.current.currentTime = 0; // Reset to start
+            notificationSound.current.play().catch((err) => {
+                console.warn("Sound play failed (interaction required):", err);
             });
         }
+    }, []);
+
+    // Global click listener to unlock audio (browser requirement)
+    React.useEffect(() => {
+        const unlockAudio = () => {
+            if (notificationSound.current) {
+                // Play and immediately pause to "unlock" the audio context
+                notificationSound.current.play().then(() => {
+                    notificationSound.current?.pause();
+                }).catch(() => {});
+            }
+            window.removeEventListener('click', unlockAudio);
+            window.removeEventListener('touchstart', unlockAudio);
+        };
+        window.addEventListener('click', unlockAudio);
+        window.addEventListener('touchstart', unlockAudio);
+        return () => {
+            window.removeEventListener('click', unlockAudio);
+            window.removeEventListener('touchstart', unlockAudio);
+        };
     }, []);
 
 
@@ -81,22 +101,34 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         
         if (!user) return;
         const channel = supabase
-            .channel(`unread-count-${user.id}`)
+            .channel(`global-notifications-${user.id}`)
             .on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+                { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
                 (payload) => {
+                    console.log('New notification received!', payload);
+                    setUnreadCount(prev => prev + 1);
+                    playNotificationSound();
+                    
+                    const newNotif = payload.new as { title?: string; message?: string, type?: string };
+                    
+                    // Display visual toast
+                    toast(newNotif.title || "Notifica", {
+                        description: newNotif.message || "Nuovo aggiornamento disponibile.",
+                        icon: newNotif.type === 'error' || newNotif.type === 'warning' ? "⚠️" : "🔔",
+                        duration: 6000,
+                        action: {
+                            label: "Leggi",
+                            onClick: () => setIsNotificationsOpen(true)
+                        }
+                    });
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+                () => {
                     fetchUnreadCount();
-                    if (payload.eventType === 'INSERT') {
-                        playNotificationSound();
-                        
-                        // Also show a toast for new notifications while online
-                        const newNotif = payload.new as { title?: string; message?: string };
-                        toast.success(newNotif.title || "Nuova Notifica", {
-                            description: newNotif.message || "Controlla il centro notifiche.",
-                            icon: "🔔",
-                        });
-                    }
                 }
             )
             .subscribe();

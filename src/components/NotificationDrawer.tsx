@@ -66,32 +66,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
         if (isOpen) {
             fetchNotifications();
         }
-    }, [isOpen, user, fetchNotifications]);
-
-    // Real-time subscription
-    useEffect(() => {
-        if (!user) return;
-
-        const channel = supabase
-            .channel(`notifications-${user.id}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'notifications',
-                    filter: `user_id=eq.${user.id}`
-                },
-                (payload) => {
-                    setNotifications(prev => [payload.new as Notification, ...prev].slice(0, 20));
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [user]);
+    }, [isOpen, fetchNotifications]);
 
     const getNotificationStyle = (type: string, isRead: boolean) => {
         if (isRead) return 'bg-white/[0.02] border-white/5 opacity-60 grayscale-[0.5]';
