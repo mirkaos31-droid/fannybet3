@@ -68,7 +68,7 @@ export interface SurvivalPlayer {
     username: string;
     status: 'ALIVE' | 'ELIMINATED' | 'WINNER';
     usedTeams: string[];
-    tokens: number;
+    lives: number;
     avatarUrl?: string;
     eliminatedAt?: number;
     currentPick?: string;

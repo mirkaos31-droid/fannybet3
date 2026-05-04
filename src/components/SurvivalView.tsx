@@ -218,10 +218,19 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                     )}
 
                     {hasJoined && !isSeasonCompleted && (
-                        <div className="flex justify-center">
+                        <div className="flex flex-col items-center gap-2">
                             <div className={`px-2 py-0.5 rounded-sm font-black text-[7px] italic tracking-tighter uppercase shadow-lg border ${isAlive ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-red-600/10 text-red-500 border-red-600/30'}`}>
                                 {isAlive ? 'ALIVE' : 'ELIMINATED'}
                             </div>
+                            {isAlive && myPlayer && (
+                                <div className="flex gap-1 animate-pulse">
+                                    {Array.from({ length: 2 }).map((_, i) => (
+                                        <span key={i} className={`text-xs ${i < myPlayer.lives ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'text-white/10'}`}>
+                                            ❤️
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -378,6 +387,13 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
                                                 {isSameUser(p) && (
                                                     <span className="text-[6px] text-brand-teal font-black">● TU</span>
                                                 )}
+                                            </div>
+                                            <div className="flex gap-0.5 mb-0.5">
+                                                {Array.from({ length: 2 }).map((_, i) => (
+                                                    <span key={i} className={`text-[7px] ${i < p.lives ? 'text-red-500' : 'text-white/5'}`}>
+                                                        ❤️
+                                                    </span>
+                                                ))}
                                             </div>
                                             <span className="text-[8px] font-black italic text-green-500/60 uppercase truncate">
                                                 {p.currentPick || 'READY'}

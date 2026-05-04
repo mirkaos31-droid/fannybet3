@@ -23,7 +23,6 @@ DECLARE
     v_card_id_un_punto UUID;
     v_open_md_id BIGINT;
 BEGIN
-    -- 1. Admin Check
     IF NOT public.is_admin() THEN
         RETURN json_build_object('success', false, 'message', 'Unauthorized: Admin only');
     END IF;
@@ -38,18 +37,13 @@ BEGIN
         RETURN json_build_object('success', false, 'message', 'Giornata già archiviata.');
     END IF;
 
-    -- 3. Check Results
-    IF v_matchday.results IS NULL OR array_length(v_matchday.results, 1) < 12 THEN
-        RETURN json_build_object('success', false, 'message', 'Risultati non completi (richiesti 12).');
-    END IF;
-
-    -- 4. Calculate Max Score and Pot
-    -- v_total_pot is already calculated in the database via the trigger/recalculate function.
-    -- We'll use the record value directly.
-    v_total_pot := COALESCE(v_matchday.current_pot, 0);
+    -- 3. Calculate REAL Pot from bets + rollover
+    SELECT COALESCE(SUM(amount), 0) INTO v_total_pot FROM public.bets WHERE matchday_id = p_matchday_id;
+    v_total_pot := v_total_pot + COALESCE(v_matchday.rollover_pot, 0);
+    
     v_super_jackpot := COALESCE(v_matchday.super_jackpot, 0);
 
-    -- Find max score
+    -- 4. Find max score
     FOR v_bet IN SELECT * FROM public.bets WHERE matchday_id = p_matchday_id LOOP
         DECLARE
             v_score INTEGER := 0;
@@ -62,11 +56,10 @@ BEGIN
             IF v_score > v_max_score THEN
                 v_max_score := v_score;
             END IF;
-        END LOOP;
-    END FOR;
+        END;
+    END LOOP;
 
-    -- 5. Identify Winners & Shares
-    -- Standard Winners (Highest score >= 8)
+    -- 5. Identify Winners & Shares (Standard Winners >= 8)
     IF v_max_score >= 8 THEN
         SELECT COUNT(*), array_agg(user_id) INTO v_standard_winner_count, v_all_winners_ids
         FROM (
@@ -85,15 +78,15 @@ BEGIN
             FROM public.profiles
             WHERE id = ANY(v_all_winners_ids);
             
-            v_next_rollover := 0; -- Reset rollover as pot was distributed (except remainder)
+            v_next_rollover := 0;
         ELSE
             v_next_rollover := v_total_pot;
         END IF;
     ELSE
-        v_next_rollover := v_total_pot;
+        v_next_rollover := v_total_pot; -- Rollover if max score < 8
     END IF;
 
-    -- Super Jackpot Winners (Score >= 10 and opt-in)
+    -- Super Jackpot Winners
     SELECT COUNT(*), array_agg(user_id) INTO v_sj_winner_count, v_all_winners_ids
     FROM (
         SELECT user_id, 
@@ -112,52 +105,35 @@ BEGIN
     SELECT id INTO v_card_id_sj FROM public.collectible_cards WHERE title = 'SuperJ' LIMIT 1;
     SELECT id INTO v_card_id_un_punto FROM public.collectible_cards WHERE title = 'Un Punto' LIMIT 1;
 
-    -- 7. Loop through ALL participants to update stats, prizes, and levels
+    -- 7. Update Participants
     FOR v_bet IN SELECT * FROM public.bets WHERE matchday_id = p_matchday_id LOOP
         DECLARE
             v_score INTEGER := 0;
-            v_tokens_to_add NUMERIC := 0;
+            v_to_add NUMERIC := 0;
             v_is_standard_winner BOOLEAN := false;
             v_is_sj_winner BOOLEAN := false;
         BEGIN
-            -- Calculate individual score
             FOR i IN 1..12 LOOP
                 IF v_matchday.results[i] IS NOT NULL AND v_matchday.results[i] = v_bet.predictions[i] THEN
                     v_score := v_score + 1;
                 END IF;
             END LOOP;
 
-            -- Check if winner
             IF v_max_score >= 8 AND v_score = v_max_score THEN
                 v_is_standard_winner := true;
-                v_tokens_to_add := v_tokens_to_add + v_standard_share;
+                v_to_add := v_to_add + v_standard_share;
             END IF;
             
             IF v_score >= 10 AND v_bet.include_super_jackpot = true THEN
                 v_is_sj_winner := true;
-                v_tokens_to_add := v_tokens_to_add + v_sj_share;
+                v_to_add := v_to_add + v_sj_share;
             END IF;
 
-            -- Update Profile
             UPDATE public.profiles
-            SET tokens = tokens + v_tokens_to_add,
+            SET tokens = tokens + v_to_add,
                 wins_1x2 = wins_1x2 + (CASE WHEN v_is_standard_winner THEN 1 ELSE 0 END),
-                total_tokens_won = total_tokens_won + v_tokens_to_add,
+                total_tokens_won = total_tokens_won + v_to_add,
                 total_points = total_points + v_score
-            WHERE id = v_bet.user_id;
-
-            -- Recalculate level & accuracy (after points update)
-            UPDATE public.profiles
-            SET prediction_accuracy = CASE WHEN bets_placed > 0 THEN round((total_points::float / (bets_placed * 12)) * 100) ELSE 0 END,
-                level = GREATEST(level, (
-                    CASE 
-                        WHEN bets_placed >= 50 AND (wins_1x2 + wins_survival) >= 15 AND total_tokens_won >= 5000 THEN 5
-                        WHEN bets_placed >= 30 AND (wins_1x2 + wins_survival) >= 7 AND total_tokens_won >= 1500 THEN 4
-                        WHEN bets_placed >= 15 AND (wins_1x2 + wins_survival) >= 3 AND total_tokens_won >= 500 THEN 3
-                        WHEN bets_placed >= 5 AND (wins_1x2 + wins_survival) >= 1 AND total_tokens_won >= 50 THEN 2
-                        ELSE 1
-                    END
-                ))
             WHERE id = v_bet.user_id;
 
             -- Award Cards
@@ -171,20 +147,20 @@ BEGIN
                 INSERT INTO public.user_cards (user_id, card_id) VALUES (v_bet.user_id, v_card_id_un_punto) ON CONFLICT DO NOTHING;
             END IF;
         END;
-    END FOR;
+    END LOOP;
 
     -- 8. Finalize Matchday
     UPDATE public.matchdays
     SET status = 'ARCHIVED',
-        winners = COALESCE(v_standard_winners_usernames, ARRAY[]::TEXT[]),
-        winner_animation = (array_length(v_standard_winners_usernames, 1) > 0),
-        leaderboard_animation = (array_length(v_standard_winners_usernames, 1) > 0),
+        winners = to_jsonb(COALESCE(v_standard_winners_usernames, ARRAY[]::TEXT[])),
+        winner_animation = (COALESCE(array_length(v_standard_winners_usernames, 1), 0) > 0),
+        leaderboard_animation = (COALESCE(array_length(v_standard_winners_usernames, 1), 0) > 0),
         rollover_pot = v_next_rollover,
         current_pot = 0,
         super_jackpot = 0
     WHERE id = p_matchday_id;
 
-    -- 9. Push Rollover to next OPEN matchday
+    -- 9. Push Rollover
     IF v_next_rollover > 0 THEN
         SELECT id INTO v_open_md_id FROM public.matchdays WHERE status = 'OPEN' ORDER BY id DESC LIMIT 1;
         IF v_open_md_id IS NOT NULL THEN
@@ -204,7 +180,7 @@ BEGIN
         'success', true, 
         'message', 'Giornata archiviata con successo.', 
         'winners', v_standard_winners_usernames,
-        'next_rollover', v_next_rollover
+        'rollover', v_next_rollover
     );
 END;
 $$;

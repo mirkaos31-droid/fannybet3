@@ -7,6 +7,7 @@ interface DbSurvivalPlayerRecord {
     id: string;
     user_id: string;
     status: 'ALIVE' | 'ELIMINATED' | 'WINNER';
+    lives: number;
     used_teams: string[];
     eliminated_at_matchday?: number;
     profiles: DbProfileRecord | DbProfileRecord[];
@@ -93,7 +94,8 @@ export const survivalService = {
                 username: profile?.username || 'Sconosciuto',
                 avatarUrl: profile?.avatar_url,
                 tokens: profile?.tokens || 0,
-                status: p.status || 'ALIVE', // Default to ALIVE if missing
+                status: p.status || 'ALIVE',
+                lives: p.lives ?? 2,
                 usedTeams: p.used_teams || [],
                 eliminatedAt: p.eliminated_at_matchday,
                 currentPick: currentPick?.team
@@ -164,7 +166,13 @@ export const survivalService = {
             .select('*')
             .eq('matchday_id', matchdayId);
 
-        if (!picks) return { success: false, message: "No picks found" };
+        if (!picks || picks.length === 0) return { success: false, message: "Nessuna giocata trovata per questa giornata." };
+
+        // 3b. Anti-Duplicate Check: If picks already have results, it's already processed
+        const alreadyProcessed = picks.some(p => p.result !== null && p.result !== 'PENDING');
+        if (alreadyProcessed) {
+            return { success: false, message: "Questo turno Survival è stato già elaborato. Notifiche doppie bloccate." };
+        }
 
         // [AUTO-START] If season is OPEN, switch to ACTIVE now that we are processing the first round
         if (season.status === 'OPEN') {
@@ -188,18 +196,25 @@ export const survivalService = {
             if (!pick) {
                 isEliminated = true; // No pick = Eliminated
             } else {
-                const matchIndex = md.matches.findIndex(m => m.home === pick.team || m.away === pick.team);
+                const pickTeam = pick.team.trim().toUpperCase();
+                const matchIndex = md.matches.findIndex(m => 
+                    m.home.trim().toUpperCase() === pickTeam || 
+                    m.away.trim().toUpperCase() === pickTeam
+                );
+
                 if (matchIndex === -1) {
-                    // console.warn(`Player ${player.username} picked team ${pick.team} not found.`);
-                    // Strict rule: Invalid team = Elimination? Or survive? Let's say survive if system error, but unlikely.
-                    // For now, eliminating invalid picks is safer to prevent exploits.
+                    console.warn(`[Survival] Team ${pickTeam} not found in matches for player ${player.username}`);
                     isEliminated = true;
                 } else {
                     const result = md.results[matchIndex];
-                    if (!result) return { success: false, message: "Not all matches have results" };
+                    if (!result) {
+                        console.error(`[Survival] Missing result for match index ${matchIndex}`);
+                        return { success: false, message: "Non tutti i match hanno un risultato inserito." };
+                    }
 
                     const match = md.matches[matchIndex];
-                    const isWin = (match.home === pick.team && result === '1') || (match.away === pick.team && result === '2');
+                    const isWin = (match.home.trim().toUpperCase() === pickTeam && result === '1') || 
+                                  (match.away.trim().toUpperCase() === pickTeam && result === '2');
 
                     if (!isWin) isEliminated = true;
                 }
@@ -207,12 +222,16 @@ export const survivalService = {
 
             if (isEliminated) {
                 eliminatedIds.push(player.id);
-                // Notification for elimination
+                const willBeEliminated = (player.lives - 1) <= 0;
+                
+                // Notification based on remaining lives
                 await supabase.from('notifications').insert([{
                     user_id: player.userId,
-                    title: '💀 ELIMINATO DALL\'ARENA',
-                    message: `Il risultato di ${pick?.team || 'nessuna scelta'} ti è stato fatale. La tua corsa finisce qui.`,
-                    type: 'warning'
+                    title: willBeEliminated ? '💀 ELIMINATO DALL\'ARENA' : '💔 VITA PERSA!',
+                    message: willBeEliminated 
+                        ? `Il risultato di ${pick?.team || 'nessuna scelta'} ti è stato fatale. La tua corsa finisce qui.`
+                        : `La tua squadra (${pick?.team}) ha fallito! Hai perso un cuore, ma sei ancora in gioco nell'Arena.`,
+                    type: willBeEliminated ? 'error' : 'warning'
                 }]);
             } else {
                 advancedCount++;
@@ -227,19 +246,26 @@ export const survivalService = {
             }
         }
 
-        // 5. Apply eliminations
+        // 5. Update Statuses (Decrement lives instead of instant elimination)
         if (eliminatedIds.length > 0) {
-            const { error } = await supabase.rpc('eliminate_survival_players', { p_player_ids: eliminatedIds });
-            if (error) return { success: false, message: error.message };
+            console.log(`[Survival] Decrementing lives for ${eliminatedIds.length} players...`);
+            const { error } = await supabase.rpc('decrement_survival_lives', { p_player_ids: eliminatedIds });
+            if (error) return { success: false, message: "Errore nel decremento vite: " + error.message };
         }
 
         // Update used_teams for survivors
         await supabase.rpc('update_survivors_teams', { p_matchday_id: matchdayId });
 
         // 6. CHECK FOR WINNER (Automatic)
-        // If exactly ONE player remains ALIVE
-        if (advancedCount === 1 && survivors.length === 1) {
-            const winner = survivors[0];
+        const stillAlive = players.filter(p => {
+            if (eliminatedIds.includes(p.id)) {
+                return (p.lives - 1) > 0; // Lost a life but still has > 0
+            }
+            return p.status === 'ALIVE';
+        });
+
+        if (stillAlive.length === 1) {
+            const winner = stillAlive[0];
             console.log(`🏆 SURVIVAL WINNER FOUND: ${winner.username}. Closing season via RPC.`);
 
             const closeRes = await survivalService.closeSurvivalSeason(season.id);
