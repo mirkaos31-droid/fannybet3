@@ -66,18 +66,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             .eq('is_read', false);
         
         if (!error && count !== null) {
-            if (count > unreadCount) {
-                playNotificationSound();
-            }
             setUnreadCount(count);
         }
-    }, [user, unreadCount, playNotificationSound]);
+    }, [user]); // Removed unreadCount and playNotificationSound from dependencies to break the loop
 
     React.useEffect(() => {
         const checkInitialNotifications = async () => {
             if (!user) return;
             
-            // First fetch unread count
             const { count, error } = await supabase
                 .from('notifications')
                 .select('*', { count: 'exact', head: true })
@@ -86,11 +82,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             
             if (!error && count !== null && count > 0) {
                 setUnreadCount(count);
-                playNotificationSound();
                 
-                // Show a welcome back toast
+                // Show a welcome back toast without sound
                 toast.info("Bentornato nell'Arena!", {
-                    description: `Hai ${count} nuovi aggiornamenti che ti aspettano nel Protocol Intel.`,
+                    description: `Hai ${count} nuovi aggiornamenti nel Protocol Intel.`,
                     icon: "📡",
                     duration: 5000,
                 });
@@ -134,7 +129,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [user, fetchUnreadCount, playNotificationSound]);
+    }, [user, fetchUnreadCount]); // Removed playNotificationSound as it's a stable callback
 
     return (
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
@@ -171,13 +166,16 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                         <button
                             onClick={() => {
                                 setIsNotificationsOpen(true);
-                                setUnreadCount(0); // Scompare al click
+                                setUnreadCount(0);
                             }}
-                            className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 text-white relative shadow-xl touch-target"
+                            className="w-11 h-11 flex items-center justify-center bg-white/5 active:bg-white/10 rounded-xl border border-white/10 text-white relative shadow-xl touch-target transition-all active:scale-90 group"
                         >
-                            <Bell className="w-5 h-5" />
+                            <Bell className={`w-5 h-5 transition-transform duration-300 ${unreadCount > 0 ? 'group-hover:rotate-12' : ''}`} />
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-black animate-pulse shadow-[0_0_10px_rgba(220,38,38,0.6)]"></span>
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-black flex items-center justify-center animate-in zoom-in duration-300">
+                                    <span className="w-full h-full bg-red-600 rounded-full animate-ping absolute opacity-75"></span>
+                                    <span className="relative text-[8px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                                </span>
                             )}
                         </button>
 
@@ -303,18 +301,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
 
                         <div className="h-10 md:h-12 w-[1px] bg-white/10"></div>
 
-                        {/* Notification Bell (Desktop) */}
                         <button 
                             onClick={() => {
                                 setIsNotificationsOpen(true);
-                                setUnreadCount(0); // Scompare al click
+                                setUnreadCount(0);
                             }} 
-                            className="bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 group relative touch-target"
+                            className="bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 group relative touch-target active:scale-95"
                             title="Protocol News"
                         >
-                            <Bell className="w-5 h-5 text-white/70 group-hover:text-red-500 relative z-10" />
+                            <Bell className={`w-5 h-5 text-white/70 group-hover:text-red-500 relative z-10 transition-all duration-300 ${unreadCount > 0 ? 'animate-bounce-slow' : ''}`} />
                             {unreadCount > 0 && (
-                                <span className="absolute top-2 right-2 w-3 h-3 bg-red-600 rounded-full border-2 border-black shadow-[0_0_10px_rgba(220,38,38,0.8)] z-20 animate-pulse"></span>
+                                <span className="absolute top-2 right-2 w-4 h-4 bg-red-600 rounded-full border-2 border-black shadow-[0_0_15px_rgba(220,38,38,0.6)] z-20 flex items-center justify-center animate-in zoom-in duration-500">
+                                    <span className="w-full h-full bg-red-600 rounded-full animate-ping absolute opacity-40"></span>
+                                    <span className="relative text-[9px] font-black text-white">{unreadCount}</span>
+                                </span>
                             )}
                         </button>
                     </div>

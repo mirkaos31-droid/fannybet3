@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, Trophy, AlertTriangle, Skull, Zap, Star, MessageSquare } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { toast } from 'sonner';
 import type { User } from '../types';
 
 interface Notification {
@@ -39,18 +40,27 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
     }, [user]);
 
     const markAsRead = async (id: string) => {
+        // Optimistic update
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+
         const { error } = await supabase
             .from('notifications')
             .update({ is_read: true })
             .eq('id', id);
 
-        if (!error) {
-            setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+        if (error) {
+            // Revert on error
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: false } : n));
         }
     };
 
     const markAllAsRead = async () => {
         if (!user) return;
+        
+        // Optimistic update
+        const previousNotifications = [...notifications];
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+
         const { error } = await supabase
             .from('notifications')
             .update({ is_read: true })
@@ -58,7 +68,18 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
             .eq('is_read', false);
 
         if (!error) {
-            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+            toast.success('Protocollo Sincronizzato', {
+                description: 'Tutte le notifiche sono state segnate come lette.',
+                icon: '📡'
+            });
+        }
+
+        if (error) {
+            // Revert on error
+            setNotifications(previousNotifications);
+            toast.error('Errore di Sincronizzazione', {
+                description: 'Impossibile aggiornare lo stato delle notifiche.'
+            });
         }
     };
 
@@ -104,7 +125,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
 
             {/* Drawer */}
             <div className={`
-                fixed top-0 right-0 h-full w-full sm:w-[420px] bg-[#0a0a0a]/95 backdrop-blur-[40px] border-l border-white/10 z-[210] shadow-[0_0_100px_rgba(0,0,0,0.8)] transition-transform duration-700 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col
+                fixed top-0 right-0 h-full w-full sm:w-[420px] bg-[#0a0a0a]/95 backdrop-blur-[40px] border-l border-white/10 z-[210] shadow-[0_0_100px_rgba(0,0,0,0.8)] transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col
                 ${isOpen ? 'translate-x-0' : 'translate-x-full'}
             `}>
                 <div className="p-8 border-b border-white/10 flex items-center justify-between mt-[env(safe-area-inset-top,0px)]">
@@ -152,8 +173,10 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
                                     ${getNotificationStyle(n.type, n.is_read)}
                                 `}
                             >
-                                {!n.is_read && (
-                                    <span className="absolute top-6 right-6 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(239,68,68,1)] z-10 border-2 border-[#0a0a0a]"></span>
+                                {n.is_read ? (
+                                    <span className="absolute top-6 right-6 w-3 h-3 bg-white/10 rounded-full transition-all duration-700 scale-0 opacity-0 z-10 border-2 border-transparent"></span>
+                                ) : (
+                                    <span className="absolute top-6 right-6 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(239,68,68,1)] z-10 border-2 border-[#0a0a0a] transition-all duration-300"></span>
                                 )}
                                 <div className="flex gap-5">
                                     <div className={`
@@ -178,7 +201,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
                                             <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.3em]">
                                                 {new Date(n.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
                                             </span>
-                                            {n.is_read && <Check className="w-3 h-3 text-white/10" />}
+                                            {n.is_read && <Check className="w-3 h-3 text-white/10 animate-in zoom-in duration-500" />}
                                         </div>
                                     </div>
                                 </div>
@@ -193,7 +216,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
                             onClick={markAllAsRead}
                             className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[1.5rem] text-[10px] font-black text-white uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-3 active:scale-95 shadow-lg group"
                         >
-                            <Check className="w-4 h-4 text-brand-orange opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                            <Check className="w-4 h-4 text-brand-orange transition-all duration-500 group-hover:scale-125" />
                             Sincronizza Tutto
                         </button>
                     </div>
