@@ -224,17 +224,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const { league, participants } = data;
 
     // Dynamically adjust participants for the current live leaderboard view
-    // if the league's round hasn't progressed to the global active matchday yet.
-    const displayParticipants = participants.map(p => {
-        if (leaderboardMatchday && matchday && leaderboardMatchday.id !== matchday.id) {
-            return {
-                ...p,
-                live_points: 0,
-                active_bonuses: []
-            };
-        }
-        return p;
-    }).sort((a, b) => b.total_points - a.total_points);
+    const displayParticipants = [...participants].sort((a, b) => b.total_points - a.total_points);
 
     const isParticipant = participants.some(p => p.user_id === user?.id);
     const bonusX = (league.scoring_rules as Record<string, number>)?.X || 1;
