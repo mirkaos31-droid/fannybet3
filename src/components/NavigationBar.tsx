@@ -1,12 +1,13 @@
-import { Home, Zap, Eye, Trophy, Skull, User, Shield } from 'lucide-react';
+import { Home, Zap, Eye, Trophy, Skull, User, Shield, Globe } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface NavigationBarProps {
     currentView: ViewMode;
     onNavigate: (view: ViewMode) => void;
+    isAdmin?: boolean;
 }
 
-export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNavigate }) => {
+export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNavigate, isAdmin = false }) => {
     const navItems: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
         { id: 'HOME', label: 'Home', icon: <Home size={18} /> },
         { id: 'BETTING', label: '1x2 Mode', icon: <Zap size={18} /> },
@@ -14,6 +15,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNav
         { id: 'LEADERBOARD', label: 'Classifiche', icon: <Trophy size={18} /> },
         { id: 'SURVIVAL', label: 'Survival Mode', icon: <Skull size={18} /> },
         { id: 'FB_LEGA', label: 'FB Lega', icon: <Shield size={18} /> },
+        ...(false && isAdmin ? [{ id: 'WORLD_CUP' as ViewMode, label: 'Mondiali', icon: <Globe size={18} /> }] : []),
         { id: 'PROFILE', label: 'Profilo', icon: <User size={18} /> },
     ];
 

@@ -19,7 +19,7 @@ export interface User {
 
 export type League = 'SERIE A' | 'CUSTOM';
 
-export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'FB_LEGA' | 'CARDS';
+export type ViewMode = 'HOME' | 'BETTING' | 'SPY' | 'LEADERBOARD' | 'SURVIVAL' | 'PROFILE' | 'FB_LEGA' | 'CARDS' | 'WORLD_CUP';
 
 export interface Match {
     id: number;
