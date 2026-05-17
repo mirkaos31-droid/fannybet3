@@ -82,14 +82,6 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 participants: liveParticipants
             });
 
-            if (currentUser && mdData) {
-                const picks = await gameService.getMyPicks(leagueId, currentUser.id);
-                const currentMdPick = picks.find(p => p.matchday_id === mdData.id);
-                if (currentMdPick) {
-                    setMyPicks(currentMdPick.predictions);
-                }
-            }
-
             // Fetch all matchdays for this league to determine the correct active round matchday details
             const allMds = await gameService.getLeagueMatchdays(leagueId);
             const activeRoundNum = details.league.current_round + 1;
@@ -104,6 +96,16 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 }
             }
             setLeaderboardMatchday(activeRoundMd);
+
+            if (currentUser && activeRoundMd) {
+                const picks = await gameService.getMyPicks(leagueId, currentUser.id);
+                const currentMdPick = picks.find(p => p.matchday_id === activeRoundMd.id);
+                if (currentMdPick) {
+                    setMyPicks(currentMdPick.predictions);
+                } else {
+                    setMyPicks(Array(10).fill(''));
+                }
+            }
 
             // Fetch archive list
             if (details.league.current_round > 0) {
@@ -155,7 +157,8 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     }, [leagueId]);
 
     const handleSavePicks = async () => {
-        if (!matchday) return;
+        const targetMd = leaderboardMatchday || matchday;
+        if (!targetMd) return;
         if (myPicks.some(p => p === '')) {
             toast.error('Compila tutti i 10 pronostici!');
             return;
@@ -163,7 +166,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
         try {
             setSaving(true);
-            const result = await gameService.submitPicks(leagueId, matchday.id, myPicks);
+            const result = await gameService.submitPicks(leagueId, targetMd.id, myPicks);
             if (result.success) {
                 // Success Notification for League
                 if (user) {
@@ -407,7 +410,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 participants={displayParticipants}
                 currentUserId={user?.id}
                 leagueId={league.id}
-                matchday={matchday}
+                matchday={leaderboardMatchday || matchday}
                 title="Classifica Generale"
             />
 
@@ -429,7 +432,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <PredictionsModal
                 isOpen={activeModal === 'PREDICTIONS'}
                 onClose={() => window.history.back()}
-                matchday={matchday}
+                matchday={leaderboardMatchday || matchday}
                 myPicks={myPicks}
                 onPickChange={(idx, sign) => {
                     const newPicks = [...myPicks];

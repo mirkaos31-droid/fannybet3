@@ -244,66 +244,69 @@ export const FBLegaView: React.FC = () => {
                         </p>
                     </div>
                 ) : (
-                    displayedLeagues.map(league => (
-                        <div
-                            key={league.id}
-                            onClick={() => setSelectedLeagueId(league.id)}
-                            className="glass-card card-lega-alieno p-6 group cursor-pointer hover:translate-y-[-4px] transition-all"
-                        >
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="p-3 bg-[#2c5a78]/20 rounded-2xl group-hover:bg-[#2c5a78]/30 transition-colors border border-[#2c5a78]/30">
-                                    <Shield size={24} className="text-[#5d8aa8]" />
-                                </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">Entry</span>
-                                    <div className="flex items-center gap-1 text-[#5d8aa8] font-black italic">
-                                        <Coins size={14} />
-                                        <span>{league.entry_fee} FTK</span>
+                    displayedLeagues.map(league => {
+                        const displayRound = league.status === 'COMPLETED' ? league.current_round : Math.min(league.current_round + 1, league.duration_matchdays);
+                        return (
+                            <div
+                                key={league.id}
+                                onClick={() => setSelectedLeagueId(league.id)}
+                                className="glass-card card-lega-alieno p-6 group cursor-pointer hover:translate-y-[-4px] transition-all"
+                            >
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="p-3 bg-[#2c5a78]/20 rounded-2xl group-hover:bg-[#2c5a78]/30 transition-colors border border-[#2c5a78]/30">
+                                        <Shield size={24} className="text-[#5d8aa8]" />
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">Entry</span>
+                                        <div className="flex items-center gap-1 text-[#5d8aa8] font-black italic">
+                                            <Coins size={14} />
+                                            <span>{league.entry_fee} FTK</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <h3 className="text-xl font-black italic text-white uppercase mb-2 group-hover:text-[#5d8aa8] transition-colors">
-                                {league.name}
-                            </h3>
+                                <h3 className="text-xl font-black italic text-white uppercase mb-2 group-hover:text-[#5d8aa8] transition-colors">
+                                    {league.name}
+                                </h3>
 
-                            <div className="space-y-3 mb-6">
-                                <div className="flex justify-between text-[10px] font-black uppercase text-gray-400">
-                                    <span>Progresso</span>
-                                    <span className="text-white">{league.current_round} / {league.duration_matchdays} RD</span>
-                                </div>
-                                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-[#5d8aa8] to-[#bfff00] transition-all duration-1000"
-                                        style={{ width: `${(league.current_round / league.duration_matchdays) * 100}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between mt-auto">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center">
-                                        <Users size={12} className="text-gray-500" />
+                                <div className="space-y-3 mb-6">
+                                    <div className="flex justify-between text-[10px] font-black uppercase text-gray-400">
+                                        <span>Progresso</span>
+                                        <span className="text-white">{displayRound} / {league.duration_matchdays} RD</span>
                                     </div>
-                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">{league.participant_count || 0} Partecipanti</span>
+                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-[#5d8aa8] to-[#bfff00] transition-all duration-1000"
+                                            style={{ width: `${(displayRound / league.duration_matchdays) * 100}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
 
-                                {view === 'DISCOVER' && !league.is_member ? (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleJoinLeague(league.id);
-                                        }}
-                                        className="px-4 py-2 bg-[#5d8aa8] text-white text-[10px] font-black uppercase rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(93,138,168,0.3)]"
-                                    >
-                                        Iscriviti
-                                    </button>
-                                ) : (
-                                    <ChevronRight className="text-gray-600 group-hover:text-[#5d8aa8] transition-colors" />
-                                )}
+                                <div className="flex items-center justify-between mt-auto">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center">
+                                            <Users size={12} className="text-gray-500" />
+                                        </div>
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">{league.participant_count || 0} Partecipanti</span>
+                                    </div>
+
+                                    {view === 'DISCOVER' && !league.is_member ? (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleJoinLeague(league.id);
+                                            }}
+                                            className="px-4 py-2 bg-[#5d8aa8] text-white text-[10px] font-black uppercase rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(93,138,168,0.3)]"
+                                        >
+                                            Iscriviti
+                                        </button>
+                                    ) : (
+                                        <ChevronRight className="text-gray-600 group-hover:text-[#5d8aa8] transition-colors" />
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
