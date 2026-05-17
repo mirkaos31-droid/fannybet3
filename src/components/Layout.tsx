@@ -22,8 +22,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
 
     // Initialize sound
     React.useEffect(() => {
-        notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        notificationSound.current.volume = 0.45;
+        // Usiamo un suono più morbido e professionale (Digital Chime)
+        notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-preview.mp3');
+        notificationSound.current.volume = 0.4;
     }, []);
 
     const playNotificationSound = React.useCallback(() => {
@@ -39,9 +40,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
     React.useEffect(() => {
         const unlockAudio = () => {
             if (notificationSound.current) {
-                // Play and immediately pause to "unlock" the audio context
+                // Impostiamo il volume a 0 per sbloccare l'audio senza farlo sentire
+                const originalVolume = notificationSound.current.volume;
+                notificationSound.current.volume = 0;
                 notificationSound.current.play().then(() => {
                     notificationSound.current?.pause();
+                    if (notificationSound.current) {
+                        notificationSound.current.volume = originalVolume;
+                        notificationSound.current.currentTime = 0;
+                    }
                 }).catch(() => {});
             }
             window.removeEventListener('click', unlockAudio);

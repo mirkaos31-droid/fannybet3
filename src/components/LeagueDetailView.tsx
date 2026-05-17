@@ -21,6 +21,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
         participants: FBLeagueParticipant[];
     } | null>(null);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
+    const [leaderboardMatchday, setLeaderboardMatchday] = useState<Matchday | null>(null);
     const [myPicks, setMyPicks] = useState<string[]>(new Array(10).fill(''));
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -59,7 +60,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
         leagueId,
         userId: user?.id,
         participants: data?.participants || [],
-        matchdayId: matchday?.id
+        matchdayId: leaderboardMatchday?.id || matchday?.id
     });
 
     const loadLeagueData = useCallback(async () => {
@@ -89,9 +90,23 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 }
             }
 
+            // Fetch all matchdays for this league to determine the correct active round matchday details
+            const allMds = await gameService.getLeagueMatchdays(leagueId);
+            const activeRoundNum = details.league.current_round + 1;
+            const activeRoundInfo = allMds.find(m => m.round_number === activeRoundNum);
+
+            let activeRoundMd = mdData;
+            if (activeRoundInfo) {
+                if (mdData && activeRoundInfo.matchday_id === mdData.id) {
+                    activeRoundMd = mdData;
+                } else {
+                    activeRoundMd = await gameService.getMatchdayById(activeRoundInfo.matchday_id);
+                }
+            }
+            setLeaderboardMatchday(activeRoundMd);
+
             // Fetch archive list
             if (details.league.current_round > 0) {
-                const allMds = await gameService.getLeagueMatchdays(leagueId);
                 const pastMds = allMds.filter(m => m.round_number <= details.league.current_round);
                 setArchiveMatchdays(pastMds);
             }
@@ -207,6 +222,20 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     }
 
     const { league, participants } = data;
+
+    // Dynamically adjust participants for the current live leaderboard view
+    // if the league's round hasn't progressed to the global active matchday yet.
+    const displayParticipants = participants.map(p => {
+        if (leaderboardMatchday && matchday && leaderboardMatchday.id !== matchday.id) {
+            return {
+                ...p,
+                live_points: 0,
+                active_bonuses: []
+            };
+        }
+        return p;
+    }).sort((a, b) => b.total_points - a.total_points);
+
     const isParticipant = participants.some(p => p.user_id === user?.id);
     const bonusX = (league.scoring_rules as Record<string, number>)?.X || 1;
 
@@ -385,7 +414,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <LeaderboardModal
                 isOpen={activeModal === 'LEADERBOARD'}
                 onClose={() => window.history.back()}
-                participants={participants}
+                participants={displayParticipants}
                 currentUserId={user?.id}
                 leagueId={league.id}
                 matchday={matchday}

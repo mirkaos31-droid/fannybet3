@@ -124,6 +124,7 @@ export interface FBLeagueParticipant {
     username?: string;
     live_points?: number;
     active_bonuses?: string[];
+    accumulated_points?: number;
 }
 
 export interface FBLeaguePick {
