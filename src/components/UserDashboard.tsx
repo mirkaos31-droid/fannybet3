@@ -13,6 +13,7 @@ import { RequestTokensModal } from './RequestTokensModal';
 import { Zap, Eye, Trophy, Skull, Shield } from 'lucide-react';
 import { FBLegaView } from './FBLegaView';
 import { CardGallery } from './CardGallery';
+import { WorldCupView } from './WorldCupView';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -48,6 +49,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isExploding, setIsExploding] = useState(false);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -80,13 +82,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     }, [loadData]);
 
     useEffect(() => {
-        document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena');
+        document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena', 'world-cup-arena');
         if (view === 'SPY') {
             document.body.classList.add('gold-arena');
         } else if (view === 'FB_LEGA') {
             document.body.classList.add('lega-arena');
+        } else if (view === 'WORLD_CUP') {
+            document.body.classList.add('world-cup-arena');
         }
-        return () => document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena');
+        return () => document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena', 'world-cup-arena');
     }, [view]);
 
     const handleBetPlaced = () => {
@@ -160,6 +164,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
 
+
+
                 {view === 'HOME' && (
                     <div className="relative pt-[6.4rem] pb-6 md:pt-[7.2rem] md:pb-16 text-center animate-fade-in px-2">
                         <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.6em] mb-1 md:mb-3 opacity-60">benvenuto su</p>
@@ -182,6 +188,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             {view === 'LEADERBOARD' && 'CLASSIFICHE'}
                             {view === 'SURVIVAL' && 'SURVIVAL MODE'}
                             {view === 'FB_LEGA' && 'FB LEGA'}
+                            {view === 'WORLD_CUP' && 'WORLD CUP'}
                             {view === 'CARDS' && 'ARCHIVIO CARD'}
                         </h1>
                     </div>
@@ -196,6 +203,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                     if (v === 'PROFILE') setShowProfile(true);
                                     else setView(v);
                                 }}
+                                isAdmin={user?.role === 'ADMIN'}
                             />
                         </div>
                     </div>
@@ -203,6 +211,39 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'HOME' && (
                     <div className="max-w-5xl mx-auto w-full px-2 space-y-8 md:space-y-16">
+                        {/* SECTION 1: EVENTI SPECIALI */}
+                        {false && user?.role === 'ADMIN' && (
+                            <div className="space-y-6">
+                                <SectionHeader title="EVENTI SPECIALI" subtitle="Tornei Internazionali" color="border-white/30" />
+                                <div className="grid grid-cols-4 gap-3 md:gap-8">
+                                    <button
+                                        onClick={() => {
+                                            setIsExploding(true);
+                                            setTimeout(() => {
+                                                setView('WORLD_CUP');
+                                                setIsExploding(false);
+                                            }, 800);
+                                        }}
+                                        style={{ animationDelay: '0.05s' }}
+                                        className={`glass-card card-white-glow col-span-4 group h-[12rem] sm:h-[20rem] md:h-[24rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both] ${isExploding ? 'animate-card-explode' : ''}`}
+                                    >
+                                        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-[#00f3ff]/20 border border-[#00f3ff]/30 text-[#00f3ff] text-[10px] font-black animate-pulse uppercase italic shadow-[0_0_15px_rgba(0,243,255,0.3)]"> NUOVA MODALITÀ (BETA) </div>
+                                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#00f3ff]/5 blur-[60px] rounded-full group-hover:bg-[#00f3ff]/10 transition-all duration-700"></div>
+                                        <div className="mb-2 md:mb-4 group-hover:scale-105 transition-transform duration-500">
+                                            <img 
+                                                src="/world_cup_logo.png" 
+                                                alt="Mondiali 2026 Logo" 
+                                                className="w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] filter brightness-105 group-hover:brightness-110 transition-all"
+                                            />
+                                        </div>
+                                        <h3 className="text-sm sm:text-2xl md:text-4xl font-black italic tracking-tighter text-white/90 uppercase">Mondiali 2026</h3>
+                                        <p className="text-gray-500 text-[6px] sm:text-[10px] md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-[#00f3ff] transition-colors">USA, Messico e Canada: il grande torneo tra fannies.</p>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SECTION 2: MODALITÀ 1X2 */}
                         <div className="space-y-6">
                             <SectionHeader title="MODALITÀ 1X2" subtitle="Montepremi & Classifica Globale" color="border-acid-green/30" />
                             <div className="grid grid-cols-4 gap-3 md:gap-8">
@@ -353,6 +394,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                         <FBLegaView />
                     </div>
                 )}
+                {view === 'WORLD_CUP' && (
+                    <div className="relative animate-fade-in">
+                        <ErrorBoundary>
+                            <WorldCupView onBack={() => setView('HOME')} />
+                        </ErrorBoundary>
+                    </div>
+                )}
                 {view === 'CARDS' && (
                     <div className="relative animate-fade-in">
                         <CardGallery onBack={() => setView('HOME')} />
@@ -370,6 +418,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     onCards={() => setView('CARDS')}
                     onProfile={() => setShowProfile(true)}
                 />
+            )}
+
+            {isExploding && (
+                <>
+                    <div className="explosion-flash-overlay" />
+                    <div className="explosion-shockwave" />
+                    <div className="explosion-particles" />
+                </>
             )}
         </>
     );
