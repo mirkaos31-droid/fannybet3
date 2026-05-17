@@ -97,9 +97,9 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             }
             setLeaderboardMatchday(activeRoundMd);
 
-            if (currentUser && activeRoundMd) {
+            if (currentUser && mdData) {
                 const picks = await gameService.getMyPicks(leagueId, currentUser.id);
-                const currentMdPick = picks.find(p => p.matchday_id === activeRoundMd.id);
+                const currentMdPick = picks.find(p => p.matchday_id === mdData.id);
                 if (currentMdPick) {
                     setMyPicks(currentMdPick.predictions);
                 } else {
@@ -157,8 +157,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     }, [leagueId]);
 
     const handleSavePicks = async () => {
-        const targetMd = leaderboardMatchday || matchday;
-        if (!targetMd) return;
+        if (!matchday) return;
         if (myPicks.some(p => p === '')) {
             toast.error('Compila tutti i 10 pronostici!');
             return;
@@ -166,7 +165,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
         try {
             setSaving(true);
-            const result = await gameService.submitPicks(leagueId, targetMd.id, myPicks);
+            const result = await gameService.submitPicks(leagueId, matchday.id, myPicks);
             if (result.success) {
                 // Success Notification for League
                 if (user) {
@@ -410,7 +409,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 participants={displayParticipants}
                 currentUserId={user?.id}
                 leagueId={league.id}
-                matchday={leaderboardMatchday || matchday}
+                matchday={matchday}
                 title="Classifica Generale"
             />
 
@@ -432,7 +431,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <PredictionsModal
                 isOpen={activeModal === 'PREDICTIONS'}
                 onClose={() => window.history.back()}
-                matchday={leaderboardMatchday || matchday}
+                matchday={matchday}
                 myPicks={myPicks}
                 onPickChange={(idx, sign) => {
                     const newPicks = [...myPicks];
