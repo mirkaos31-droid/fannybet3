@@ -1,0 +1,1120 @@
+import React, { useState } from 'react';
+import { ArrowLeft, Trophy, Calendar, Users, Sparkles, AlertCircle, CheckCircle2, Play, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+
+// 20 Mock Players for Simulation
+const INITIAL_MOCK_PLAYERS = [
+    { id: '1', username: 'Sabato', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Sabato' },
+    { id: '2', username: 'Danny89', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Danny89' },
+    { id: '3', username: 'Mirko (Tu)', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Mirko' },
+    { id: '4', username: 'Fanny', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Fanny' },
+    { id: '5', username: 'Alien', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Alien' },
+    { id: '6', username: 'Bomber', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Bomber' },
+    { id: '7', username: 'Cobra', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Cobra' },
+    { id: '8', username: 'Joker', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Joker' },
+    { id: '9', username: 'Ninja', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Ninja' },
+    { id: '10', username: 'Professor', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Professor' },
+    { id: '11', username: 'Capitano', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Capitano' },
+    { id: '12', username: 'Drago', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Drago' },
+    { id: '13', username: 'Sfinge', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Sfinge' },
+    { id: '14', username: 'Vikingo', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Vikingo' },
+    { id: '15', username: 'Pirata', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Pirata' },
+    { id: '16', username: 'Mago', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Mago' },
+    { id: '17', username: 'Fenomeno', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Fenomeno' },
+    { id: '18', username: 'Toro', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Toro' },
+    { id: '19', username: 'Fulmine', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Fulmine' },
+    { id: '20', username: 'Gladiatore', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Gladiatore' }
+];
+
+// Mock Real World Matches for Gironi (12 per Matchday, total 72 matches)
+const MOCK_MATCHDAYS_MATCHES: Record<number, { id: number; home: string; away: string }[]> = {
+    1: [
+        { id: 1, home: 'Canada', away: 'Ecuador' },
+        { id: 2, home: 'Inghilterra', away: 'Iran' },
+        { id: 3, home: 'Senegal', away: 'Olanda' },
+        { id: 4, home: 'Stati Uniti', away: 'Galles' },
+        { id: 5, home: 'Argentina', away: 'Arabia Saudita' },
+        { id: 6, home: 'Danimarca', away: 'Tunisia' },
+        { id: 7, home: 'Messico', away: 'Polonia' },
+        { id: 8, home: 'Francia', away: 'Australia' },
+        { id: 9, home: 'Marocco', away: 'Croazia' },
+        { id: 10, home: 'Germania', away: 'Giappone' },
+        { id: 11, home: 'Spagna', away: 'Costa Rica' },
+        { id: 12, home: 'Belgio', away: 'Canada' },
+    ],
+    2: [
+        { id: 13, home: 'Svizzera', away: 'Camerun' },
+        { id: 14, home: 'Uruguay', away: 'Corea del Sud' },
+        { id: 15, home: 'Portogallo', away: 'Ghana' },
+        { id: 16, home: 'Brasile', away: 'Serbia' },
+        { id: 17, home: 'Galles', away: 'Iran' },
+        { id: 18, home: 'Canada', away: 'Senegal' },
+        { id: 19, home: 'Olanda', away: 'Ecuador' },
+        { id: 20, home: 'Inghilterra', away: 'Stati Uniti' },
+        { id: 21, home: 'Tunisia', away: 'Australia' },
+        { id: 22, home: 'Polonia', away: 'Arabia Saudita' },
+        { id: 23, home: 'Francia', away: 'Danimarca' },
+        { id: 24, home: 'Argentina', away: 'Messico' },
+    ],
+    3: [
+        { id: 25, home: 'Giappone', away: 'Costa Rica' },
+        { id: 26, home: 'Belgio', away: 'Marocco' },
+        { id: 27, home: 'Croazia', away: 'Canada' },
+        { id: 28, home: 'Spagna', away: 'Germania' },
+        { id: 29, home: 'Camerun', away: 'Serbia' },
+        { id: 30, home: 'Corea del Sud', away: 'Ghana' },
+        { id: 31, home: 'Brasile', away: 'Svizzera' },
+        { id: 32, home: 'Portogallo', away: 'Uruguay' },
+        { id: 33, home: 'Ecuador', away: 'Senegal' },
+        { id: 34, home: 'Olanda', away: 'Canada' },
+        { id: 35, home: 'Iran', away: 'Stati Uniti' },
+        { id: 36, home: 'Galles', away: 'Inghilterra' },
+    ],
+    4: [
+        { id: 37, home: 'Tunisia', away: 'Francia' },
+        { id: 38, home: 'Australia', away: 'Danimarca' },
+        { id: 39, home: 'Polonia', away: 'Argentina' },
+        { id: 40, home: 'Arabia Saudita', away: 'Messico' },
+        { id: 41, home: 'Croazia', away: 'Belgio' },
+        { id: 42, home: 'Canada', away: 'Marocco' },
+        { id: 43, home: 'Giappone', away: 'Spagna' },
+        { id: 44, home: 'Costa Rica', away: 'Germania' },
+        { id: 45, home: 'Corea del Sud', away: 'Portogallo' },
+        { id: 46, home: 'Ghana', away: 'Uruguay' },
+        { id: 47, home: 'Serbia', away: 'Svizzera' },
+        { id: 48, home: 'Camerun', away: 'Brasile' },
+    ],
+    5: [
+        { id: 49, home: 'Olanda', away: 'Stati Uniti' },
+        { id: 50, home: 'Argentina', away: 'Australia' },
+        { id: 51, home: 'Francia', away: 'Polonia' },
+        { id: 52, home: 'Inghilterra', away: 'Senegal' },
+        { id: 53, home: 'Giappone', away: 'Croazia' },
+        { id: 54, home: 'Brasile', away: 'Corea del Sud' },
+        { id: 55, home: 'Marocco', away: 'Spagna' },
+        { id: 56, home: 'Portogallo', away: 'Svizzera' },
+        { id: 57, home: 'Croazia', away: 'Brasile' },
+        { id: 58, home: 'Olanda', away: 'Argentina' },
+        { id: 59, home: 'Marocco', away: 'Portogallo' },
+        { id: 60, home: 'Inghilterra', away: 'Francia' },
+    ],
+    6: [
+        { id: 61, home: 'Argentina', away: 'Croazia' },
+        { id: 62, home: 'Francia', away: 'Marocco' },
+        { id: 63, home: 'Croazia', away: 'Marocco' },
+        { id: 64, home: 'Argentina', away: 'Francia' },
+        { id: 65, home: 'Italia', away: 'Spagna' },
+        { id: 66, home: 'Inghilterra', away: 'Germania' },
+        { id: 67, home: 'Belgio', away: 'Olanda' },
+        { id: 68, home: 'Portogallo', away: 'Uruguay' },
+        { id: 69, home: 'Brasile', away: 'Messico' },
+        { id: 70, home: 'Stati Uniti', away: 'Colombia' },
+        { id: 71, home: 'Senegal', away: 'Camerun' },
+        { id: 72, home: 'Giappone', away: 'Corea del Sud' },
+    ]
+};
+
+// Elimination direct matches counts
+// MD 7: Sedicesimi (16 matches)
+// MD 8: Ottavi (8 matches)
+// MD 9: Final Four (8 matches covering Quarti, Semis and Finals)
+const KNOCKOUT_MATCHDAYS_MATCHES: Record<number, { id: number; home: string; away: string }[]> = {
+    7: Array.from({ length: 16 }, (_, idx) => ({ id: 100 + idx, home: `Squadra Reale A${idx+1}`, away: `Squadra Reale B${idx+1}` })),
+    8: Array.from({ length: 8 }, (_, idx) => ({ id: 200 + idx, home: `Squadra Ottavi A${idx+1}`, away: `Squadra Ottavi B${idx+1}` })),
+    9: Array.from({ length: 8 }, (_, idx) => ({ id: 300 + idx, home: `Squadra Finali A${idx+1}`, away: `Squadra Finali B${idx+1}` }))
+};
+
+interface Participant {
+    id: string;
+    username: string;
+    avatarUrl: string;
+    // Standings stats
+    points: number;
+    played: number;
+    won: number;
+    drawn: number;
+    lost: number;
+    goalsFor: number;   // FannyBet score sums
+    goalsAgainst: number;
+}
+
+interface Group {
+    name: string;
+    participants: Participant[];
+}
+
+interface Clash {
+    id: string;
+    matchday: number;
+    homeUser: string;
+    awayUser: string;
+    homeScore?: number;
+    awayScore?: number;
+    result?: '1' | 'X' | '2';
+}
+
+interface KnockoutMatch {
+    id: string;
+    round: 'SEDICESIMI' | 'OTTAVI' | 'SEMIFINALE' | 'FINALE';
+    player1: string;
+    player2: string;
+    score1?: number;
+    score2?: number;
+    winner?: string;
+}
+
+interface WorldCupViewProps {
+    onBack: () => void;
+}
+
+export const WorldCupView: React.FC<WorldCupViewProps> = ({ onBack }) => {
+    const [activeTab, setActiveTab] = useState<'GIRONI' | 'SCHEDINA' | 'TABELLONE' | 'ADMIN'>('GIRONI');
+    
+    const [isTorneoAttivo, setIsTorneoAttivo] = useState(false);
+    const [currentMatchday, setCurrentMatchday] = useState(1);
+    const [groups, setGroups] = useState<Group[]>([]);
+    const [clashes, setClashes] = useState<Clash[]>([]);
+    const [myPicks, setMyPicks] = useState<Record<number, string>>({});
+    const [realResults, setRealResults] = useState<Record<number, string>>({});
+    
+    // Knockout phases state
+    const [knockoutBracket, setKnockoutBracket] = useState<KnockoutMatch[]>([]);
+    
+    // Initialize simulation with 20 players and 5 groups
+    const handleInitializeTorneo = () => {
+        // Initialize stats
+        const initialParticipants = INITIAL_MOCK_PLAYERS.map(p => ({
+            ...p,
+            points: 0,
+            played: 0,
+            won: 0,
+            drawn: 0,
+            lost: 0,
+            goalsFor: 0,
+            goalsAgainst: 0
+        }));
+
+        // Assign to 5 groups (A, B, C, D, E) of 4 players
+        const generatedGroups: Group[] = [];
+        const alphabet = ['A', 'B', 'C', 'D', 'E'];
+        for (let i = 0; i < 5; i++) {
+            generatedGroups.push({
+                name: `Girone ${alphabet[i]}`,
+                participants: initialParticipants.slice(i * 4, i * 4 + 4)
+            });
+        }
+
+        // Generate Clashes (Double Round Robin - 6 Matchdays for 4 players per group)
+        // Scheduling pattern for 4 items:
+        // MD 1: [0 vs 1, 2 vs 3]
+        // MD 2: [0 vs 2, 1 vs 3]
+        // MD 3: [0 vs 3, 1 vs 2]
+        // MD 4: [1 vs 0, 3 vs 2] (Reverse of MD 1)
+        // MD 5: [2 vs 0, 3 vs 1] (Reverse of MD 2)
+        // MD 6: [3 vs 0, 2 vs 1] (Reverse of MD 3)
+        const generatedClashes: Clash[] = [];
+        for (let g = 0; g < 5; g++) {
+            const grpPlayers = initialParticipants.slice(g * 4, g * 4 + 4).map(p => p.username);
+            const grpName = alphabet[g];
+            
+            // MD 1
+            generatedClashes.push({ id: `${grpName}-1-1`, matchday: 1, homeUser: grpPlayers[0], awayUser: grpPlayers[1] });
+            generatedClashes.push({ id: `${grpName}-1-2`, matchday: 1, homeUser: grpPlayers[2], awayUser: grpPlayers[3] });
+            
+            // MD 2
+            generatedClashes.push({ id: `${grpName}-2-1`, matchday: 2, homeUser: grpPlayers[0], awayUser: grpPlayers[2] });
+            generatedClashes.push({ id: `${grpName}-2-2`, matchday: 2, homeUser: grpPlayers[1], awayUser: grpPlayers[3] });
+            
+            // MD 3
+            generatedClashes.push({ id: `${grpName}-3-1`, matchday: 3, homeUser: grpPlayers[0], awayUser: grpPlayers[3] });
+            generatedClashes.push({ id: `${grpName}-3-2`, matchday: 3, homeUser: grpPlayers[1], awayUser: grpPlayers[2] });
+            
+            // MD 4 (reverse)
+            generatedClashes.push({ id: `${grpName}-4-1`, matchday: 4, homeUser: grpPlayers[1], awayUser: grpPlayers[0] });
+            generatedClashes.push({ id: `${grpName}-4-2`, matchday: 4, homeUser: grpPlayers[3], awayUser: grpPlayers[2] });
+            
+            // MD 5 (reverse)
+            generatedClashes.push({ id: `${grpName}-5-1`, matchday: 5, homeUser: grpPlayers[2], awayUser: grpPlayers[0] });
+            generatedClashes.push({ id: `${grpName}-5-2`, matchday: 5, homeUser: grpPlayers[3], awayUser: grpPlayers[1] });
+            
+            // MD 6 (reverse)
+            generatedClashes.push({ id: `${grpName}-6-1`, matchday: 6, homeUser: grpPlayers[3], awayUser: grpPlayers[0] });
+            generatedClashes.push({ id: `${grpName}-6-2`, matchday: 6, homeUser: grpPlayers[2], awayUser: grpPlayers[1] });
+        }
+
+        setGroups(generatedGroups);
+        setClashes(generatedClashes);
+        setCurrentMatchday(1);
+        setIsTorneoAttivo(true);
+        setMyPicks({});
+        setRealResults({});
+        setKnockoutBracket([]);
+        setActiveTab('GIRONI');
+        toast.success("🏆 Torneo Mondiale Inizializzato! Gironi generati in locale.");
+    };
+
+    // Pre-fill my picks and real results randomly for quick testing
+    const handleAutoFillSimulationData = () => {
+        const matches = currentMatchday <= 6 
+            ? MOCK_MATCHDAYS_MATCHES[currentMatchday] 
+            : KNOCKOUT_MATCHDAYS_MATCHES[currentMatchday];
+            
+        if (!matches) return;
+
+        const outcomes = ['1', 'X', '2'];
+        const mockPicks: Record<number, string> = { ...myPicks };
+        const mockResults: Record<number, string> = { ...realResults };
+
+        matches.forEach(m => {
+            // Pre-fill user picks (if not already filled)
+            if (!mockPicks[m.id]) {
+                mockPicks[m.id] = outcomes[Math.floor(Math.random() * outcomes.length)];
+            }
+            // Pre-fill real outcomes
+            mockResults[m.id] = outcomes[Math.floor(Math.random() * outcomes.length)];
+        });
+
+        setMyPicks(mockPicks);
+        setRealResults(mockResults);
+        toast.info("⚡ Simulazione: Schedine e Risultati compilati automaticamente!");
+    };
+
+    // Resolve the current matchday
+    const handleResolveMatchday = () => {
+        const matches = currentMatchday <= 6 
+            ? MOCK_MATCHDAYS_MATCHES[currentMatchday] 
+            : KNOCKOUT_MATCHDAYS_MATCHES[currentMatchday];
+
+        // Ensure all real results are input
+        const incomplete = matches.some(m => !realResults[m.id]);
+        if (incomplete) {
+            toast.error("❌ Errore: Inserisci il risultato di tutte le partite reali prima di risolvere la giornata!");
+            return;
+        }
+
+        if (currentMatchday <= 6) {
+            resolveGroupMatchday();
+        } else {
+            resolveKnockoutMatchday();
+        }
+    };
+
+    // Resolve Group matchdays (MD 1-6)
+    const resolveGroupMatchday = () => {
+        const outcomes = ['1', 'X', '2'];
+        const matches = MOCK_MATCHDAYS_MATCHES[currentMatchday];
+        
+        // 1. Calculate prediction score for all 20 players
+        // In the mock system, we generate random picks for all bot players, and grade them
+        const playerScores: Record<string, number> = {};
+        
+        INITIAL_MOCK_PLAYERS.forEach(p => {
+            let correctCount = 0;
+            matches.forEach(m => {
+                const pick = p.username.includes('Tu')
+                    ? myPicks[m.id] // user pick
+                    : outcomes[Math.floor(Math.random() * outcomes.length)]; // bot pick
+                
+                if (pick === realResults[m.id]) {
+                    correctCount++;
+                }
+            });
+            playerScores[p.username] = correctCount;
+        });
+
+        // 2. Resolve clashes for current Matchday
+        const updatedClashes = clashes.map(c => {
+            if (c.matchday !== currentMatchday) return c;
+            
+            const scoreHome = playerScores[c.homeUser] || 0;
+            const scoreAway = playerScores[c.awayUser] || 0;
+            let result: '1' | 'X' | '2' = 'X';
+            if (scoreHome > scoreAway) result = '1';
+            else if (scoreAway > scoreHome) result = '2';
+
+            return {
+                ...c,
+                homeScore: scoreHome,
+                awayScore: scoreAway,
+                result
+            };
+        });
+
+        // 3. Update Group Standings
+        const updatedGroups = groups.map(grp => {
+            const updatedParticipants = grp.participants.map(p => {
+                // Find all clashes for this participant in this matchday
+                const playerClash = updatedClashes.find(c => 
+                    c.matchday === currentMatchday && 
+                    (c.homeUser === p.username || c.awayUser === p.username)
+                );
+
+                if (!playerClash) return p;
+
+                const isHome = playerClash.homeUser === p.username;
+                const myScore = isHome ? playerClash.homeScore! : playerClash.awayScore!;
+                const oppScore = isHome ? playerClash.awayScore! : playerClash.homeScore!;
+                
+                let ptsEarned = 0;
+                let won = 0;
+                let drawn = 0;
+                let lost = 0;
+
+                if (myScore > oppScore) {
+                    ptsEarned = 3;
+                    won = 1;
+                } else if (myScore === oppScore) {
+                    ptsEarned = 1;
+                    drawn = 1;
+                } else {
+                    lost = 1;
+                }
+
+                return {
+                    ...p,
+                    points: p.points + ptsEarned,
+                    played: p.played + 1,
+                    won: p.won + won,
+                    drawn: p.drawn + drawn,
+                    lost: p.lost + lost,
+                    goalsFor: p.goalsFor + myScore,
+                    goalsAgainst: p.goalsAgainst + oppScore
+                };
+            });
+
+            // Sort group participants: points desc, then goal difference desc, then goalsFor desc
+            const sortedParticipants = [...updatedParticipants].sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                const diffA = a.goalsFor - a.goalsAgainst;
+                const diffB = b.goalsFor - b.goalsAgainst;
+                if (diffB !== diffA) return diffB - diffA;
+                return b.goalsFor - a.goalsFor;
+            });
+
+            return {
+                ...grp,
+                participants: sortedParticipants
+            };
+        });
+
+        setClashes(updatedClashes);
+        setGroups(updatedGroups);
+
+        toast.success(`🎉 Matchday ${currentMatchday} Risolto con successo! Classifiche aggiornate.`);
+
+        // Advance round
+        const nextMd = currentMatchday + 1;
+        setCurrentMatchday(nextMd);
+        setMyPicks({});
+        setRealResults({});
+
+        // If next round is MD 7, generate bracket!
+        if (nextMd === 7) {
+            generateKnockoutBracket(updatedGroups);
+        }
+    };
+
+    // Generate Direct Elimination Bracket (16 Players: top 2 of each of the 5 groups + 6 best thirds)
+    const generateKnockoutBracket = (finalGroups: Group[]) => {
+        toast.info("⚽ Calcolo Qualificati e sorteggio Tabellone in corso...");
+
+        // 1. Get Top 2 from each group
+        const qualified: string[] = [];
+        const thirds: Participant[] = [];
+
+        finalGroups.forEach(g => {
+            qualified.push(g.participants[0].username);
+            qualified.push(g.participants[1].username);
+            thirds.push(g.participants[2]);
+        });
+
+        // 2. Sort thirds to find best 6
+        const sortedThirds = thirds.sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            const diffA = a.goalsFor - a.goalsAgainst;
+            const diffB = b.goalsFor - b.goalsAgainst;
+            if (diffB !== diffA) return diffB - diffA;
+            return b.goalsFor - a.goalsFor;
+        });
+
+        // Add 6 best thirds
+        for (let i = 0; i < 6; i++) {
+            qualified.push(sortedThirds[i].username);
+        }
+
+        // Shuffle qualified slightly or pair them:
+        // We do 8 Sedicesimi pairings (16 players total)
+        const matches: KnockoutMatch[] = [];
+        for (let i = 0; i < 8; i++) {
+            matches.push({
+                id: `SED-${i+1}`,
+                round: 'SEDICESIMI',
+                player1: qualified[i],
+                player2: qualified[15 - i]
+            });
+        }
+
+        setKnockoutBracket(matches);
+        toast.success("🔥 Tabellone Sedicesimi di Finale Generato! Fase a gironi conclusa.");
+    };
+
+    // Resolve Knockout rounds (MD 7-9)
+    const resolveKnockoutMatchday = () => {
+        const outcomes = ['1', 'X', '2'];
+        const matches = KNOCKOUT_MATCHDAYS_MATCHES[currentMatchday];
+        
+        // 1. Generate prediction points for all players active in this round
+        const activePlayers = Array.from(new Set(
+            knockoutBracket
+                .filter(m => m.round === getRoundNameFromMatchday(currentMatchday))
+                .flatMap(m => [m.player1, m.player2])
+        ));
+
+        const playerScores: Record<string, number> = {};
+        activePlayers.forEach(p => {
+            let correctCount = 0;
+            matches.forEach(m => {
+                const pick = p.includes('Tu')
+                    ? myPicks[m.id]
+                    : outcomes[Math.floor(Math.random() * outcomes.length)];
+                
+                if (pick === realResults[m.id]) {
+                    correctCount++;
+                }
+            });
+            playerScores[p] = correctCount;
+        });
+
+        // 2. Grade matches
+        const currentRoundName = getRoundNameFromMatchday(currentMatchday);
+        const updatedBracket = knockoutBracket.map(m => {
+            if (m.round !== currentRoundName) return m;
+
+            const score1 = playerScores[m.player1] || 0;
+            const score2 = playerScores[m.player2] || 0;
+            
+            // In case of a draw in direct elimination, simulated coin toss or bot with higher index wins
+            let winner = score1 > score2 ? m.player1 : m.player2;
+            if (score1 === score2) {
+                // If user is playing, let's give him a slight handicap or advantage to make it fun, or random
+                winner = Math.random() > 0.5 ? m.player1 : m.player2;
+            }
+
+            return {
+                ...m,
+                score1,
+                score2,
+                winner
+            };
+        });
+
+        setKnockoutBracket(updatedBracket);
+        toast.success(`🎉 ${currentRoundName} Risolti!`);
+
+        // Generate next round
+        const nextMd = currentMatchday + 1;
+        setCurrentMatchday(nextMd);
+        setMyPicks({});
+        setRealResults({});
+
+        if (nextMd === 8) {
+            // Generate Ottavi (4 matches from 8 winners of Sedicesimi)
+            const winners = updatedBracket.filter(m => m.round === 'SEDICESIMI').map(m => m.winner!);
+            const ottaviMatches: KnockoutMatch[] = [];
+            for (let i = 0; i < 4; i++) {
+                ottaviMatches.push({
+                    id: `OTT-${i+1}`,
+                    round: 'OTTAVI',
+                    player1: winners[i * 2],
+                    player2: winners[i * 2 + 1]
+                });
+            }
+            setKnockoutBracket([...updatedBracket, ...ottaviMatches]);
+            toast.info("🔥 Accoppiamenti Ottavi di Finale Generati!");
+        } else if (nextMd === 9) {
+            // Generate Semifinali and Finale (Final Four!)
+            const winners = updatedBracket.filter(m => m.round === 'OTTAVI').map(m => m.winner!);
+            const semiMatches: KnockoutMatch[] = [
+                { id: 'SEM-1', round: 'SEMIFINALE', player1: winners[0], player2: winners[1] },
+                { id: 'SEM-2', round: 'SEMIFINALE', player1: winners[2], player2: winners[3] }
+            ];
+            setKnockoutBracket([...updatedBracket, ...semiMatches]);
+            toast.info("🔥 Accoppiamenti Final Four Generati!");
+        } else if (nextMd === 10) {
+            // Final matchday resolved!
+            const semiMatches = updatedBracket.filter(m => m.round === 'SEMIFINALE');
+            const winner1 = semiMatches[0].winner!;
+            const winner2 = semiMatches[1].winner!;
+            
+            // Add Final Match
+            const finalMatch: KnockoutMatch = {
+                id: 'FIN-1',
+                round: 'FINALE',
+                player1: winner1,
+                player2: winner2
+            };
+            
+            setKnockoutBracket([...updatedBracket, finalMatch]);
+            // Force currentMatchday to stay at 9 but mark as completely finished
+            setCurrentMatchday(9.5); // finished!
+            toast.success(`🏆 IL MONDIALE È TERMINATO!`);
+        }
+    };
+
+    const resolveFinalMatchMock = () => {
+        // Resolve final match specifically
+        const finalIndex = knockoutBracket.findIndex(m => m.round === 'FINALE');
+        if (finalIndex === -1) return;
+
+        const finalMatch = knockoutBracket[finalIndex];
+        
+        let score1 = Math.floor(Math.random() * 6) + 2;
+        let score2 = Math.floor(Math.random() * 6) + 2;
+        if (score1 === score2) score1++; // avoid final draw in mock
+
+        const winner = score1 > score2 ? finalMatch.player1 : finalMatch.player2;
+
+        const updated = [...knockoutBracket];
+        updated[finalIndex] = {
+            ...finalMatch,
+            score1,
+            score2,
+            winner
+        };
+
+        setKnockoutBracket(updated);
+        setCurrentMatchday(10); // Fully done
+        toast.success(`👑 CAMPIONE DEL MONDO: ${winner.toUpperCase()}!!! 🏆`);
+    };
+
+    const getRoundNameFromMatchday = (md: number) => {
+        if (md === 7) return 'SEDICESIMI';
+        if (md === 8) return 'OTTAVI';
+        if (md === 9) return 'SEMIFINALE';
+        return 'FINALE';
+    };
+
+    // Calculate user's completed picks count
+    const matchesList = currentMatchday <= 6 
+        ? MOCK_MATCHDAYS_MATCHES[currentMatchday] 
+        : KNOCKOUT_MATCHDAYS_MATCHES[currentMatchday];
+        
+    const completedPicksCount = matchesList ? matchesList.filter(m => myPicks[m.id]).length : 0;
+    const totalPicksCount = matchesList ? matchesList.length : 0;
+
+    return (
+        <div className="max-w-6xl mx-auto w-full px-2 space-y-6 md:space-y-10">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-black/40 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="p-3 bg-white/5 border border-white/10 text-white rounded-2xl hover:bg-white/10 hover:scale-105 transition-all"
+                    >
+                        <ArrowLeft size={18} />
+                    </button>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-xl md:text-3xl font-black italic uppercase text-white tracking-tight">Mondiali 2026 USA, Messico & Canada</h2>
+                            <span className="px-2 py-0.5 rounded bg-[#00f3ff]/20 text-[#00f3ff] text-[9px] font-bold uppercase tracking-wider">Locale Sandbox</span>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-gray-400 font-mono mt-1">Ambiente di test locale per il nuovo format a gironi ed eliminazione.</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    {!isTorneoAttivo ? (
+                        <button
+                            onClick={handleInitializeTorneo}
+                            className="px-6 py-3 bg-[#00f3ff] text-black font-black uppercase text-xs tracking-wider rounded-2xl shadow-[0_0_20px_rgba(0,243,255,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                        >
+                            <Play size={16} fill="black" /> Inizializza Mondiale
+                        </button>
+                    ) : (
+                        <>
+                            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-center">
+                                <span className="text-[8px] font-black uppercase text-gray-500 tracking-wider block">Stato Torneo</span>
+                                <span className="text-xs font-black uppercase text-white">
+                                    {currentMatchday <= 6 ? `Gironi (Giornata ${currentMatchday}/6)` : ''}
+                                    {currentMatchday === 7 ? 'Sedicesimi' : ''}
+                                    {currentMatchday === 8 ? 'Ottavi' : ''}
+                                    {currentMatchday === 9 ? 'Final Four (Semis)' : ''}
+                                    {currentMatchday === 9.5 ? 'Finale' : ''}
+                                    {currentMatchday >= 10 ? 'Terminato 🏆' : ''}
+                                </span>
+                            </div>
+                            <button
+                                onClick={handleInitializeTorneo}
+                                className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl hover:bg-red-500/20 active:scale-95 transition-all flex items-center gap-1 text-xs font-black uppercase tracking-widest"
+                                title="Resetta e ricomincia la simulazione"
+                            >
+                                <RefreshCw size={14} /> Reset
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {isTorneoAttivo ? (
+                <>
+                    {/* Navigation Tabs */}
+                    <div className="flex border-b border-white/10 gap-1 md:gap-2 overflow-x-auto no-scrollbar">
+                        {[
+                            { id: 'GIRONI', label: 'Gironi', icon: <Users size={16} /> },
+                            { id: 'SCHEDINA', label: 'La tua Schedina', icon: <Calendar size={16} /> },
+                            { id: 'TABELLONE', label: 'Knockout Bracket', icon: <Trophy size={16} /> },
+                            { id: 'ADMIN', label: 'Simulatore Admin', icon: <Sparkles size={16} /> }
+                        ].map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => setActiveTab(t.id as typeof activeTab)}
+                                className={`px-4 py-3 rounded-t-2xl text-[10px] md:text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all relative ${
+                                    activeTab === t.id
+                                        ? 'bg-[#00f3ff]/10 text-[#00f3ff] border-b-2 border-[#00f3ff]'
+                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                }`}
+                            >
+                                {t.icon} {t.label}
+                                {t.id === 'SCHEDINA' && currentMatchday <= 9 && (
+                                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                                        completedPicksCount === totalPicksCount ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                                    }`}>
+                                        {completedPicksCount}/{totalPicksCount}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tab Panels */}
+                    <div className="space-y-6 animate-fade-in">
+                        
+                        {/* 1. GIRONI TAB */}
+                        {activeTab === 'GIRONI' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                                <div className="lg:col-span-2 bg-[#00f3ff]/5 border border-[#00f3ff]/20 rounded-3xl p-6 flex flex-col md:flex-row items-center gap-4">
+                                    <Trophy size={32} className="text-[#00f3ff] animate-pulse" />
+                                    <div>
+                                        <h4 className="text-white font-black uppercase italic text-sm md:text-base">Fase a Gironi in corso</h4>
+                                        <p className="text-xs text-gray-400 mt-1">20 Partecipanti divisi in 5 Gironi da 4 giocatori. Scontri diretti andata e ritorno. I primi 2 di ogni girone e le 6 migliori terze avanzano al tabellone a eliminazione diretta.</p>
+                                    </div>
+                                </div>
+
+                                {groups.map((g, idx) => (
+                                    <div key={idx} className="bg-black/40 border border-white/10 rounded-3xl p-6 space-y-4">
+                                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                            <h3 className="text-base md:text-xl font-black italic uppercase text-white tracking-wide">{g.name}</h3>
+                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Girone all'italiana</span>
+                                        </div>
+
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left text-xs text-white">
+                                                <thead>
+                                                    <tr className="text-gray-500 border-b border-white/5 uppercase font-mono text-[9px] tracking-wider">
+                                                        <th className="py-2">Rank</th>
+                                                        <th>Giocatore</th>
+                                                        <th className="text-center">G</th>
+                                                        <th className="text-center text-[#00f3ff]">PT</th>
+                                                        <th className="text-center">V</th>
+                                                        <th className="text-center">N</th>
+                                                        <th className="text-center">P</th>
+                                                        <th className="text-center">GF:GS</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5 font-mono">
+                                                    {g.participants.map((p, pIdx) => (
+                                                        <tr key={pIdx} className={`hover:bg-white/5 transition-colors ${p.username.includes('Tu') ? 'bg-[#00f3ff]/5 font-black text-[#00f3ff]' : ''}`}>
+                                                            <td className="py-3 pl-1 font-black">
+                                                                {pIdx === 0 && '🥇'}
+                                                                {pIdx === 1 && '🥈'}
+                                                                {pIdx > 1 && `${pIdx + 1}°`}
+                                                            </td>
+                                                            <td className="flex items-center gap-2 py-3 font-sans">
+                                                                <img src={p.avatarUrl} alt="" className="w-6 h-6 rounded-full border border-white/10 bg-black" />
+                                                                <span className="font-bold">{p.username}</span>
+                                                            </td>
+                                                            <td className="text-center">{p.played}</td>
+                                                            <td className="text-center font-black text-[#00f3ff] text-sm">{p.points}</td>
+                                                            <td className="text-center">{p.won}</td>
+                                                            <td className="text-center">{p.drawn}</td>
+                                                            <td className="text-center">{p.lost}</td>
+                                                            <td className="text-center text-gray-400">{p.goalsFor}:{p.goalsAgainst}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Gironi Clashes Overview */}
+                                <div className="lg:col-span-2 bg-black/40 border border-white/10 rounded-3xl p-6 space-y-4">
+                                    <h3 className="text-xl font-black italic uppercase text-white tracking-wide border-b border-white/5 pb-2">Storico Scontri Diretti</h3>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+                                        {clashes.map((c, idx) => (
+                                            <div key={idx} className={`p-4 rounded-2xl border text-xs flex flex-col justify-between ${
+                                                c.result 
+                                                    ? 'border-white/5 bg-white/[0.02]' 
+                                                    : 'border-[#00f3ff]/20 bg-[#00f3ff]/5'
+                                            }`}>
+                                                <div className="flex justify-between items-center text-gray-500 font-mono text-[9px] uppercase tracking-wider mb-2">
+                                                    <span>Matchday {c.matchday}</span>
+                                                    <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white">Girone {c.id.split('-')[0]}</span>
+                                                </div>
+
+                                                <div className="grid grid-cols-3 items-center text-center">
+                                                    <span className={`font-bold truncate ${c.result === '1' ? 'text-green-400 font-black' : ''}`}>{c.homeUser}</span>
+                                                    <span className="font-digital text-sm font-black bg-black/50 py-1 px-2 rounded border border-white/5 mx-2">
+                                                        {c.result ? `${c.homeScore} - ${c.awayScore}` : 'VS'}
+                                                    </span>
+                                                    <span className={`font-bold truncate ${c.result === '2' ? 'text-green-400 font-black' : ''}`}>{c.awayUser}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 2. SCHEDINA TAB */}
+                        {activeTab === 'SCHEDINA' && (
+                            <div className="max-w-3xl mx-auto bg-black/40 border border-white/10 rounded-3xl p-6 md:p-8 space-y-6 md:space-y-8">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 gap-2">
+                                    <div>
+                                        <h3 className="text-xl font-black italic uppercase text-white tracking-wide">La tua Schedina</h3>
+                                        <p className="text-xs text-gray-400 font-mono mt-1">
+                                            {currentMatchday <= 6 
+                                                ? `Inserisci i pronostici per la Giornata ${currentMatchday} dei Gironi.`
+                                                : `Inserisci i pronostici per la fase a eliminazione: ${getRoundNameFromMatchday(currentMatchday)}.`
+                                            }
+                                        </p>
+                                    </div>
+                                    <div className="px-4 py-2 bg-[#00f3ff]/10 border border-[#00f3ff]/20 rounded-xl text-center self-start">
+                                        <span className="text-[8px] font-black uppercase text-[#00f3ff] tracking-wider block">Progresso</span>
+                                        <span className="text-xs font-black text-white font-mono">{completedPicksCount} / {totalPicksCount} GIOCATE</span>
+                                    </div>
+                                </div>
+
+                                {matchesList && matchesList.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {matchesList.map((m, idx) => (
+                                            <div key={m.id} className="grid grid-cols-1 md:grid-cols-12 items-center bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all gap-4">
+                                                
+                                                {/* Match Number */}
+                                                <div className="md:col-span-1 text-center md:text-left text-xs font-mono font-black text-gray-500 uppercase">
+                                                    #{idx + 1}
+                                                </div>
+
+                                                {/* Teams */}
+                                                <div className="md:col-span-5 flex items-center justify-between md:justify-start gap-4">
+                                                    <span className="text-sm font-black text-white">{m.home}</span>
+                                                    <span className="text-[10px] text-gray-500 font-mono uppercase">vs</span>
+                                                    <span className="text-sm font-black text-white">{m.away}</span>
+                                                </div>
+
+                                                {/* Speed Betting Grid Selector */}
+                                                <div className="md:col-span-6 flex justify-end gap-2">
+                                                    {['1', 'X', '2'].map(outcome => (
+                                                        <button
+                                                            key={outcome}
+                                                            onClick={() => setMyPicks({ ...myPicks, [m.id]: outcome })}
+                                                            className={`w-12 h-10 md:w-16 md:h-12 rounded-xl border font-mono font-black text-sm transition-all uppercase tracking-wide flex items-center justify-center ${
+                                                                myPicks[m.id] === outcome
+                                                                    ? 'bg-[#00f3ff] text-black border-[#00f3ff] shadow-[0_0_12px_rgba(0,243,255,0.3)] scale-[1.05]'
+                                                                    : 'bg-black/40 border-white/5 text-gray-400 hover:border-white/20 hover:text-white'
+                                                            }`}
+                                                        >
+                                                            {outcome}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        <button
+                                            onClick={() => toast.success("✅ Pronostici salvati localmente! Invia a server simulato completato.")}
+                                            className="w-full py-4 mt-4 bg-gradient-to-r from-[#00f3ff] to-[#00aa88] text-black font-black uppercase text-xs tracking-wider rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                        >
+                                            Salva Pronostici
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 bg-white/[0.02] border border-white/5 rounded-3xl">
+                                        <AlertCircle className="mx-auto text-yellow-500 mb-2 animate-bounce" size={32} />
+                                        <h4 className="text-white font-black uppercase italic text-sm">Turno terminato</h4>
+                                        <p className="text-xs text-gray-400 mt-1">Non ci sono schedine attive da giocare per questo turno.</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* 3. TABELLONE TAB */}
+                        {activeTab === 'TABELLONE' && (
+                            <div className="bg-black/40 border border-white/10 rounded-3xl p-6 md:p-8 space-y-8 overflow-x-auto no-scrollbar">
+                                <h3 className="text-xl md:text-3xl font-black italic uppercase text-white tracking-tight border-b border-white/5 pb-2">Knockout Stage Bracket</h3>
+                                
+                                {knockoutBracket.length === 0 ? (
+                                    <div className="text-center py-12 bg-white/[0.02] border border-white/5 rounded-3xl">
+                                        <Trophy className="mx-auto text-gray-500 mb-2" size={32} />
+                                        <h4 className="text-white font-black uppercase italic text-sm">Fase ad eliminazione non ancora iniziata</h4>
+                                        <p className="text-xs text-gray-400 mt-1">Concludi prima i 6 Matchday della fase a gironi per qualificare i 16 giocatori ed erigere il tabellone.</p>
+                                    </div>
+                                ) : (
+                                    <div className="min-w-[800px] grid grid-cols-4 gap-8 py-4 relative z-10">
+                                        
+                                        {/* SEDICESIMI COLUMN */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-[#00f3ff] border-b border-[#00f3ff]/20 pb-2 mb-4">Sedicesimi (MD 7)</h4>
+                                            {knockoutBracket.filter(m => m.round === 'SEDICESIMI').map(m => (
+                                                <div key={m.id} className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-xs space-y-2 relative group hover:border-[#00f3ff]/30 transition-all">
+                                                    <div className="flex justify-between items-center text-gray-500 font-mono text-[9px] uppercase">
+                                                        <span>{m.id}</span>
+                                                        <span>{m.winner ? 'Risultato' : 'VS'}</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <div className={`flex justify-between items-center ${m.winner === m.player1 ? 'text-[#00f3ff] font-black' : 'text-white'}`}>
+                                                            <span className="truncate">{m.player1}</span>
+                                                            <span className="font-mono">{m.winner ? m.score1 : '-'}</span>
+                                                        </div>
+                                                        <div className={`flex justify-between items-center ${m.winner === m.player2 ? 'text-[#00f3ff] font-black' : 'text-white'}`}>
+                                                            <span className="truncate">{m.player2}</span>
+                                                            <span className="font-mono">{m.winner ? m.score2 : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* OTTAVI COLUMN */}
+                                        <div className="space-y-8 pt-8">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-brand-gold border-b border-brand-gold/20 pb-2 mb-4">Ottavi (MD 8)</h4>
+                                            {knockoutBracket.filter(m => m.round === 'OTTAVI').length === 0 ? (
+                                                <p className="text-[10px] text-gray-500 font-mono uppercase text-center mt-12">In attesa dei Sedicesimi</p>
+                                            ) : (
+                                                knockoutBracket.filter(m => m.round === 'OTTAVI').map(m => (
+                                                    <div key={m.id} className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-xs space-y-2 hover:border-brand-gold/30 transition-all">
+                                                        <div className="flex justify-between items-center text-gray-500 font-mono text-[9px] uppercase">
+                                                            <span>{m.id}</span>
+                                                            <span>{m.winner ? 'Risultato' : 'VS'}</span>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className={`flex justify-between items-center ${m.winner === m.player1 ? 'text-brand-gold font-black' : 'text-white'}`}>
+                                                                <span className="truncate">{m.player1}</span>
+                                                                <span className="font-mono">{m.winner ? m.score1 : '-'}</span>
+                                                            </div>
+                                                            <div className={`flex justify-between items-center ${m.winner === m.player2 ? 'text-brand-gold font-black' : 'text-white'}`}>
+                                                                <span className="truncate">{m.player2}</span>
+                                                                <span className="font-mono">{m.winner ? m.score2 : '-'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        {/* SEMIS COLUMN */}
+                                        <div className="space-y-16 pt-16">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-red-400 border-b border-red-400/20 pb-2 mb-4">Semifinali (MD 9)</h4>
+                                            {knockoutBracket.filter(m => m.round === 'SEMIFINALE').length === 0 ? (
+                                                <p className="text-[10px] text-gray-500 font-mono uppercase text-center mt-20">In attesa degli Ottavi</p>
+                                            ) : (
+                                                knockoutBracket.filter(m => m.round === 'SEMIFINALE').map(m => (
+                                                    <div key={m.id} className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-xs space-y-2 hover:border-red-400/30 transition-all">
+                                                        <div className="flex justify-between items-center text-gray-500 font-mono text-[9px] uppercase">
+                                                            <span>{m.id}</span>
+                                                            <span>{m.winner ? 'Risultato' : 'VS'}</span>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className={`flex justify-between items-center ${m.winner === m.player1 ? 'text-red-400 font-black' : 'text-white'}`}>
+                                                                <span className="truncate">{m.player1}</span>
+                                                                <span className="font-mono">{m.winner ? m.score1 : '-'}</span>
+                                                            </div>
+                                                            <div className={`flex justify-between items-center ${m.winner === m.player2 ? 'text-red-400 font-black' : 'text-white'}`}>
+                                                                <span className="truncate">{m.player2}</span>
+                                                                <span className="font-mono">{m.winner ? m.score2 : '-'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        {/* FINALE COLUMN */}
+                                        <div className="space-y-24 pt-24">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-green-400 border-b border-green-400/20 pb-2 mb-4">Finale 🏆</h4>
+                                            {knockoutBracket.filter(m => m.round === 'FINALE').length === 0 ? (
+                                                <p className="text-[10px] text-gray-500 font-mono uppercase text-center mt-28">In attesa delle Semifinali</p>
+                                            ) : (
+                                                knockoutBracket.filter(m => m.round === 'FINALE').map(m => (
+                                                    <div key={m.id} className="p-4 bg-[#00f3ff]/5 border-2 border-green-400/30 rounded-2xl text-xs space-y-3 shadow-[0_0_20px_rgba(74,222,128,0.1)]">
+                                                        <div className="flex justify-between items-center text-green-400 font-mono text-[9px] font-black uppercase">
+                                                            <span>{m.id}</span>
+                                                            <span>🏆 FINALE 🏆</span>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <div className={`flex justify-between items-center text-sm ${m.winner === m.player1 ? 'text-green-400 font-black text-base' : 'text-white'}`}>
+                                                                <span className="truncate">{m.player1}</span>
+                                                                <span className="font-mono font-black">{m.winner ? m.score1 : '-'}</span>
+                                                            </div>
+                                                            <div className={`flex justify-between items-center text-sm ${m.winner === m.player2 ? 'text-green-400 font-black text-base' : 'text-white'}`}>
+                                                                <span className="truncate">{m.player2}</span>
+                                                                <span className="font-mono font-black">{m.winner ? m.score2 : '-'}</span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {currentMatchday === 9.5 && !m.winner && (
+                                                            <button
+                                                                onClick={resolveFinalMatchMock}
+                                                                className="w-full py-2 bg-green-400 text-black font-black uppercase text-[10px] tracking-wider rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1"
+                                                            >
+                                                                <Play size={10} fill="black" /> Gioca Finale!
+                                                            </button>
+                                                        )}
+
+                                                        {m.winner && (
+                                                            <div className="pt-2 border-t border-white/5 text-center text-[10px] font-black uppercase text-green-400 tracking-widest animate-pulse">
+                                                                👑 CAMPIONE: {m.winner} 👑
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* 4. ADMIN TAB */}
+                        {activeTab === 'ADMIN' && (
+                            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                                
+                                {/* Controller Side panel */}
+                                <div className="bg-black/40 border border-white/10 rounded-3xl p-6 space-y-6">
+                                    <h3 className="text-lg font-black italic uppercase text-white tracking-wide border-b border-white/5 pb-2">Controlli Simulatore</h3>
+                                    
+                                    <div className="space-y-4">
+                                        <button
+                                            onClick={handleAutoFillSimulationData}
+                                            className="w-full py-3 bg-white/5 border border-white/10 text-white font-black uppercase text-xs tracking-wider rounded-2xl hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Sparkles size={16} className="text-[#00f3ff]" /> Auto-Fill (Dati Rapidi)
+                                        </button>
+                                        
+                                        <button
+                                            onClick={handleResolveMatchday}
+                                            className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black uppercase text-xs tracking-wider rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <CheckCircle2 size={18} /> Risolvi Giornata {currentMatchday}
+                                        </button>
+                                    </div>
+
+                                    <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl text-xs space-y-2">
+                                        <div className="flex items-center gap-2 text-yellow-400 font-bold uppercase tracking-wider">
+                                            <AlertCircle size={14} /> Note di Test
+                                        </div>
+                                        <p className="text-gray-400 font-mono leading-relaxed">
+                                            Questa console simula le funzioni dell'Admin. Cliccando su "Auto-Fill" compili la schedina per te e generi i risultati reali casuali di tutte le partite, per poter procedere velocemente con la risoluzione.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Results input panel */}
+                                <div className="md:col-span-2 bg-black/40 border border-white/10 rounded-3xl p-6 space-y-6">
+                                    <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                                        <div>
+                                            <h3 className="text-lg font-black italic uppercase text-white tracking-wide">Risultati Reali del Turno</h3>
+                                            <p className="text-xs text-gray-400 font-mono mt-1">Immetti gli esiti finali delle partite reali.</p>
+                                        </div>
+                                        <span className="px-3 py-1 rounded bg-white/5 border border-white/10 text-white text-xs font-mono">
+                                            Matchday {currentMatchday}
+                                        </span>
+                                    </div>
+
+                                    {matchesList && matchesList.length > 0 ? (
+                                        <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2 no-scrollbar">
+                                            {matchesList.map((m, idx) => (
+                                                <div key={m.id} className="grid grid-cols-1 md:grid-cols-12 items-center bg-white/[0.01] hover:bg-white/[0.02] border border-white/5 rounded-2xl p-4 transition-all gap-4">
+                                                    
+                                                    {/* Match Number */}
+                                                    <div className="md:col-span-1 text-xs font-mono font-black text-gray-500 uppercase">
+                                                        #{idx + 1}
+                                                    </div>
+
+                                                    {/* Teams */}
+                                                    <div className="md:col-span-5 flex items-center gap-2">
+                                                        <span className="text-xs font-bold text-white truncate">{m.home}</span>
+                                                        <span className="text-[10px] text-gray-500 font-mono">VS</span>
+                                                        <span className="text-xs font-bold text-white truncate">{m.away}</span>
+                                                    </div>
+
+                                                    {/* Outcomes grid input */}
+                                                    <div className="md:col-span-6 flex justify-end gap-1.5">
+                                                        {['1', 'X', '2'].map(outcome => (
+                                                            <button
+                                                                key={outcome}
+                                                                onClick={() => setRealResults({ ...realResults, [m.id]: outcome })}
+                                                                className={`w-9 h-8 rounded-lg border font-mono font-black text-xs transition-all uppercase flex items-center justify-center ${
+                                                                    realResults[m.id] === outcome
+                                                                        ? 'bg-green-500 text-black border-green-500 shadow-[0_0_8px_rgba(74,222,128,0.25)]'
+                                                                        : 'bg-black/40 border-white/5 text-gray-500 hover:border-white/10'
+                                                                }`}
+                                                            >
+                                                                {outcome}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-12 bg-white/[0.02] border border-white/5 rounded-3xl">
+                                            <CheckCircle2 className="mx-auto text-green-400 mb-2" size={32} />
+                                            <h4 className="text-white font-black uppercase italic text-sm">Competizione Terminata</h4>
+                                            <p className="text-xs text-gray-400 mt-1">Il torneo simulato si è concluso con successo!</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </>
+            ) : (
+                /* Torneo non ancora inizializzato (Splash Screen) */
+                <div className="max-w-md mx-auto bg-black/60 border border-white/10 rounded-3xl p-8 backdrop-blur-md text-center space-y-6 py-12 md:py-16">
+                    <div className="w-20 h-20 mx-auto rounded-full bg-[#00f3ff]/10 border border-[#00f3ff]/30 flex items-center justify-center animate-pulse">
+                        <Trophy size={40} className="text-[#00f3ff]" />
+                    </div>
+
+                    <div className="space-y-2">
+                        <h3 className="text-2xl font-black italic uppercase text-white tracking-wide">FannyBet World Cup</h3>
+                        <p className="text-xs text-gray-400 font-mono">Un format premium interamente a gironi ed eliminazione diretta tra fannies.</p>
+                    </div>
+
+                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 text-left space-y-4 text-xs leading-relaxed text-gray-300">
+                        <div className="flex items-start gap-3">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#00f3ff]/20 text-[#00f3ff] text-[10px] font-black flex items-center justify-center font-mono">1</span>
+                            <p><strong>20 Giocatori reali</strong> divisi in 5 gironi equilibrati.</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#00f3ff]/20 text-[#00f3ff] text-[10px] font-black flex items-center justify-center font-mono">2</span>
+                            <p><strong>Double Round Robin</strong> (6 matchdays) di scontri diretti intensissimi in ogni girone.</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#00f3ff]/20 text-[#00f3ff] text-[10px] font-black flex items-center justify-center font-mono">3</span>
+                            <p><strong>Tabellone finale a 16</strong> (Ottavi, Semifinali e Finali) con qualificazione diretta ed eliminazione!</p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handleInitializeTorneo}
+                        className="w-full py-4 bg-[#00f3ff] text-black font-black uppercase text-xs tracking-wider rounded-2xl shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                        <Play size={16} fill="black" /> Avvia Simulazione Locale
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
