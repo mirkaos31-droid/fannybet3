@@ -48,6 +48,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showProfile, setShowProfile] = useState(false);
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
+    const [showWorldCupRules, setShowWorldCupRules] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isExploding, setIsExploding] = useState(false);
 
@@ -136,6 +137,36 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
             <RegulationsModal isOpen={showRegulations} onClose={() => setShowRegulations(false)} />
             <RequestTokensModal isOpen={showRequestTokens} onClose={() => setShowRequestTokens(false)} currentTokens={user?.tokens || 0} />
+            {showWorldCupRules && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setShowWorldCupRules(false)}></div>
+                    <div className="relative z-10 w-full max-w-3xl overflow-y-auto rounded-3xl border border-white/10 bg-[#05070d]/95 p-6 shadow-[0_0_80px_rgba(0,0,0,0.75)]">
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.35em] text-cyan-300">Regolamento Mondiali</p>
+                                <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white">Mondiali 2026</h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowWorldCupRules(false)}
+                                className="inline-flex h-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:border-white/20 hover:bg-white/10"
+                            >Chiudi</button>
+                        </div>
+                        <div className="space-y-4 text-sm text-gray-300 leading-7">
+                            <p className="text-gray-200">Questa modalità Mondiali è pensata per utenti reali e si attiva solo quando l'Admin decide di far partire il torneo.</p>
+                            <ul className="space-y-3 pl-5 list-disc text-gray-300">
+                                <li><span className="font-semibold text-white">Iscrizione:</span> gli utenti reali si registrano cliccando su <span className="text-cyan-300">Partecipa al Mondiale</span> e vengono salvati nel gruppo di attesa.</li>
+                                <li><span className="font-semibold text-white">Avvio torneo:</span> l'Admin genera i gironi con i partecipanti reali e aggiunge bot solo se necessario per completare i gruppi da 4.</li>
+                                <li><span className="font-semibold text-white">Gironi e clash:</span> i partecipanti vengono distribuiti in gruppi e giocano una serie di matchday predefiniti.</li>
+                                <li><span className="font-semibold text-white">Pronostici:</span> per ogni giornata scegli la tua schedina e assegna un <span className="text-cyan-300">jolly</span> a una partita importante.</li>
+                                <li><span className="font-semibold text-white">Risoluzione:</span> l'Admin inserisce i risultati reali, risolve la giornata e aggiorna la classifica interna.</li>
+                                <li><span className="font-semibold text-white">Nota:</span> finché il torneo non è avviato, la modalità resta in attesa; quando i Mondiali saranno pronti verrà attivata dal team.</li>
+                            </ul>
+                            <p className="text-gray-400">Questa card apre il regolamento rapido, ma il flusso rimane gestito dall'Admin per l'avvio effettivo del torneo.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className={`space-y-6 md:space-y-12 animate-fade-in no-scrollbar pb-24 md:pb-10`}>
                 {view === 'HOME' && (
@@ -211,8 +242,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'HOME' && (
                     <div className="max-w-5xl mx-auto w-full px-2 space-y-8 md:space-y-16">
-                        {/* SECTION 1: EVENTI SPECIALI */}
-                        {false && user?.role === 'ADMIN' && (
+                        {/* SECTION 1: EVENTI SPECIALI - visible to all users */}
+                        {(
                             <div className="space-y-6">
                                 <SectionHeader title="EVENTI SPECIALI" subtitle="Tornei Internazionali" color="border-white/30" />
                                 <div className="grid grid-cols-4 gap-3 md:gap-8">
@@ -227,7 +258,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                         style={{ animationDelay: '0.05s' }}
                                         className={`glass-card card-white-glow col-span-4 group h-[12rem] sm:h-[20rem] md:h-[24rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both] ${isExploding ? 'animate-card-explode' : ''}`}
                                     >
-                                        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-[#00f3ff]/20 border border-[#00f3ff]/30 text-[#00f3ff] text-[10px] font-black animate-pulse uppercase italic shadow-[0_0_15px_rgba(0,243,255,0.3)]"> NUOVA MODALITÀ (BETA) </div>
+                                        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-[#00f3ff]/20 border border-[#00f3ff]/30 text-[#00f3ff] text-[10px] font-black animate-pulse uppercase italic shadow-[0_0_15px_rgba(0,243,255,0.3)]"> NUOVA MODALITÀ </div>
                                         <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#00f3ff]/5 blur-[60px] rounded-full group-hover:bg-[#00f3ff]/10 transition-all duration-700"></div>
                                         <div className="mb-2 md:mb-4 group-hover:scale-105 transition-transform duration-500">
                                             <img 
@@ -238,6 +269,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                         </div>
                                         <h3 className="text-sm sm:text-2xl md:text-4xl font-black italic tracking-tighter text-white/90 uppercase">Mondiali 2026</h3>
                                         <p className="text-gray-500 text-[6px] sm:text-[10px] md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-[#00f3ff] transition-colors">USA, Messico e Canada: il grande torneo tra fannies.</p>
+                                    </button>
+                                </div>
+                                <div className="col-span-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowWorldCupRules(true)}
+                                        className="w-full rounded-3xl border-2 border-cyan-400/50 bg-black/20 px-4 py-3 text-left transition-all duration-300 hover:border-cyan-300 hover:bg-cyan-400/5 hover:shadow-[0_0_30px_rgba(34,211,238,0.25)]"
+                                    >
+                                        <p className="text-sm sm:text-base font-black text-cyan-300 uppercase tracking-[0.2em]">Regolamento Mondiali</p>
                                     </button>
                                 </div>
                             </div>
@@ -397,7 +437,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {view === 'WORLD_CUP' && (
                     <div className="relative animate-fade-in">
                         <ErrorBoundary>
-                            <WorldCupView onBack={() => setView('HOME')} />
+                            <WorldCupView onBack={() => setView('HOME')} user={user} />
                         </ErrorBoundary>
                     </div>
                 )}

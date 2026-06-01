@@ -36,34 +36,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         }
     }, []);
 
-    // Global click listener to unlock audio (browser requirement)
-    React.useEffect(() => {
-        const unlockAudio = () => {
-            if (notificationSound.current) {
-                // Impostiamo il volume a 0 per sbloccare l'audio senza farlo sentire
-                const originalVolume = notificationSound.current.volume;
-                notificationSound.current.volume = 0;
-                notificationSound.current.play().then(() => {
-                    notificationSound.current?.pause();
-                    if (notificationSound.current) {
-                        notificationSound.current.volume = originalVolume;
-                        notificationSound.current.currentTime = 0;
-                    }
-                }).catch(() => {});
-            }
-            window.removeEventListener('click', unlockAudio);
-            window.removeEventListener('touchstart', unlockAudio);
-        };
-        window.addEventListener('click', unlockAudio);
-        window.addEventListener('touchstart', unlockAudio);
-        return () => {
-            window.removeEventListener('click', unlockAudio);
-            window.removeEventListener('touchstart', unlockAudio);
-        };
-    }, []);
-
-
-
     const fetchUnreadCount = React.useCallback(async () => {
         if (!user) return;
         const { count, error } = await supabase
@@ -110,7 +82,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 (payload) => {
                     console.log('New notification received!', payload);
                     setUnreadCount(prev => prev + 1);
-                    playNotificationSound();
+                    
+                    // Play sound only if the notification drawer is NOT open
+                    if (!isNotificationsOpen) {
+                        playNotificationSound();
+                    }
                     
                     const newNotif = payload.new as { title?: string; message?: string, type?: string };
                     
@@ -136,7 +112,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [user, fetchUnreadCount]); // Removed playNotificationSound as it's a stable callback
+    }, [user, fetchUnreadCount, isNotificationsOpen, playNotificationSound]);
 
     return (
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">

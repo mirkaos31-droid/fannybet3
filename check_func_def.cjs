@@ -5,15 +5,13 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function run() {
-    const { data, error } = await supabase.rpc('get_function_source', { p_name: 'distribute_fb_league_prizes' });
+    console.log('Querying function definition...');
+    const { data, error } = await supabase.rpc('get_func', { func_name: 'distribute_fb_league_prizes' });
     if (error) {
+        // Let's try executing SQL directly using raw SQL via REST API if get_func is not allowed or failed
         console.error('RPC Error:', error);
-        // Try direct query if RPC doesn't exist
-        const { data: data2, error: error2 } = await supabase.from('pg_catalog.pg_proc').select('prosrc').eq('proname', 'distribute_fb_league_prizes');
-        if (error2) console.error('Error fetching from pg_catalog.pg_proc:', error2);
-        else if (data2 && data2.length > 0) console.log(data2[0].prosrc);
-        else console.log('Function not found in pg_catalog.pg_proc');
     } else {
+        console.log('Function definition:');
         console.log(data);
     }
 }
