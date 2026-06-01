@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Trophy, Calendar, Users, Sparkles, AlertCircle, CheckCircle2, Play, RefreshCw, Star, Globe } from 'lucide-react';
+import { ArrowLeft, Users, Star, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { gameService } from '../services/gameService';
 import type { User } from '../types';
@@ -16,7 +16,6 @@ export const WorldCupView: React.FC<WorldCupViewProps> = ({ onBack, user }) => {
     const [matches, setMatches] = useState<any[]>([]);
     const [groups, setGroups] = useState<any[]>([]);
     const [clashes, setClashes] = useState<any[]>([]);
-    const [myPredictions, setMyPredictions] = useState<any[]>([]);
     
     // UI States
     const [myPicks, setMyPicks] = useState<Record<number, string>>({});
@@ -36,7 +35,6 @@ export const WorldCupView: React.FC<WorldCupViewProps> = ({ onBack, user }) => {
 
         if (user) {
             const preds = await gameService.getUserPredictions(user.id);
-            setMyPredictions(preds);
             
             // Map predictions to state
             const picksObj: Record<number, string> = {};

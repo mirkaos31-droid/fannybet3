@@ -7,7 +7,7 @@ interface NavigationBarProps {
     isAdmin?: boolean;
 }
 
-export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNavigate, isAdmin = false }) => {
+export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNavigate }) => {
     const navItems: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
         { id: 'HOME', label: 'Home', icon: <Home size={18} /> },
         { id: 'BETTING', label: '1x2 Mode', icon: <Zap size={18} /> },
