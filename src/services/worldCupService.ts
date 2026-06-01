@@ -94,11 +94,36 @@ export const worldCupService = {
         await supabase.from('worldcup_clashes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         const { error: clashError } = await supabase.from('worldcup_clashes').insert(clashes);
 
+        if (!clashError) {
+            const realUsers = allParticipants.filter(p => p.user_id);
+            if (realUsers.length > 0) {
+                const notifications = realUsers.map(u => ({
+                    user_id: u.user_id,
+                    title: '🌍 GIRONI MONDIALE GENERATI!',
+                    message: `I gironi del Mondiale 2026 sono pronti! Sei nel GIRONE ${u.group_name}. Inizia subito a pronosticare!`,
+                    type: 'info'
+                }));
+                await supabase.from('notifications').insert(notifications);
+            }
+        }
+
         return { success: !clashError, message: clashError?.message };
     },
 
     async adminResolveMatchday(matchday: number) {
         const { error } = await supabase.rpc('resolve_worldcup_matchday', { p_matchday: matchday });
+        if (!error) {
+            const { data: participants } = await supabase.from('worldcup_user_groups').select('user_id').not('user_id', 'is', null);
+            if (participants && participants.length > 0) {
+                const notifications = participants.map(p => ({
+                    user_id: p.user_id,
+                    title: `🏁 MONDIALE: G. ${matchday} CHIUSA`,
+                    message: `La Giornata ${matchday} del Mondiale 2026 è stata archiviata. I risultati sono pronti!`,
+                    type: 'info'
+                }));
+                await supabase.from('notifications').insert(notifications);
+            }
+        }
         return { success: !error, message: error?.message };
     },
 
@@ -131,6 +156,14 @@ export const worldCupService = {
             group_name: 'WAITING',
             status: 'ACTIVE'
         });
+        if (!error) {
+            await supabase.from('notifications').insert([{
+                user_id: userId,
+                title: '🌍 MONDIALE: ISCRITTO!',
+                message: 'Ti sei iscritto con successo ai Mondiali 2026! Sei in sala d\'attesa.',
+                type: 'success'
+            }]);
+        }
         return { success: !error, message: error?.message };
     },
 
@@ -173,6 +206,14 @@ export const worldCupService = {
         }));
 
         const { error } = await supabase.from('worldcup_predictions').upsert(formatted, { onConflict: 'user_id,match_id' });
+        if (!error) {
+            await supabase.from('notifications').insert([{
+                user_id: userId,
+                title: '💾 SCHEDINA MONDIALE SALVATA',
+                message: `I tuoi pronostici per il Mondiale sono stati registrati con successo.`,
+                type: 'success'
+            }]);
+        }
         return { success: !error, message: error?.message };
-    }
+    },
 };

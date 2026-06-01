@@ -18,23 +18,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
     const [unreadCount, setUnreadCount] = React.useState(0);
-    const notificationSound = React.useRef<HTMLAudioElement | null>(null);
-
-    // Initialize sound
-    React.useEffect(() => {
-        // Usiamo un suono più morbido e professionale (Digital Chime)
-        notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-preview.mp3');
-        notificationSound.current.volume = 0.4;
-    }, []);
-
-    const playNotificationSound = React.useCallback(() => {
-        if (notificationSound.current) {
-            notificationSound.current.currentTime = 0; // Reset to start
-            notificationSound.current.play().catch((err) => {
-                console.warn("Sound play failed (interaction required):", err);
-            });
-        }
-    }, []);
 
     const fetchUnreadCount = React.useCallback(async () => {
         if (!user) return;
@@ -47,7 +30,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         if (!error && count !== null) {
             setUnreadCount(count);
         }
-    }, [user]); // Removed unreadCount and playNotificationSound from dependencies to break the loop
+    }, [user]);
 
     React.useEffect(() => {
         const checkInitialNotifications = async () => {
@@ -83,11 +66,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                     console.log('New notification received!', payload);
                     setUnreadCount(prev => prev + 1);
                     
-                    // Play sound only if the notification drawer is NOT open
-                    if (!isNotificationsOpen) {
-                        playNotificationSound();
-                    }
-                    
                     const newNotif = payload.new as { title?: string; message?: string, type?: string };
                     
                     // Display visual toast
@@ -112,7 +90,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [user, fetchUnreadCount, isNotificationsOpen, playNotificationSound]);
+    }, [user, fetchUnreadCount, isNotificationsOpen]);
 
     return (
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
