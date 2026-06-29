@@ -15,7 +15,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNav
         { id: 'LEADERBOARD', label: 'Classifiche', icon: <Trophy size={18} /> },
         { id: 'SURVIVAL', label: 'Survival Mode', icon: <Skull size={18} /> },
         { id: 'FB_LEGA', label: 'FB Lega', icon: <Shield size={18} /> },
-        { id: 'WORLD_CUP' as ViewMode, label: 'Mondiali', icon: <Globe size={18} /> },
+        // Per riattivare la modalità Mondiali, decommenta la riga seguente:
+        // { id: 'WORLD_CUP' as ViewMode, label: 'Mondiali', icon: <Globe size={18} /> },
         { id: 'PROFILE', label: 'Profilo', icon: <User size={18} /> },
     ];
 

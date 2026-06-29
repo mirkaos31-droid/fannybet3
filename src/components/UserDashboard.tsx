@@ -52,6 +52,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [loading, setLoading] = useState(true);
     const [isExploding, setIsExploding] = useState(false);
 
+    // Per riattivare la modalità Mondiali in dashboard, impostare questa costante a true
+    const showWorldCup = false;
+
     const loadData = useCallback(async () => {
         setLoading(true);
         const md = await gameService.getMatchday();
@@ -243,7 +246,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {view === 'HOME' && (
                     <div className="max-w-5xl mx-auto w-full px-2 space-y-8 md:space-y-16">
                         {/* SECTION 1: EVENTI SPECIALI - visible to all users */}
-                        {(
+                        {showWorldCup && (
                             <div className="space-y-6">
                                 <SectionHeader title="EVENTI SPECIALI" subtitle="Tornei Internazionali" color="border-white/30" />
                                 <div className="grid grid-cols-4 gap-3 md:gap-8">
