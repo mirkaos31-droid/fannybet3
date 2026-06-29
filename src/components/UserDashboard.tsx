@@ -176,7 +176,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#050505]">
                         <div
                             className="absolute inset-0 opacity-50 bg-cover bg-center bg-no-repeat"
-                            style={{ backgroundImage: `url('/fibra.jpg')` }}
+                            style={{ backgroundImage: `url('/fibra_2.png')` }}
                         ></div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.03)_0%,transparent_70%)]"></div>
