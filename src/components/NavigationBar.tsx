@@ -1,4 +1,4 @@
-import { Home, Zap, Eye, Trophy, Skull, User, Shield, Globe } from 'lucide-react';
+import { Home, Zap, Eye, Trophy, Skull, User, Shield } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface NavigationBarProps {
