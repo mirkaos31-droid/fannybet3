@@ -209,7 +209,7 @@
 @layer base {
   body {
     @apply bg-brand-dark text-white antialiased overflow-x-hidden selection:bg-brand-purple selection:text-white;
-    background-color: #020205;
+    background-color: #02040a;
     position: relative;
     min-height: 100vh;
     letter-spacing: -0.015em;
@@ -223,44 +223,46 @@
     inset: 0;
     z-index: 9999;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.04;
+    opacity: 0.02;
     pointer-events: none;
   }
 
-  /* Deep Cosmic Aura Grid - Soccer Arena Edition */
+  /* Minimal Neon Blue Ambient Background */
   body::before {
     content: '';
     position: fixed;
     inset: -10%;
     z-index: -2;
     background:
-      /* Stadium Lights Flares */
-      radial-gradient(circle at 10% 10%, rgba(157, 0, 255, 0.2) 0%, transparent 50%),
-      radial-gradient(circle at 90% 10%, rgba(157, 0, 255, 0.2) 0%, transparent 50%),
-      /* Field Focus Glow */
-      radial-gradient(circle at 50% 100%, rgba(157, 0, 255, 0.15) 0%, transparent 70%),
-      #05020a;
-    filter: blur(40px);
-    animation: auraShift 25s ease-in-out infinite alternate;
+      /* Soft neon blue lights and deep navy base */
+      radial-gradient(circle at 80% 20%, rgba(0, 102, 255, 0.12) 0%, transparent 60%),
+      radial-gradient(circle at 10% 80%, rgba(0, 243, 255, 0.08) 0%, transparent 65%),
+      radial-gradient(circle at 50% 50%, rgba(0, 68, 255, 0.05) 0%, transparent 80%),
+      #020612;
+    filter: blur(120px);
+    pointer-events: none;
   }
 
-  /* Digital Grid Layer */
+  /* Subtle 3D Embossed Futuristic Grid Layer (Tone-on-tone) */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: -1;
     background-image:
-      /* Hexagonal Soccer Ball Pattern */
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='70' viewBox='0 0 60 70'%3E%3Cpath d='M30 0l30 17.5v35L30 70 0 52.5v-35z' fill='none' stroke='%239d00ff' stroke-width='0.5' stroke-opacity='0.1'/%3E%3C/svg%3E"),
-      /* Subtle Pitch Grid */
-      linear-gradient(rgba(157, 0, 255, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(157, 0, 255, 0.04) 1px, transparent 1px);
-    background-size: 60px 70px, 120px 120px;
-    mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 100%);
+      /* Embossed Grid effect: offset dark shadow line and light neon blue line */
+      linear-gradient(rgba(0, 0, 0, 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.5) 1px, transparent 1px),
+      linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+      /* Hexagonal pattern with offset shadow path for a relief/carved look */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='70' viewBox='0 0 60 70'%3E%3Cg%3E%3Cpath d='M30 0l30 17.5v35L30 70 0 52.5v-35z' fill='none' stroke='rgba%280,0,0,0.4%29' stroke-width='1'/%3E%3Cpath d='M30 1l30 17.5v35L30 71 0 53.5v-35z' fill='none' stroke='rgba%280,243,255,0.04%29' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px, 120px 120px, 120px 120px, 120px 120px, 60px 70px;
+    background-position: 0 0, 0 0, 1px 1px, 1px 1px, 0 0;
+    mask-image: radial-gradient(circle at 50% 50%, black 65%, transparent 100%);
     pointer-events: none;
-    opacity: 0.7;
-    transition: background-image 0.5s ease-in-out;
+    opacity: 0.85;
+    transition: background-image 0.5s ease-in-out, opacity 0.5s ease-in-out;
   }
 
   /* GOLD ARENA THEME */
@@ -391,7 +393,7 @@
 
 @layer components {
   .liquid-glass {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(32px) saturate(180%);
     -webkit-backdrop-filter: blur(32px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -413,7 +415,7 @@
   }
 
   .glass-panel {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(32px) saturate(180%);
     -webkit-backdrop-filter: blur(32px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -433,7 +435,7 @@
   }
 
   .glass-card {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.45) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);

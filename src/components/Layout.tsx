@@ -95,47 +95,47 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
     return (
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
 
-            {/* Mobile Header (Brand Infused & Functional) */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,20px)] h-[calc(5rem+env(safe-area-inset-top,20px))] shadow-2xl">
-                <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
+            {/* Mobile Header (Brand Infused & Functional - Shortened for space) */}
+            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,20px)] h-[calc(4.2rem+env(safe-area-inset-top,20px))] shadow-2xl">
+                <div className="flex items-center gap-2">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
                         {user?.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
+                            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-xl" />
                         ) : (
-                            <span className="text-2xl">✨</span>
+                            <span className="text-xl">✨</span>
                         )}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-display font-black text-white italic truncate max-w-[120px] uppercase">
+                        <span className="text-xs font-display font-black text-white italic truncate max-w-[100px] uppercase">
                             {user?.username || 'GUEST'}
                         </span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    {/* Token Display (Enhanced) */}
-                    <div className="flex flex-col items-end bg-white/5 px-3.5 py-2 rounded-xl border border-brand-gold/40 shadow-[0_0_15px_rgba(255,204,0,0.2)] shadow-inner">
-                        <span className="text-[7px] text-gray-500 font-black uppercase tracking-widest leading-none mb-0.5">Balance</span>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-xl font-mono font-black text-brand-gold drop-shadow-[0_0_12px_rgba(255,204,0,0.4)]">{user?.tokens || 0}</span>
-                            <span className="text-[8px] font-black text-brand-gold/60">FTK</span>
+                <div className="flex items-center gap-2">
+                    {/* Token Display (Enhanced & Tighter) */}
+                    <div className="flex flex-col items-end bg-white/5 px-2.5 py-1 rounded-lg border border-brand-gold/40 shadow-[0_0_12px_rgba(255,204,0,0.15)] shadow-inner">
+                        <span className="text-[6px] text-gray-500 font-black uppercase tracking-widest leading-none mb-0.5">Balance</span>
+                        <div className="flex items-baseline gap-0.5">
+                            <span className="text-base font-mono font-black text-brand-gold drop-shadow-[0_0_10px_rgba(255,204,0,0.3)]">{user?.tokens || 0}</span>
+                            <span className="text-[7px] font-black text-brand-gold/60">FTK</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                         {/* Notification Bell (Mobile) */}
                         <button
                             onClick={() => {
                                 setIsNotificationsOpen(true);
                                 setUnreadCount(0);
                             }}
-                            className="w-11 h-11 flex items-center justify-center bg-white/5 active:bg-white/10 rounded-xl border border-white/10 text-white relative shadow-xl touch-target transition-all active:scale-90 group"
+                            className="w-9 h-9 flex items-center justify-center bg-white/5 active:bg-white/10 rounded-lg border border-white/10 text-white relative shadow-xl touch-target transition-all active:scale-90 group"
                         >
-                            <Bell className={`w-5 h-5 transition-transform duration-300 ${unreadCount > 0 ? 'group-hover:rotate-12' : ''}`} />
+                            <Bell className={`w-4 h-4 transition-transform duration-300 ${unreadCount > 0 ? 'group-hover:rotate-12' : ''}`} />
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-black flex items-center justify-center animate-in zoom-in duration-300">
+                                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-600 rounded-full border border-black flex items-center justify-center animate-in zoom-in duration-300">
                                     <span className="w-full h-full bg-red-600 rounded-full animate-ping absolute opacity-75"></span>
-                                    <span className="relative text-[8px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                                    <span className="relative text-[7px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</span>
                                 </span>
                             )}
                         </button>
@@ -143,7 +143,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                         {user?.role === 'ADMIN' && onAdminUsers && (
                             <button
                                 onClick={onAdminUsers}
-                                className="w-10 h-10 flex items-center justify-center bg-brand-diamond/10 rounded-xl border border-brand-diamond/30 text-brand-diamond text-lg hover:bg-brand-diamond/20 transition-all touch-target"
+                                className="w-9 h-9 flex items-center justify-center bg-brand-diamond/10 rounded-lg border border-brand-diamond/30 text-brand-diamond text-sm hover:bg-brand-diamond/20 transition-all touch-target"
                                 title="Admin Panel"
                             >
                                 👥
@@ -151,7 +151,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                         )}
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 text-white shadow-xl touch-target"
+                            className="w-9 h-9 flex items-center justify-center bg-white/5 rounded-lg border border-white/10 text-white shadow-xl touch-target"
                         >
                             {isSidebarOpen ? '✕' : '☰'}
                         </button>
@@ -199,7 +199,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             )}
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col p-2 md:p-6 space-y-2 md:space-y-6 max-h-screen pt-20 md:pt-6 overflow-hidden">
+            <div className="flex-1 flex flex-col p-2 md:p-6 space-y-2 md:space-y-6 max-h-screen pt-16 md:pt-6 overflow-hidden">
                 {/* Top Header (Desktop Only) */}
                 <header className="hidden md:flex liquid-glass px-6 md:px-10 py-5 items-center justify-between border-white/5 h-24 md:h-28 shadow-2xl">
                     <div className="flex items-center gap-3 md:gap-5 min-w-0">

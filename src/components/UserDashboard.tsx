@@ -172,18 +172,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
             )}
 
             <div className={`space-y-6 md:space-y-12 animate-fade-in no-scrollbar pb-24 md:pb-10`}>
-                {view === 'HOME' && (
-                    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#050505]">
-                        <div
-                            className="absolute -inset-[50%] opacity-50 bg-cover bg-center bg-no-repeat"
-                            style={{ backgroundImage: `url('/fibra_2.png')`, transform: 'scaleY(-1) scale(0.5)' }}
-                        ></div>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.03)_0%,transparent_70%)]"></div>
-                        <div className="mesh-glow bg-brand-purple/10 -top-48 -left-48 animate-aura-slow"></div>
-                        <div className="mesh-glow bg-brand-orange/5 bottom-0 -right-48 animate-aura-slow"></div>
-                    </div>
-                )}
+                {/* Fallback to global body background with minimal embossed neon blue style */}
 
                 {view === 'FB_LEGA' && (
                     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#020508]">
@@ -229,8 +218,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
 
                 {view !== 'HOME' && (
-                    <div className="flex justify-center sticky top-12 md:top-6 z-20 px-2 md:px-4">
-                        <div className="liquid-glass !p-1 md:!p-1.5 !rounded-full inline-block backdrop-blur-[40px] border-white/10 shadow-3xl">
+                    <div className="flex justify-center sticky top-10 md:top-6 z-20 px-2 md:px-4">
+                        <div className="liquid-glass !p-0.5 md:!p-1.5 !rounded-full inline-block backdrop-blur-[40px] border-white/10 shadow-3xl">
                             <NavigationBar
                                 currentView={view}
                                 onNavigate={(v) => {
