@@ -117,11 +117,12 @@ export const fbLegaService = {
         return data;
     },
 
-    async submitPicks(leagueId: number, matchdayId: number, predictions: string[]) {
+    async submitPicks(leagueId: number, matchdayId: number, predictions: string[], secretMatchIndex?: number | null) {
         const { data, error } = await supabase.rpc('submit_fb_league_picks', {
             p_league_id: leagueId,
             p_matchday_id: matchdayId,
-            p_predictions: predictions
+            p_predictions: predictions,
+            p_secret_match_index: secretMatchIndex ?? null
         });
         if (error) throw error;
         return data;

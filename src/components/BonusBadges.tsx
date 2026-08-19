@@ -14,6 +14,12 @@ export const BonusBadges: React.FC<BonusBadgesProps> = ({ bonuses }) => {
             color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
             glow: 'shadow-[0_0_10px_rgba(234,179,8,0.3)]'
         },
+        'cappotto': {
+            icon: '🎩',
+            label: 'Cappotto',
+            color: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
+            glow: 'shadow-[0_0_10px_rgba(168,85,247,0.3)]'
+        },
         'strike': {
             icon: '⚡',
             label: 'Strike',
@@ -25,6 +31,18 @@ export const BonusBadges: React.FC<BonusBadgesProps> = ({ bonuses }) => {
             label: 'Jolly',
             color: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
             glow: 'shadow-[0_0_10px_rgba(168,85,247,0.3)]'
+        },
+        'secret_match': {
+            icon: '🔮',
+            label: 'Match Segreto',
+            color: 'bg-amber-400/20 text-amber-400 border-amber-400/40',
+            glow: 'shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+        },
+        'mago_pareggi': {
+            icon: '⚖️',
+            label: 'Mago Pareggi',
+            color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40',
+            glow: 'shadow-[0_0_10px_rgba(34,211,238,0.3)]'
         },
         'underdog': {
             icon: '🦴',

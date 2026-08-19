@@ -133,6 +133,7 @@ export interface FBLeaguePick {
     user_id: string;
     matchday_id: number;
     predictions: string[];
+    secret_match_index?: number | null;
     points_earned: number | null;
     created_at: string;
 }

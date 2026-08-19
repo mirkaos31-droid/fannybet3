@@ -29,60 +29,74 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         {/* Standard Point */}
-                        <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
                             <Target size={20} className="text-gray-500 mb-2 group-hover:text-white transition-colors" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Segno 1 o 2</span>
-                            <span className="text-[#bfff00] font-black text-3xl italic">1 PT</span>
+                            <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Segno 1 o 2</span>
+                            <span className="text-[#bfff00] font-black text-2xl italic">1 PT</span>
                         </div>
 
                         {/* Bonus X */}
-                        <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
                             <Trophy size={20} className="text-gray-500 mb-2 group-hover:text-[#bfff00] transition-colors" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Pareggio (X)</span>
+                            <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Pareggio (X)</span>
                             <div className="flex flex-col">
-                                <span className="text-[#bfff00] font-black text-3xl italic">{bonusX} PT</span>
+                                <span className="text-[#bfff00] font-black text-2xl italic">{bonusX} PT</span>
                                 {bonusX > 1 && <span className="text-[8px] font-black text-[#bfff00]/60 uppercase tracking-widest">BONUS LEGA</span>}
                             </div>
                         </div>
 
-                        {/* Jolly */}
-                        <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        {/* Match Segreto 2X */}
+                        <div className="p-4 bg-amber-400/10 rounded-3xl border border-amber-400/30 flex flex-col items-center text-center group hover:border-amber-400 transition-all">
+                            <span className="text-xl mb-1">🎯</span>
+                            <span className="text-amber-400 text-[9px] font-black uppercase mb-1 tracking-widest">Match Segreto</span>
+                            <span className="text-amber-400 font-black text-2xl italic">2X PT</span>
+                            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Punti Raddoppiati</span>
+                        </div>
+
+                        {/* Jolly Admin */}
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
                             <Star size={20} className="text-[#5d8aa8] mb-2 animate-pulse" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Jolly</span>
-                            <span className="text-[#5d8aa8] font-black text-3xl italic">X2</span>
-                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Punti Raddoppiati</span>
+                            <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Jolly Admin</span>
+                            <span className="text-[#5d8aa8] font-black text-2xl italic">+2 PT</span>
+                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Match Stellato</span>
                         </div>
 
                         {/* Strike */}
-                        <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
                             <Zap size={20} className="text-orange-500 mb-2" />
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Strike</span>
-                            <span className="text-orange-500 font-black text-3xl italic">+3 PT</span>
-                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">3 Corretti Filati</span>
+                            <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Filotto / Strike</span>
+                            <span className="text-orange-500 font-black text-2xl italic">+3 PT</span>
+                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">3+ Consecutivi</span>
                         </div>
 
-                        {/* Underdog Bonus */}
-                        <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
-                            <span className="text-2xl mb-1.5 grayscale group-hover:grayscale-0 transition-all">🦴</span>
-                            <span className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Underdog</span>
-                            <span className="text-[#bfff00] font-black text-3xl italic">+2 PT</span>
-                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Scelto dal &lt;15%</span>
+                        {/* Mago dei Pareggi */}
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-cyan-400/30 transition-all">
+                            <span className="text-xl mb-1">⚖️</span>
+                            <span className="text-cyan-400 text-[9px] font-black uppercase mb-1 tracking-widest">Mago Pareggi</span>
+                            <span className="text-cyan-400 font-black text-2xl italic">+3 PT</span>
+                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">2+ X Indovinati</span>
                         </div>
                     </div>
 
-                    <div className="p-6 bg-gradient-to-br from-[#bfff00]/10 to-[#bfff00]/5 rounded-[2rem] border border-[#bfff00]/20 text-center mt-4 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                            <Trophy size={64} className="text-[#bfff00]" />
+                    {/* En Plein & Cappotto Banner */}
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                        <div className="p-4 bg-gradient-to-br from-[#bfff00]/10 to-[#bfff00]/5 rounded-[2rem] border border-[#bfff00]/20 text-center">
+                            <span className="block text-[#bfff00] text-xs font-black uppercase tracking-widest mb-1 italic">🌟 EN PLEIN</span>
+                            <p className="text-gray-400 text-[8px] font-bold uppercase mb-1">10/10 Pronostici</p>
+                            <div className="text-white font-black text-xl italic">+10 PT</div>
                         </div>
-                        <span className="block text-[#bfff00] text-sm font-black uppercase tracking-[0.3em] mb-1 italic">🎯 EN PLEIN 🎯</span>
-                        <p className="text-gray-400 text-[10px] font-bold uppercase mb-2">Indovina tutti i 10 pronostici per</p>
-                        <div className="text-white font-black text-3xl italic">+10 PT EXTRA</div>
+
+                        <div className="p-4 bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-[2rem] border border-purple-500/20 text-center">
+                            <span className="block text-purple-400 text-xs font-black uppercase tracking-widest mb-1 italic">🎩 CAPPOTTO</span>
+                            <p className="text-gray-400 text-[8px] font-bold uppercase mb-1">9/10 Pronostici</p>
+                            <div className="text-white font-black text-xl italic">+5 PT</div>
+                        </div>
                     </div>
                 </div>
 
                 <button
                     onClick={onClose}
-                    className="mt-8 w-full py-5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white font-black uppercase tracking-widest rounded-2xl transition-all border border-white/5"
+                    className="mt-6 w-full py-4 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white font-black uppercase tracking-widest rounded-2xl transition-all border border-white/5"
                 >
                     Ho Capito
                 </button>

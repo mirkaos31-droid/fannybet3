@@ -1,16 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { gameService } from '../services/gameService';
-import type { Matchday, Bet, User, ViewMode } from '../types';
-import { BettingInterface } from './BettingInterface';
-import { FanniesView } from './FanniesView';
+import type { Matchday, User, ViewMode } from '../types';
 import { NavigationBar } from './NavigationBar';
-import { LeaderboardView } from './LeaderboardView';
 import { SurvivalView } from './SurvivalView';
 import { BottomNavBar } from './BottomNavBar';
 import { ProfileView } from './ProfileView';
 import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
-import { Zap, Eye, Trophy, Skull, Shield } from 'lucide-react';
+import { Skull, Shield } from 'lucide-react';
 import { FBLegaView } from './FBLegaView';
 import { CardGallery } from './CardGallery';
 import { WorldCupView } from './WorldCupView';
@@ -41,10 +38,11 @@ interface UserDashboardProps {
 
 export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpdate, onLogout }) => {
     const [matchday, setMatchday] = useState<Matchday | null>(null);
-    const [userBets, setUserBets] = useState<Bet[]>([]);
     const [view, setView] = useState<ViewMode>('HOME');
     const [survivalStatus, setSurvivalStatus] = useState<'ALIVE' | 'ELIMINATED' | 'WINNER' | null>(null);
     const [isSurvivalOpen, setIsSurvivalOpen] = useState(false);
+    const [survivalPrizePool, setSurvivalPrizePool] = useState<number | null>(null);
+    const [fbLegaPrizePool, setFbLegaPrizePool] = useState<number | null>(null);
     const [showProfile, setShowProfile] = useState(false);
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
@@ -60,9 +58,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
         const md = await gameService.getMatchday();
         setMatchday(md);
         if (user) {
-            const bets = await gameService.getUserBets(user.username);
-            setUserBets(bets);
-
             const { season, players } = await gameService.getSurvivalState();
             const me = players.find(p =>
                 (p.userId && user.id && p.userId.toString().toLowerCase() === user.id.toString().toLowerCase()) ||
@@ -76,6 +71,28 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 setIsSurvivalOpen(!deadline || new Date() < deadline);
             } else {
                 setIsSurvivalOpen(false);
+            }
+
+            // Set Survival Prize Pool
+            setSurvivalPrizePool(season?.prizePool || 0);
+
+            // Set FB Lega Prize Pool
+            try {
+                const leagues = await gameService.getLeagues();
+                // Sum the prize_pool of active leagues the user is part of
+                const userLeagues = leagues.filter(l => l.is_member && l.status !== 'COMPLETED');
+                if (userLeagues.length > 0) {
+                    const totalPot = userLeagues.reduce((sum, l) => sum + (l.prize_pool || 0), 0);
+                    setFbLegaPrizePool(totalPot);
+                } else {
+                    // Sum the prize pools of all open leagues
+                    const openLeagues = leagues.filter(l => l.status === 'OPEN');
+                    const openPot = openLeagues.reduce((sum, l) => sum + (l.prize_pool || 0), 0);
+                    setFbLegaPrizePool(openPot);
+                }
+            } catch (error) {
+                console.error('Error loading FB leagues prize pools:', error);
+                setFbLegaPrizePool(0);
             }
         }
         setLoading(false);
@@ -105,21 +122,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     if (loading && view === 'HOME') {
         return <DashboardSkeleton />;
     }
-
-    if (!matchday && (view === 'BETTING' || view === 'SPY')) {
-        return (
-            <div className="text-center py-20 animate-fade-in">
-                <h3 className="text-2xl font-bold text-white mb-2">NESSUNA GIORNATA ATTIVA</h3>
-                <p className="text-gray-400">
-                    {view === 'BETTING' ? "L'Admin sta preparando le nuove partite. Torna più tardi!" : "Don't have any bets to spy yet."}
-                </p>
-                <button onClick={() => setView('HOME')} className="mt-6 text-brand-orange underline">Torna alla Home</button>
-            </div>
-        );
-    }
-
-    const jackpotDisplay = matchday ? matchday.superJackpot : 0;
-    const potDisplay = matchday ? matchday.currentPot : 0;
 
     return (
         <>
@@ -206,9 +208,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {view !== 'HOME' && (
                     <div className="py-4 md:py-12 text-center animate-fade-in px-2">
                         <h1 className="text-2xl sm:text-4xl md:text-8xl font-display font-black italic tracking-tighter uppercase text-white/90 drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                            {view === 'BETTING' && '1X2 MODE'}
-                            {view === 'SPY' && 'I FANNIES'}
-                            {view === 'LEADERBOARD' && 'CLASSIFICHE'}
                             {view === 'SURVIVAL' && 'SURVIVAL MODE'}
                             {view === 'FB_LEGA' && 'FB LEGA'}
                             {view === 'WORLD_CUP' && 'WORLD CUP'}
@@ -275,98 +274,39 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             </div>
                         )}
 
-                        {/* SECTION 2: MODALITÀ 1X2 */}
-                        <div className="space-y-6">
-                            <SectionHeader title="MODALITÀ 1X2" subtitle="Montepremi & Classifica Globale" color="border-acid-green/30" />
-                            <div className="grid grid-cols-4 gap-3 md:gap-8">
-                                {/* SLIM CYBER-HEADER (Pot & Jackpot) */}
-                                <div className="col-span-4 relative group">
-                                    <div className="liquid-glass border-white/5 relative overflow-hidden group hover:border-white/10 transition-all duration-700 w-full shadow-[0_0_40px_rgba(0,0,0,0.8)]">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/5 via-transparent to-cyan-400/5 opacity-50"></div>
-                                        <div className="grid grid-cols-2 divide-x divide-white/10 relative z-10">
-                                            <div className="py-3 md:py-6 px-4 md:px-12 flex items-center justify-between group/pot">
-                                                <div className="flex flex-col">
-                                                    <span className="text-brand-gold text-[7px] md:text-[12px] tracking-[0.4em] font-black uppercase opacity-60">MONTE PREMI</span>
-                                                    <div className="text-xl md:text-5xl font-display font-black text-brand-gold drop-shadow-[0_0_15px_rgba(255,204,0,0.5)] font-digital flex items-baseline gap-1">
-                                                        {potDisplay}<span className="text-[8px] md:text-xl opacity-40 font-mono">FTK</span>
-                                                    </div>
-                                                </div>
-                                                <div className="hidden md:block w-12 h-12 rounded-full border border-brand-gold/20 flex items-center justify-center group-hover/pot:scale-110 transition-transform">
-                                                    <Trophy size={20} className="text-brand-gold/40" />
-                                                </div>
-                                            </div>
-                                            <div className="py-3 md:py-6 px-4 md:px-12 flex items-center justify-between group/sj">
-                                                <div className="flex flex-col">
-                                                    <span className="text-cyan-400 text-[7px] md:text-[12px] tracking-[0.4em] font-black uppercase opacity-60">SUPER JACKPOT</span>
-                                                    <div className="text-xl md:text-5xl font-display font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(0,255,255,0.5)] font-digital flex items-baseline gap-1">
-                                                        {jackpotDisplay}<span className="text-[8px] md:text-xl opacity-40 font-mono">FTK</span>
-                                                    </div>
-                                                </div>
-                                                <div className="hidden md:block w-12 h-12 rounded-full border border-cyan-400/20 flex items-center justify-center group-hover/sj:scale-110 transition-transform">
-                                                    <Zap size={20} className="text-cyan-400/40" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-white/20 animate-scanline opacity-20"></div>
-                                    </div>
-                                </div>
-
-                                {/* 1x2 MODE BUTTON */}
-                                <button
-                                    onClick={() => setView('BETTING')}
-                                    style={{ animationDelay: '0.1s' }}
-                                    className="glass-card card-acid-green col-span-2 group h-[12rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
-                                >
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#bfff00]/5 blur-[60px] rounded-full group-hover:bg-[#bfff00]/10 transition-all duration-700"></div>
-                                    <div className="mb-2 group-hover:scale-110 transition-transform duration-500">
-                                        <Zap size={40} className="text-acid-glow md:w-20 md:h-20" strokeWidth={2.5} />
-                                    </div>
-                                    <h3 className="text-sm sm:text-2xl md:text-5xl font-black italic tracking-tighter text-white/90 uppercase">Gioca 1x2</h3>
-                                    <p className="text-gray-600 text-[7px] sm:text-xs md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-[#bfff00] transition-colors">vai alla schedina</p>
-                                </button>
-
-                                {/* CLASSIFICA BUTTON */}
-                                <button
-                                    onClick={() => setView('LEADERBOARD')}
-                                    style={{ animationDelay: '0.2s' }}
-                                    className="glass-card card-purple col-span-2 group h-[12rem] sm:h-[20rem] md:h-[26rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
-                                >
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#9d00ff]/5 blur-[60px] rounded-full group-hover:bg-[#9d00ff]/10 transition-all duration-700"></div>
-                                    <div className="mb-2 group-hover:scale-110 transition-transform duration-500">
-                                        <Trophy size={40} className="text-brand-purple-vibrant md:w-16 md:h-16" strokeWidth={2.5} />
-                                    </div>
-                                    <h3 className="text-sm sm:text-2xl md:text-5xl font-black italic tracking-tighter text-white/90 uppercase">Classifica</h3>
-                                    <p className="text-gray-600 text-[7px] sm:text-xs md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-brand-purple-vibrant transition-colors">1x2 ranking</p>
-                                </button>
-
-                                {/* I FANNIES (SPY) */}
-                                <button
-                                    onClick={() => setView('SPY')}
-                                    style={{ animationDelay: '0.3s' }}
-                                    className="glass-card card-bright-yellow col-span-4 group h-[9rem] sm:h-[14.5rem] md:h-[18rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
-                                >
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ffee00]/5 blur-[60px] rounded-full group-hover:bg-[#ffee00]/10 transition-all duration-700"></div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="group-hover:scale-110 transition-transform duration-500">
-                                            <Eye size={32} className="text-[#ffee00] md:w-16 md:h-16" strokeWidth={2.5} />
-                                        </div>
-                                        <div className="text-left">
-                                            <h3 className="text-sm sm:text-xl md:text-3xl font-black italic tracking-tighter text-white/90 uppercase leading-none">I Fannies</h3>
-                                            <p className="text-gray-600 text-[7px] sm:text-[9px] md:text-xs mt-1 uppercase tracking-[0.2em] font-black group-hover:text-[#ffee00] transition-colors">guarda le giocate degli altri.</p>
-                                        </div>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* SECTION 2: ARENA & LEGHE */}
+                        {/* SECTION: ARENA & LEGHE */}
                         <div className="space-y-6 pb-20">
                             <SectionHeader title="ARENA & COMPETIZIONI" subtitle="Survival & Campionati FB Lega" color="border-brand-orange/30" />
+                            
+                            {/* Montepremi (Prize Pools) badges */}
+                            <div className="grid grid-cols-4 gap-3 md:gap-8 mb-2">
+                                <div className="col-span-2">
+                                    <div className="pot-badge-survival py-2 md:py-3 px-4 rounded-[1.25rem] flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 border bg-black/40 backdrop-blur-md transition-all duration-300">
+                                        <span className="text-[8px] sm:text-[10px] md:text-xs font-black text-red-500 uppercase tracking-[0.2em] drop-shadow-[0_0_8px_rgba(255,34,0,0.4)]">
+                                            MONTEPREMI
+                                        </span>
+                                        <span className="text-[11px] sm:text-sm md:text-base font-mono font-black text-white glow-red">
+                                            {survivalPrizePool !== null ? `${survivalPrizePool} TK` : '0 TK'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="col-span-2">
+                                    <div className="pot-badge-lega py-2 md:py-3 px-4 rounded-[1.25rem] flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 border bg-black/40 backdrop-blur-md transition-all duration-300">
+                                        <span className="text-[8px] sm:text-[10px] md:text-xs font-black text-[#5d8aa8] uppercase tracking-[0.2em] drop-shadow-[0_0_8px_rgba(93,138,168,0.4)]">
+                                            MONTEPREMI
+                                        </span>
+                                        <span className="text-[11px] sm:text-sm md:text-base font-mono font-black text-white glow-sky">
+                                            {fbLegaPrizePool !== null ? `${fbLegaPrizePool} TK` : '0 TK'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-4 gap-3 md:gap-8">
                                 <button
                                     onClick={() => setView('SURVIVAL')}
                                     style={{ animationDelay: '0.4s' }}
-                                    className="glass-card card-bright-red col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
+                                    className="glass-card card-bright-red col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-end items-center text-center pb-6 sm:pb-10 md:pb-12 relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
                                     {survivalStatus === 'ALIVE' && (
                                         <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-green-500/20 border border-green-500/30 text-green-500 text-[10px] font-black animate-pulse uppercase italic"> IN VITA </div>
@@ -374,24 +314,44 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                     {isSurvivalOpen && !survivalStatus && (
                                         <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded bg-yellow-500/20 border border-yellow-500/30 text-yellow-500 text-[10px] font-black animate-pulse uppercase italic shadow-[0_0_15px_rgba(234,179,8,0.3)]"> ISCRIZIONI APERTE </div>
                                     )}
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ff2200]/5 blur-[60px] rounded-full group-hover:bg-[#ff2200]/10 transition-all duration-700"></div>
-                                    <div className="mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500">
-                                        <Skull size={36} className="text-[#ff2200] md:w-20 md:h-20" strokeWidth={2.5} />
+                                    {/* Background Image / integration */}
+                                    <div 
+                                        className="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-100 group-hover:scale-105 opacity-70 group-hover:opacity-90" 
+                                        style={{ backgroundImage: "url('/Survival.png')" }}
+                                    />
+                                    {/* Dark overlays to blend image perfectly into the dark dashboard look */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#020508] via-transparent to-[#020508]/20 z-0"></div>
+                                    <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors duration-500 z-0"></div>
+                                    
+                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ff2200]/5 blur-[60px] rounded-full group-hover:bg-[#ff2200]/10 transition-all duration-700 z-0"></div>
+                                    
+                                    <div className="relative z-10 w-full px-4">
+                                        <p className="text-gray-300 text-[6px] sm:text-[10px] md:text-sm uppercase tracking-[0.2em] font-black group-hover:text-[#ff2200] transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                                            l'ultimo che resta.
+                                        </p>
                                     </div>
-                                    <h3 className="text-sm sm:text-2xl md:text-4xl font-black italic tracking-tighter text-white/90 uppercase">Survival</h3>
-                                    <p className="text-gray-600 text-[7px] sm:text-xs md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-[#ff2200] transition-colors">l'ultimo che resta.</p>
                                 </button>
                                 <button
                                     onClick={() => setView('FB_LEGA')}
                                     style={{ animationDelay: '0.5s' }}
-                                    className="glass-card card-lega-alieno col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-center items-center text-center relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
+                                    className="glass-card card-lega-alieno col-span-2 group h-[16rem] sm:h-[28rem] md:h-[36rem] flex flex-col justify-end items-center text-center pb-6 sm:pb-10 md:pb-12 relative overflow-hidden transition-all duration-500 animate-[popIn_0.5s_ease-out_both]"
                                 >
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#5d8aa8]/20 blur-[60px] rounded-full group-hover:opacity-100 transition-all duration-700"></div>
-                                    <div className="mb-2 md:mb-4 group-hover:rotate-12 transition-transform duration-500">
-                                        <Shield size={36} className="text-[#5d8aa8] md:w-20 md:h-20 drop-shadow-[0_0_12px_rgba(93,138,168,0.9)] group-hover:text-acid-glow transition-colors" strokeWidth={2.5} />
+                                    {/* Background Image / integration */}
+                                    <div 
+                                        className="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-100 group-hover:scale-105 opacity-70 group-hover:opacity-90" 
+                                        style={{ backgroundImage: "url('/Lega.png')" }}
+                                    />
+                                    {/* Dark overlays to blend image perfectly into the dark dashboard look */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#020508] via-transparent to-[#020508]/20 z-0"></div>
+                                    <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors duration-500 z-0"></div>
+                                    
+                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#5d8aa8]/25 blur-[60px] rounded-full group-hover:opacity-100 transition-all duration-700 z-0"></div>
+                                    
+                                    <div className="relative z-10 w-full px-4">
+                                        <p className="text-gray-300 text-[6px] sm:text-[10px] md:text-sm uppercase tracking-[0.2em] font-black group-hover:text-acid-glow transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                                            partecipa o crea la tua lega.
+                                        </p>
                                     </div>
-                                    <h3 className="text-sm sm:text-2xl md:text-4xl font-black italic tracking-tighter text-white/90 uppercase">FB Lega</h3>
-                                    <p className="text-gray-500 text-[6px] sm:text-[10px] md:text-sm mt-1 uppercase tracking-[0.2em] font-black group-hover:text-acid-glow transition-colors">partecipa o crea la tua lega.</p>
                                 </button>
                             </div>
                         </div>
@@ -399,23 +359,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
 
                 {/* Sub-views */}
-                {view === 'BETTING' && matchday && (
-                    <div className="relative animate-fade-in">
-                        <BettingInterface matchday={matchday} userBets={userBets} user={user} onBetPlaced={handleBetPlaced} onViewChange={setView} />
-                    </div>
-                )}
-                {view === 'SPY' && matchday && (
-                    <div className="relative animate-fade-in group">
-                        <ErrorBoundary>
-                            <FanniesView matchday={matchday} />
-                        </ErrorBoundary>
-                    </div>
-                )}
-                {view === 'LEADERBOARD' && (
-                    <div className="relative animate-fade-in">
-                        <LeaderboardView matchday={matchday} />
-                    </div>
-                )}
                 {view === 'SURVIVAL' && (
                     <div className="relative animate-fade-in">
                         <SurvivalView user={user} activeMatchday={matchday} onBack={() => setView('HOME')} onBalanceUpdate={() => { if (onBalanceUpdate) onBalanceUpdate(); loadData(); }} />

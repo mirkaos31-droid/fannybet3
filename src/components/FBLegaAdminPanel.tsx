@@ -309,7 +309,7 @@ export const FBLegaAdminPanel = () => {
                             Partita #{matchday.jollyMatchIndex + 1} ⭐
                         </span>
                     ) : (
-                        <span className="text-red-500 text-[10px] font-bold uppercase italic">Nessuno Impostato (Usa 1X2 Editor)</span>
+                        <span className="text-red-500 text-[10px] font-bold uppercase italic">Nessuno Impostato (Usa Match Editor)</span>
                     )}
                 </div>
                 <div className="text-[9px] text-gray-600 font-bold uppercase italic">Verranno assegnati +2 PT extra</div>

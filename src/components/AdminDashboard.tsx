@@ -4,8 +4,9 @@ import type { Matchday } from '../types';
 import { SurvivalAdminPanel } from './SurvivalAdminPanel';
 import { UserManagementPanel } from './UserManagementPanel';
 import { FBLegaAdminPanel } from './FBLegaAdminPanel';
-import { Star } from 'lucide-react';
+import { Star, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+import { SERIE_A_SCHEDULE_2026_2027 } from '../data/serieA2026_2027';
 
 interface AdminDashboardProps {
     onToggleView?: () => void;
@@ -16,6 +17,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
     const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA'>(initialTab);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [loading, setLoading] = useState(false);
+    const [selectedRound, setSelectedRound] = useState<number>(1);
 
     useEffect(() => {
         gameService.getMatchday().then(setMatchday);
@@ -43,39 +45,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
         gameService.updateMatch(idx, newMatches[idx]);
     };
 
-    const handleUpdateJackpot = (val: string) => {
-        if (!matchday) return;
-        const num = parseInt(val) || 0;
-        setMatchday({ ...matchday, superJackpot: num });
-        gameService.updateSuperJackpot(num);
-    };
 
     if (!matchday) {
         return (
             <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#dfff00] p-6 text-black z-[1000]">
-                <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter mb-8">ADMIN CONSOLE</h1>
-                <div className="bg-black text-[#dfff00] p-10 rounded-[40px] shadow-[20px_20px_0px_rgba(0,0,0,0.2)] text-center max-w-md w-full border-4 border-black">
-                    <p className="font-bold uppercase tracking-widest text-sm mb-8 opacity-70">Nessuna giornata attiva detected.</p>
+                <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter mb-6 text-center">ADMIN CONSOLE</h1>
+                <div className="bg-black text-[#dfff00] p-8 md:p-10 rounded-[40px] shadow-[20px_20px_0px_rgba(0,0,0,0.2)] text-center max-w-md w-full border-4 border-black space-y-6">
+                    <div>
+                        <p className="font-bold uppercase tracking-widest text-xs opacity-70 mb-2">Nessuna giornata attiva nel sistema</p>
+                        <h2 className="text-xl font-black italic text-white uppercase">Seleziona Giornata Serie A</h2>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-white/10 p-2 rounded-2xl border border-white/20">
+                        <Calendar size={20} className="text-[#dfff00] ml-2" />
+                        <select
+                            value={selectedRound}
+                            onChange={(e) => setSelectedRound(parseInt(e.target.value))}
+                            className="bg-transparent text-white font-black text-lg uppercase outline-none w-full cursor-pointer"
+                        >
+                            {Array.from({ length: 38 }, (_, i) => i + 1).map((g) => (
+                                <option key={g} value={g} className="bg-black text-white">
+                                    Giornata {g} (Serie A 2026/27)
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <button
                         onClick={async () => {
-                            if (!window.confirm("Attivare nuova giornata?")) return;
+                            if (!window.confirm(`Aprire e pre-compilare la GIORNATA ${selectedRound} con le 10 partite di Serie A?`)) return;
                             setLoading(true);
                             const res = await gameService.createMatchday();
                             if (res.success) {
+                                const roundMatches = SERIE_A_SCHEDULE_2026_2027[selectedRound];
+                                if (roundMatches) {
+                                    await gameService.updateAllMatches(roundMatches);
+                                }
                                 const md = await gameService.getMatchday();
                                 setMatchday(md);
+                                toast.success(`Giornata ${selectedRound} creata con le 10 partite ufficiali!`);
                             } else {
                                 alert("Errore inizializzazione: " + res.message);
                             }
                             setLoading(false);
                         }}
                         disabled={loading}
-                        className="w-full bg-[#dfff00] text-black py-5 rounded-2xl font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_black] border-2 border-black"
+                        className="w-full bg-[#dfff00] text-black py-4 rounded-2xl font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_black] border-2 border-black"
                     >
-                        {loading ? 'WAIT...' : 'INITIALIZE SYSTEM'}
+                        {loading ? 'CARICAMENTO...' : `⚡ APRI GIORNATA ${selectedRound}`}
                     </button>
                     {onToggleView && (
-                        <button onClick={onToggleView} className="mt-8 text-xs font-black uppercase tracking-widest border-b border-[#dfff00]/30 pb-1">
+                        <button onClick={onToggleView} className="mt-4 text-xs font-black uppercase tracking-widest border-b border-[#dfff00]/30 pb-1 text-[#dfff00]">
                             ← BACK TO HOME
                         </button>
                     )}
@@ -95,7 +115,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                         {/* Tab Switcher - Optimized for Mobile (Scrollable & Thinner) */}
                         <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/10 w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth">
                             {[
-                                { id: 'MATCHDAY', label: '1X2', icon: '⚽' },
+                                { id: 'MATCHDAY', label: 'Giornate', icon: '📅' },
                                 { id: 'LEGA', label: 'FB Lega', icon: '🏆' },
                                 { id: 'SURVIVAL', label: 'Survival', icon: '☠️' },
                                 { id: 'USERS', label: 'Utenti', icon: '👥' },
@@ -127,16 +147,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-transparent text-white p-5 md:p-8 rounded-[24px] border-2 border-[#dfff00] shadow-[0_0_20px_rgba(223,255,0,0.1)] space-y-4 relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-[#dfff00]/5 -z-10 group-hover:bg-[#dfff00]/10 transition-colors duration-500"></div>
-                                <div className="space-y-1">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-[#dfff00]/80">💰 Super Jackpot</label>
-                                    <input
-                                        type="number"
-                                        value={matchday.superJackpot}
-                                        onChange={(e) => handleUpdateJackpot(e.target.value)}
-                                        className="bg-black/50 border border-white/10 rounded-xl px-5 py-3 w-full text-white font-black text-3xl outline-none focus:border-[#dfff00] focus:shadow-[0_0_15px_rgba(223,255,0,0.2)] transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-1">
+                            <div className="space-y-1">
                                     <label className="text-[9px] font-black uppercase tracking-widest text-[#dfff00]/80">⏰ Deadline Giornata (Ora Locale)</label>
                                     <div className="relative">
                                         <input
@@ -202,26 +213,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                     </button>
                                     <button
                                         onClick={async () => {
-                                            if (confirm("Ricalcolare il montepremi basandosi sulle giocate attuali?")) {
-                                                setLoading(true);
-                                                const res = await gameService.recalculatePot();
-                                                setLoading(false);
-                                                if (res.success) {
-                                                    const md = await gameService.getMatchday();
-                                                    setMatchday(md);
-                                                    alert(res.message + (res.newPot !== undefined ? ` Nuovo totale: ${res.newPot} FTK` : ''));
-                                                } else {
-                                                    alert("Errore: " + res.message);
-                                                }
-                                            }
-                                        }}
-                                        disabled={loading}
-                                        className="flex-1 bg-transparent text-amber-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-amber-500/50 hover:bg-amber-500 hover:text-black hover:border-amber-500 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all"
-                                    >
-                                        🔄 Ricalcola Pot
-                                    </button>
-                                    <button
-                                        onClick={async () => {
                                             if (confirm("Archiviare giornata? Questo PROCESSERÀ AUTOMATICAMENTE anche il round Survival!")) {
                                                 const res = await gameService.archiveMatchday(matchday.id);
                                                 let msg = res.message;
@@ -244,9 +235,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
 
                         <div className="bg-transparent rounded-[24px] p-5 md:p-8 border-2 border-white/10 relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#dfff00] to-transparent opacity-50"></div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-6 text-white flex items-center gap-4">
-                                Match Editor <span className="text-[10px] font-bold bg-[#dfff00] text-black px-2 py-0.5 rounded-full not-italic tracking-normal">Active</span>
-                            </h3>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-4">
+                                    Match Editor (10 Match Serie A) <span className="text-[10px] font-bold bg-[#dfff00] text-black px-2 py-0.5 rounded-full not-italic tracking-normal">Active</span>
+                                </h3>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
+                                        <Calendar size={16} className="text-[#dfff00]" />
+                                        <select
+                                            value={selectedRound}
+                                            onChange={(e) => setSelectedRound(parseInt(e.target.value))}
+                                            className="bg-transparent text-white font-black text-xs uppercase outline-none cursor-pointer"
+                                        >
+                                            {Array.from({ length: 38 }, (_, i) => i + 1).map((g) => (
+                                                <option key={g} value={g} className="bg-black text-white">
+                                                    Giornata {g}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            const roundMatches = SERIE_A_SCHEDULE_2026_2027[selectedRound];
+                                            if (!roundMatches) {
+                                                toast.error('Nessun match trovato per la giornata selezionata');
+                                                return;
+                                            }
+                                            if (!confirm(`Caricare le 10 partite ufficiali della GIORNATA ${selectedRound} Serie A?`)) return;
+
+                                            setLoading(true);
+                                            const res = await gameService.updateAllMatches(roundMatches);
+                                            if (res.success) {
+                                                const md = await gameService.getMatchday();
+                                                setMatchday(md);
+                                                toast.success(`✅ Caricate le 10 partite della Giornata ${selectedRound}!`);
+                                            } else {
+                                                toast.error(res.message);
+                                            }
+                                            setLoading(false);
+                                        }}
+                                        disabled={loading}
+                                        className="px-4 py-2 bg-[#dfff00] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(223,255,0,0.2)]"
+                                    >
+                                        ⚡ Carica Giornata {selectedRound}
+                                    </button>
+                                </div>
+                            </div>
                             <div className="grid gap-4">
                                 {matchday.matches.map((m, idx) => (
                                     <div key={idx} className={`bg-white/5 p-3.5 md:p-5 rounded-2xl border transition-all flex flex-col lg:flex-row items-center gap-4 group ${matchday.jollyMatchIndex === idx ? 'border-[#5d8aa8] bg-[#5d8aa8]/5' : 'border-white/5 hover:border-[#dfff00]/30'}`}>

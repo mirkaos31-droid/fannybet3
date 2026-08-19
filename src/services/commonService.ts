@@ -17,7 +17,7 @@ export const commonService = {
         return {
             id: data.id,
             matches: (data.matches || []) as Match[],
-            results: (data.results || Array(12).fill(null)) as (string | null)[],
+            results: (data.results || Array(10).fill(null)) as (string | null)[],
             superJackpot: data.super_jackpot || 0,
             currentPot: data.current_pot || 0,
             rolloverPot: data.rollover_pot || 0,
@@ -43,7 +43,7 @@ export const commonService = {
         return {
             id: data.id,
             matches: (data.matches || []) as Match[],
-            results: (data.results || Array(12).fill(null)) as (string | null)[],
+            results: (data.results || Array(10).fill(null)) as (string | null)[],
             superJackpot: data.super_jackpot || 0,
             currentPot: data.current_pot || 0,
             rolloverPot: data.rollover_pot || 0,
@@ -69,7 +69,7 @@ export const commonService = {
         return data.map(d => ({
             id: d.id,
             matches: (d.matches || []) as Match[],
-            results: (d.results || Array(12).fill(null)) as (string | null)[],
+            results: (d.results || Array(10).fill(null)) as (string | null)[],
             superJackpot: d.super_jackpot || 0,
             currentPot: d.current_pot || 0,
             rolloverPot: d.rollover_pot || 0,

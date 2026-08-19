@@ -1,4 +1,4 @@
-import { Home, Zap, Eye, Trophy, Skull, User, Shield } from 'lucide-react';
+import { Home, Skull, User, Shield } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface NavigationBarProps {
@@ -10,15 +10,11 @@ interface NavigationBarProps {
 export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNavigate }) => {
     const navItems: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
         { id: 'HOME', label: 'Home', icon: <Home size={18} /> },
-        { id: 'BETTING', label: '1x2 Mode', icon: <Zap size={18} /> },
-        { id: 'SPY', label: 'I fannies', icon: <Eye size={18} /> },
-        { id: 'LEADERBOARD', label: 'Classifiche', icon: <Trophy size={18} /> },
         { id: 'SURVIVAL', label: 'Survival Mode', icon: <Skull size={18} /> },
         { id: 'FB_LEGA', label: 'FB Lega', icon: <Shield size={18} /> },
-        // Per riattivare la modalità Mondiali, decommenta la riga seguente:
-        // { id: 'WORLD_CUP' as ViewMode, label: 'Mondiali', icon: <Globe size={18} /> },
         { id: 'PROFILE', label: 'Profilo', icon: <User size={18} /> },
     ];
+
 
     return (
         <div className="flex justify-center w-full overflow-x-auto no-scrollbar">

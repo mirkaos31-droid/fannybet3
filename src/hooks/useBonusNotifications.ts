@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 interface BonusAchievement {
-  type: 'strike' | 'en_plein' | 'jolly' | 'perfect_round' | 'leaderboard_gain' | 'leaderboard_top';
+  type: 'strike' | 'en_plein' | 'cappotto' | 'mago_pareggi' | 'secret_match' | 'jolly' | 'perfect_round' | 'leaderboard_gain' | 'leaderboard_top';
   points: number;
   description: string;
 }

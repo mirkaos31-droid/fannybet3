@@ -7,7 +7,9 @@ interface PredictionsModalProps {
     onClose: () => void;
     matchday: Matchday | null;
     myPicks: string[];
+    secretMatchIndex?: number | null;
     onPickChange: (index: number, sign: string) => void;
+    onSecretMatchChange?: (index: number | null) => void;
     onSave: () => void;
     saving: boolean;
 }
@@ -17,7 +19,9 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
     onClose,
     matchday,
     myPicks,
+    secretMatchIndex = null,
     onPickChange,
+    onSecretMatchChange,
     onSave,
     saving,
 }) => {
@@ -130,6 +134,29 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                                         </button>
                                     ))}
                                 </div>
+
+                                {/* Secret Match Selector */}
+                                {onSecretMatchChange && (
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                        <button
+                                            type="button"
+                                            onClick={() => onSecretMatchChange(secretMatchIndex === idx ? null : idx)}
+                                            className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-1.5 border ${
+                                                secretMatchIndex === idx
+                                                    ? 'bg-amber-400 text-black border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.6)] scale-105'
+                                                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white hover:border-amber-400/50'
+                                            }`}
+                                        >
+                                            <span>🎯 MATCH SEGRETO (2X)</span>
+                                            {secretMatchIndex === idx && <span className="text-black font-extrabold">✓ ATTIVO</span>}
+                                        </button>
+                                        {secretMatchIndex === idx && (
+                                            <span className="text-[8px] font-bold text-amber-400 uppercase tracking-widest animate-pulse">
+                                                Punti raddoppiati se azzeccata!
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

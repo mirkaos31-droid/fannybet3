@@ -126,7 +126,7 @@ export const SurvivalView: React.FC<SurvivalViewProps> = ({ user, activeMatchday
         const validMatches = activeMatchday.matches.filter(m => m.home?.trim() && m.away?.trim());
         const allTeams = validMatches.flatMap(m => [m.home, m.away]);
 
-        // Exclude the last 4 teams (last 2 matches) as per user request to have exactly 20 teams
+        // Exactly 10 matches = 20 Serie A teams
         const restrictedTeams = allTeams.slice(0, 20);
 
         // Filter teams already used by the player

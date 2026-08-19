@@ -586,7 +586,7 @@
   }
 
   .card-lega-alieno {
-    border: 1px solid rgba(93, 138, 168, 0.8) !important;
+    border: 3px solid rgba(93, 138, 168, 0.95) !important;
     background: linear-gradient(135deg, rgba(30, 60, 80, 0.2) 0%, rgba(5, 5, 8, 0.9) 100%) !important;
     box-shadow: 0 0 25px rgba(93, 138, 168, 0.4), inset 0 0 12px rgba(93, 138, 168, 0.2), 0 0 50px rgba(93, 138, 168, 0.2) !important;
   }
@@ -598,11 +598,11 @@
   }
 
   .card-lega-alieno:hover {
-    border-color: rgba(93, 138, 168, 0.8) !important;
+    border-color: rgba(93, 138, 168, 1) !important;
     background: linear-gradient(135deg, rgba(44, 90, 120, 0.3) 0%, rgba(10, 10, 12, 0.9) 100%) !important;
     box-shadow:
-      0 0 60px rgba(44, 90, 120, 0.2),
-      inset 0 0 30px rgba(44, 90, 120, 0.1);
+      0 0 60px rgba(44, 90, 120, 0.4),
+      inset 0 0 30px rgba(44, 90, 120, 0.2);
   }
 
   .card-scudetto-active {
@@ -772,8 +772,8 @@
   }
 
   .card-bright-red {
-    border-color: rgba(255, 34, 0, 0.7);
-    box-shadow: 0 0 25px rgba(255, 34, 0, 0.4), inset 0 0 12px rgba(255, 34, 0, 0.2), 0 0 50px rgba(255, 34, 0, 0.2);
+    border: 3px solid rgba(255, 34, 0, 0.9) !important;
+    box-shadow: 0 0 25px rgba(255, 34, 0, 0.4), inset 0 0 12px rgba(255, 34, 0, 0.2), 0 0 50px rgba(255, 34, 0, 0.2) !important;
   }
 
   .card-bright-red::before {
@@ -781,8 +781,8 @@
   }
 
   .card-bright-red:hover {
-    border-color: rgba(255, 34, 0, 1);
-    box-shadow: 0 0 40px rgba(255, 34, 0, 0.7), inset 0 0 20px rgba(255, 34, 0, 0.4), 0 0 80px rgba(255, 34, 0, 0.3);
+    border-color: rgba(255, 34, 0, 1) !important;
+    box-shadow: 0 0 40px rgba(255, 34, 0, 0.7), inset 0 0 20px rgba(255, 34, 0, 0.4), 0 0 80px rgba(255, 34, 0, 0.3) !important;
   }
 
   .card-bronze {
@@ -1293,4 +1293,29 @@
   background-position: 0 0, 15px 15px;
   opacity: 0;
   animation: particlesFlyOut 0.8s cubic-bezier(0.1, 0.8, 0.1, 1) forwards;
+}
+
+/* POT BADGES IN DASHBOARD */
+.pot-badge-survival {
+  border: 1px solid rgba(255, 34, 0, 0.3) !important;
+  box-shadow: 0 0 15px rgba(255, 34, 0, 0.08), inset 0 0 8px rgba(255, 34, 0, 0.03) !important;
+}
+.pot-badge-survival:hover {
+  border-color: rgba(255, 34, 0, 0.75) !important;
+  box-shadow: 0 0 25px rgba(255, 34, 0, 0.2), inset 0 0 12px rgba(255, 34, 0, 0.08) !important;
+}
+.glow-red {
+  text-shadow: 0 0 10px rgba(255, 34, 0, 0.85);
+}
+
+.pot-badge-lega {
+  border: 1px solid rgba(93, 138, 168, 0.3) !important;
+  box-shadow: 0 0 15px rgba(93, 138, 168, 0.1), inset 0 0 8px rgba(93, 138, 168, 0.03) !important;
+}
+.pot-badge-lega:hover {
+  border-color: rgba(93, 138, 168, 0.75) !important;
+  box-shadow: 0 0 25px rgba(93, 138, 168, 0.25), inset 0 0 12px rgba(93, 138, 168, 0.1) !important;
+}
+.glow-sky {
+  text-shadow: 0 0 10px rgba(93, 138, 168, 0.9);
 }

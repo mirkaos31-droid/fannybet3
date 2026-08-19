@@ -25,15 +25,18 @@ export const UserManagementPanel: React.FC = () => {
     const loadUsers = async () => {
         setLoading(true);
         try {
-            const [allUsers, burned] = await Promise.all([
-                gameService.getAllUsers(),
-                gameService.getBurnedTokens()
-            ]);
-            setUsers(allUsers);
-            setBurnedTokens(burned);
+            const allUsers = await gameService.getAllUsers();
+            setUsers(allUsers || []);
+
+            try {
+                const burned = await gameService.getBurnedTokens();
+                setBurnedTokens(burned || 0);
+            } catch (burnedErr) {
+                console.warn('Impossibile recuperare token bruciati:', burnedErr);
+                setBurnedTokens(0);
+            }
         } catch (err) {
-            console.error('Errore nel caricamento data:', err);
-            alert('Errore nel caricamento dei dati');
+            console.error('Errore nel caricamento utenti:', err);
         } finally {
             setLoading(false);
         }

@@ -23,6 +23,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [leaderboardMatchday, setLeaderboardMatchday] = useState<Matchday | null>(null);
     const [myPicks, setMyPicks] = useState<string[]>(new Array(10).fill(''));
+    const [mySecretMatch, setMySecretMatch] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [user, setUser] = useState<User | null>(null);
@@ -102,8 +103,10 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 const currentMdPick = picks.find(p => p.matchday_id === mdData.id);
                 if (currentMdPick) {
                     setMyPicks(currentMdPick.predictions);
+                    setMySecretMatch(currentMdPick.secret_match_index ?? null);
                 } else {
                     setMyPicks(Array(10).fill(''));
+                    setMySecretMatch(null);
                 }
             }
 
@@ -165,7 +168,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
         try {
             setSaving(true);
-            const result = await gameService.submitPicks(leagueId, matchday.id, myPicks);
+            const result = await gameService.submitPicks(leagueId, matchday.id, myPicks, mySecretMatch);
             if (result.success) {
                 // Success Notification for League
                 if (user) {
@@ -433,11 +436,13 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 onClose={() => window.history.back()}
                 matchday={matchday}
                 myPicks={myPicks}
+                secretMatchIndex={mySecretMatch}
                 onPickChange={(idx, sign) => {
                     const newPicks = [...myPicks];
                     newPicks[idx] = sign;
                     setMyPicks(newPicks);
                 }}
+                onSecretMatchChange={(idx) => setMySecretMatch(idx)}
                 onSave={handleSavePicks}
                 saving={saving}
             />
