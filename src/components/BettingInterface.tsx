@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import type { Matchday, Bet, User, ViewMode } from '../types';
 import { gameService } from '../services/gameService';

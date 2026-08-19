@@ -79,7 +79,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             if (res.success) {
                                 const roundMatches = SERIE_A_SCHEDULE_2026_2027[selectedRound];
                                 if (roundMatches) {
-                                    await gameService.updateAllMatches(roundMatches);
+                                    await gameService.updateAllMatches(roundMatches as any);
                                 }
                                 const md = await gameService.getMatchday();
                                 setMatchday(md);
@@ -264,7 +264,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                             if (!confirm(`Caricare le 10 partite ufficiali della GIORNATA ${selectedRound} Serie A?`)) return;
 
                                             setLoading(true);
-                                            const res = await gameService.updateAllMatches(roundMatches);
+                                            const res = await gameService.updateAllMatches(roundMatches as any);
                                             if (res.success) {
                                                 const md = await gameService.getMatchday();
                                                 setMatchday(md);

@@ -7,7 +7,6 @@ import { BottomNavBar } from './BottomNavBar';
 import { ProfileView } from './ProfileView';
 import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
-import { Skull, Shield } from 'lucide-react';
 import { FBLegaView } from './FBLegaView';
 import { CardGallery } from './CardGallery';
 import { WorldCupView } from './WorldCupView';
@@ -114,10 +113,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
         return () => document.body.classList.remove('gold-arena', 'bronze-arena', 'lega-arena', 'world-cup-arena');
     }, [view]);
 
-    const handleBetPlaced = () => {
-        loadData();
-        if (onBalanceUpdate) onBalanceUpdate();
-    };
+    // handleBetPlaced is currently unused but kept as reference:
+    // const handleBetPlaced = () => { loadData(); if (onBalanceUpdate) onBalanceUpdate(); };
 
     if (loading && view === 'HOME') {
         return <DashboardSkeleton />;
