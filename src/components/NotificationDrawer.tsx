@@ -17,11 +17,32 @@ interface NotificationDrawerProps {
     user: User | null;
     isOpen: boolean;
     onClose: () => void;
+    onNotificationsRead?: () => void;
 }
 
-export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, isOpen, onClose }) => {
+export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ 
+    user, 
+    isOpen, 
+    onClose,
+    onNotificationsRead 
+}) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
+    const unreadTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const prevIsOpenRef = React.useRef(isOpen);
+
+    const markUnreadAsReadInDb = React.useCallback(async () => {
+        if (!user) return;
+        const { error } = await supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+
+        if (!error) {
+            onNotificationsRead?.();
+        }
+    }, [user, onNotificationsRead]);
 
     const fetchNotifications = React.useCallback(async () => {
         if (!user) return;
@@ -34,10 +55,19 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
             .limit(20);
 
         if (!error && data) {
-            setNotifications(data as Notification[]);
+            const notifs = data as Notification[];
+            setNotifications(notifs);
+
+            // Silently mark unread as read in DB after 2.5s of reading
+            if (notifs.some(n => !n.is_read)) {
+                if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current);
+                unreadTimerRef.current = setTimeout(() => {
+                    markUnreadAsReadInDb();
+                }, 2500);
+            }
         }
         setLoading(false);
-    }, [user]);
+    }, [user, markUnreadAsReadInDb]);
 
     const markAsRead = async (id: string) => {
         // Optimistic update
@@ -51,11 +81,14 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
         if (error) {
             // Revert on error
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: false } : n));
+        } else {
+            onNotificationsRead?.();
         }
     };
 
     const markAllAsRead = async () => {
         if (!user) return;
+        if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current);
         
         // Optimistic update
         const previousNotifications = [...notifications];
@@ -68,6 +101,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
             .eq('is_read', false);
 
         if (!error) {
+            onNotificationsRead?.();
             toast.success('Protocollo Sincronizzato', {
                 description: 'Tutte le notifiche sono state segnate come lette.',
                 icon: '📡'
@@ -82,6 +116,37 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
             });
         }
     };
+
+    // When drawer closes, ensure any unread notifications are marked as read both in DB and in state
+    const handleClose = React.useCallback(() => {
+        if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current);
+        const hasUnread = notifications.some(n => !n.is_read);
+        if (hasUnread) {
+            markUnreadAsReadInDb();
+            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        }
+        onClose();
+    }, [notifications, markUnreadAsReadInDb, onClose]);
+
+    // Safety effect in case isOpen is toggled externally
+    React.useEffect(() => {
+        if (prevIsOpenRef.current && !isOpen) {
+            if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current);
+            const hasUnread = notifications.some(n => !n.is_read);
+            if (hasUnread) {
+                markUnreadAsReadInDb();
+                setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+            }
+        }
+        prevIsOpenRef.current = isOpen;
+    }, [isOpen, notifications, markUnreadAsReadInDb]);
+
+    // Clear timer on unmount
+    React.useEffect(() => {
+        return () => {
+            if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current);
+        };
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -119,7 +184,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
             {isOpen && (
                 <div 
                     className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] animate-fade-in"
-                    onClick={onClose}
+                    onClick={handleClose}
                 />
             )}
 
@@ -140,7 +205,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ user, is
                         </div>
                         <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-3">Sincronizzazione neurale attiva</p>
                     </div>
-                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center hover:bg-white/10 rounded-2xl transition-all group active:scale-90">
+                    <button onClick={handleClose} className="w-12 h-12 flex items-center justify-center hover:bg-white/10 rounded-2xl transition-all group active:scale-90">
                         <X className="w-6 h-6 text-white/30 group-hover:text-white transition-colors" />
                     </button>
                 </div>

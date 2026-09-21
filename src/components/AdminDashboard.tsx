@@ -13,15 +13,81 @@ interface AdminDashboardProps {
     initialTab?: 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'LEGA';
 }
 
+const getArchivedRoundNumbers = (archivedMatchdays: Matchday[]): number[] => {
+    const archivedRounds = new Set<number>();
+
+    for (const amd of archivedMatchdays) {
+        if (!amd.matches || amd.matches.length < 5) continue;
+
+        for (const [roundStr, schedMatches] of Object.entries(SERIE_A_SCHEDULE_2026_2027)) {
+            const roundNum = parseInt(roundStr);
+            const matchCount = amd.matches.filter(m =>
+                schedMatches.some(sm =>
+                    sm.home.trim().toUpperCase() === m.home?.trim()?.toUpperCase() &&
+                    sm.away.trim().toUpperCase() === m.away?.trim()?.toUpperCase()
+                )
+            ).length;
+
+            if (matchCount >= 5) {
+                archivedRounds.add(roundNum);
+            }
+        }
+    }
+
+    return Array.from(archivedRounds).sort((a, b) => a - b);
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, initialTab = 'MATCHDAY' }) => {
     const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA'>(initialTab);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [loading, setLoading] = useState(false);
     const [selectedRound, setSelectedRound] = useState<number>(1);
+    const [archivedRounds, setArchivedRounds] = useState<number[]>([]);
+
+    const loadArchivedRounds = React.useCallback(async () => {
+        try {
+            const archivedMds = await gameService.getArchivedMatchdays();
+            const rounds = getArchivedRoundNumbers(archivedMds);
+            setArchivedRounds(rounds);
+        } catch (e) {
+            console.error('Error loading archived rounds:', e);
+        }
+    }, []);
 
     useEffect(() => {
         gameService.getMatchday().then(setMatchday);
-    }, []);
+        loadArchivedRounds();
+    }, [loadArchivedRounds]);
+
+    // Available rounds exclude already archived and processed ones
+    const availableRounds = React.useMemo(() => {
+        return Array.from({ length: 38 }, (_, i) => i + 1).filter(
+            (g) => !archivedRounds.includes(g)
+        );
+    }, [archivedRounds]);
+
+    // Ensure selectedRound is always in availableRounds
+    useEffect(() => {
+        if (availableRounds.length > 0 && !availableRounds.includes(selectedRound)) {
+            setSelectedRound(availableRounds[0]);
+        }
+    }, [availableRounds, selectedRound]);
+
+    // Detect currently loaded round for active matchday
+    const currentActiveRound = React.useMemo(() => {
+        if (!matchday || !matchday.matches || matchday.matches.length < 5) return null;
+        for (const [roundStr, schedMatches] of Object.entries(SERIE_A_SCHEDULE_2026_2027)) {
+            const r = parseInt(roundStr);
+            const matchCount = matchday.matches.filter(m =>
+                schedMatches.some(sm =>
+                    sm.home.trim().toUpperCase() === m.home?.trim()?.toUpperCase() &&
+                    sm.away.trim().toUpperCase() === m.away?.trim()?.toUpperCase()
+                )
+            ).length;
+            if (matchCount >= 5) return r;
+        }
+        return null;
+    }, [matchday]);
 
     // Helper to format date for datetime-local input (handling local timezone)
     const formatForInput = (isoString: string) => {
@@ -54,6 +120,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                     <div>
                         <p className="font-bold uppercase tracking-widest text-xs opacity-70 mb-2">Nessuna giornata attiva nel sistema</p>
                         <h2 className="text-xl font-black italic text-white uppercase">Seleziona Giornata Serie A</h2>
+                        {archivedRounds.length > 0 && (
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                                {archivedRounds.length} giornate già archiviate nascoste
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-3 bg-white/10 p-2 rounded-2xl border border-white/20">
@@ -62,12 +133,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             value={selectedRound}
                             onChange={(e) => setSelectedRound(parseInt(e.target.value))}
                             className="bg-transparent text-white font-black text-lg uppercase outline-none w-full cursor-pointer"
+                            disabled={availableRounds.length === 0}
                         >
-                            {Array.from({ length: 38 }, (_, i) => i + 1).map((g) => (
-                                <option key={g} value={g} className="bg-black text-white">
-                                    Giornata {g} (Serie A 2026/27)
+                            {availableRounds.length === 0 ? (
+                                <option value="" className="bg-black text-white">
+                                    Tutte le giornate archiviate
                                 </option>
-                            ))}
+                            ) : (
+                                availableRounds.map((g) => (
+                                    <option key={g} value={g} className="bg-black text-white">
+                                        Giornata {g} (Serie A 2026/27)
+                                    </option>
+                                ))
+                            )}
                         </select>
                     </div>
 
@@ -83,16 +161,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                 }
                                 const md = await gameService.getMatchday();
                                 setMatchday(md);
+                                await loadArchivedRounds();
                                 toast.success(`Giornata ${selectedRound} creata con le 10 partite ufficiali!`);
                             } else {
                                 alert("Errore inizializzazione: " + res.message);
                             }
                             setLoading(false);
                         }}
-                        disabled={loading}
-                        className="w-full bg-[#dfff00] text-black py-4 rounded-2xl font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_black] border-2 border-black"
+                        disabled={loading || availableRounds.length === 0}
+                        className="w-full bg-[#dfff00] text-black py-4 rounded-2xl font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_black] border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? 'CARICAMENTO...' : `⚡ APRI GIORNATA ${selectedRound}`}
+                        {loading ? 'CARICAMENTO...' : availableRounds.length === 0 ? 'TUTTE ARCHIVIATE' : `⚡ APRI GIORNATA ${selectedRound}`}
                     </button>
                     {onToggleView && (
                         <button onClick={onToggleView} className="mt-4 text-xs font-black uppercase tracking-widest border-b border-[#dfff00]/30 pb-1 text-[#dfff00]">
@@ -205,6 +284,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                                 await gameService.resetMatchday();
                                                 const md = await gameService.getMatchday();
                                                 setMatchday(md);
+                                                await loadArchivedRounds();
                                             }
                                         }}
                                         className="flex-1 bg-transparent text-red-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-red-500/50 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all"
@@ -222,6 +302,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                                 alert(msg);
                                                 const md = await gameService.getMatchday();
                                                 setMatchday(md);
+                                                await loadArchivedRounds();
                                             }
                                         }}
                                         className="flex-1 bg-transparent text-[#dfff00] py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-[#dfff00]/50 hover:bg-[#dfff00] hover:text-black hover:border-[#dfff00] hover:shadow-[0_0_20px_rgba(223,255,0,0.4)] transition-all"
@@ -236,9 +317,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                         <div className="bg-transparent rounded-[24px] p-5 md:p-8 border-2 border-white/10 relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#dfff00] to-transparent opacity-50"></div>
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-4">
-                                    Match Editor (10 Match Serie A) <span className="text-[10px] font-bold bg-[#dfff00] text-black px-2 py-0.5 rounded-full not-italic tracking-normal">Active</span>
-                                </h3>
+                                <div>
+                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                                        Match Editor (10 Match Serie A) 
+                                        <span className="text-[10px] font-bold bg-[#dfff00] text-black px-2 py-0.5 rounded-full not-italic tracking-normal">Active</span>
+                                        {currentActiveRound && (
+                                            <span className="text-xs font-mono font-bold text-[#dfff00] bg-[#dfff00]/10 border border-[#dfff00]/30 px-2.5 py-0.5 rounded-lg">
+                                                Giornata {currentActiveRound}
+                                            </span>
+                                        )}
+                                    </h3>
+                                    {archivedRounds.length > 0 && (
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                                            {archivedRounds.length} giornate già archiviate (G{archivedRounds.join(', G')}) nascoste dal selettore
+                                        </p>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <div className="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
                                         <Calendar size={16} className="text-[#dfff00]" />
@@ -246,12 +340,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                             value={selectedRound}
                                             onChange={(e) => setSelectedRound(parseInt(e.target.value))}
                                             className="bg-transparent text-white font-black text-xs uppercase outline-none cursor-pointer"
+                                            disabled={availableRounds.length === 0}
                                         >
-                                            {Array.from({ length: 38 }, (_, i) => i + 1).map((g) => (
-                                                <option key={g} value={g} className="bg-black text-white">
-                                                    Giornata {g}
+                                            {availableRounds.length === 0 ? (
+                                                <option value="" className="bg-black text-white">
+                                                    Nessuna giornata disponibile
                                                 </option>
-                                            ))}
+                                            ) : (
+                                                availableRounds.map((g) => (
+                                                    <option key={g} value={g} className="bg-black text-white">
+                                                        Giornata {g}
+                                                    </option>
+                                                ))
+                                            )}
                                         </select>
                                     </div>
                                     <button
@@ -268,14 +369,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                             if (res.success) {
                                                 const md = await gameService.getMatchday();
                                                 setMatchday(md);
+                                                await loadArchivedRounds();
                                                 toast.success(`✅ Caricate le 10 partite della Giornata ${selectedRound}!`);
                                             } else {
                                                 toast.error(res.message);
                                             }
                                             setLoading(false);
                                         }}
-                                        disabled={loading}
-                                        className="px-4 py-2 bg-[#dfff00] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(223,255,0,0.2)]"
+                                        disabled={loading || availableRounds.length === 0}
+                                        className="px-4 py-2 bg-[#dfff00] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(223,255,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         ⚡ Carica Giornata {selectedRound}
                                     </button>

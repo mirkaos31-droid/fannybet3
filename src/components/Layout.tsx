@@ -18,6 +18,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
     const [unreadCount, setUnreadCount] = React.useState(0);
+    const hasCheckedInitialRef = React.useRef(false);
 
     const fetchUnreadCount = React.useCallback(async () => {
         if (!user) return;
@@ -33,30 +34,32 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
     }, [user]);
 
     React.useEffect(() => {
+        if (!user) return;
+
         const checkInitialNotifications = async () => {
-            if (!user) return;
-            
             const { count, error } = await supabase
                 .from('notifications')
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id)
                 .eq('is_read', false);
             
-            if (!error && count !== null && count > 0) {
+            if (!error && count !== null) {
                 setUnreadCount(count);
                 
-                // Show a welcome back toast without sound
-                toast.info("Bentornato nell'Arena!", {
-                    description: `Hai ${count} nuovi aggiornamenti nel Protocol Intel.`,
-                    icon: "📡",
-                    duration: 5000,
-                });
+                if (count > 0 && !hasCheckedInitialRef.current) {
+                    hasCheckedInitialRef.current = true;
+                    // Show a welcome back toast without sound once on initial check
+                    toast.info("Bentornato nell'Arena!", {
+                        description: `Hai ${count} nuovi aggiornamenti nel Protocol Intel.`,
+                        icon: "📡",
+                        duration: 5000,
+                    });
+                }
             }
         };
 
         checkInitialNotifications();
         
-        if (!user) return;
         const channel = supabase
             .channel(`global-notifications-${user.id}`)
             .on(
@@ -75,7 +78,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                         duration: 6000,
                         action: {
                             label: "Leggi",
-                            onClick: () => setIsNotificationsOpen(true)
+                            onClick: () => {
+                                setIsNotificationsOpen(true);
+                                setUnreadCount(0);
+                            }
                         }
                     });
                 }
@@ -90,7 +96,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [user, fetchUnreadCount, isNotificationsOpen]);
+    }, [user, fetchUnreadCount]);
 
     return (
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
@@ -293,6 +299,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 user={user} 
                 isOpen={isNotificationsOpen} 
                 onClose={() => setIsNotificationsOpen(false)} 
+                onNotificationsRead={fetchUnreadCount}
             />
         </div>
     );
