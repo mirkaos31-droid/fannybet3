@@ -22,21 +22,21 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                 </button>
 
                 <div className="flex items-center gap-3 mb-8">
-                    <Info size={24} className="text-[#5d8aa8]" />
+                    <Info size={24} className="text-[#bfff00]" />
                     <h3 className="text-2xl font-black italic uppercase text-white">Regolamento Punti</h3>
                 </div>
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         {/* Standard Point */}
-                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
                             <Target size={20} className="text-gray-500 mb-2 group-hover:text-white transition-colors" />
                             <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Segno 1 o 2</span>
                             <span className="text-[#bfff00] font-black text-2xl italic">1 PT</span>
                         </div>
 
                         {/* Bonus X */}
-                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
                             <Trophy size={20} className="text-gray-500 mb-2 group-hover:text-[#bfff00] transition-colors" />
                             <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Pareggio (X)</span>
                             <div className="flex flex-col">
@@ -54,15 +54,15 @@ export const LeagueRulesModal: React.FC<LeagueRulesModalProps> = ({ isOpen, onCl
                         </div>
 
                         {/* Jolly Admin */}
-                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
-                            <Star size={20} className="text-[#5d8aa8] mb-2 animate-pulse" />
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
+                            <Star size={20} className="text-[#bfff00] mb-2 animate-pulse" />
                             <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Jolly Admin</span>
-                            <span className="text-[#5d8aa8] font-black text-2xl italic">+2 PT</span>
+                            <span className="text-[#bfff00] font-black text-2xl italic">+2 PT</span>
                             <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Match Stellato</span>
                         </div>
 
                         {/* Strike */}
-                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#5d8aa8]/30 transition-all">
+                        <div className="p-4 bg-white/[0.03] rounded-3xl border border-white/5 flex flex-col items-center text-center group hover:border-[#bfff00]/30 transition-all">
                             <Zap size={20} className="text-orange-500 mb-2" />
                             <span className="text-gray-500 text-[9px] font-black uppercase mb-1 tracking-widest">Filotto / Strike</span>
                             <span className="text-orange-500 font-black text-2xl italic">+3 PT</span>

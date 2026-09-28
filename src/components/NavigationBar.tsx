@@ -11,7 +11,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ currentView, onNav
     const navItems: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
         { id: 'HOME', label: 'Home', icon: <Home size={18} /> },
         { id: 'SURVIVAL', label: 'Survival Mode', icon: <Skull size={18} /> },
-        { id: 'FB_LEGA', label: 'FB Lega', icon: <Shield size={18} /> },
+        { id: 'FB_LEGA', label: 'Fanta 1X2', icon: <Shield size={18} /> },
         { id: 'PROFILE', label: 'Profilo', icon: <User size={18} /> },
     ];
 

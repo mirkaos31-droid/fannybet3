@@ -179,9 +179,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             className="absolute -inset-[10%] opacity-[0.55] bg-cover bg-center bg-no-repeat scale-[0.8]"
                             style={{ backgroundImage: `url('/lega_bg.png')` }}
                         ></div>
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a25]/60 via-transparent to-[#020508]/90"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f12]/60 via-transparent to-[#020508]/90"></div>
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(2,5,8,0.85)_100%)]"></div>
-                        <div className="mesh-glow bg-[#5d8aa8]/25 -top-48 -right-48 animate-pulse-slow"></div>
+                        <div className="mesh-glow bg-[#bfff00]/15 -top-48 -right-48 animate-pulse-slow"></div>
                         <div className="mesh-glow bg-[#00ffaa]/5 bottom-0 -left-48 animate-float-slow"></div>
                     </div>
                 )}
@@ -206,7 +206,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     <div className="py-4 md:py-12 text-center animate-fade-in px-2">
                         <h1 className="text-2xl sm:text-4xl md:text-8xl font-display font-black italic tracking-tighter uppercase text-white/90 drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                             {view === 'SURVIVAL' && 'SURVIVAL MODE'}
-                            {view === 'FB_LEGA' && 'FB LEGA'}
+                            {view === 'FB_LEGA' && 'FANTA 1X2'}
                             {view === 'WORLD_CUP' && 'WORLD CUP'}
                             {view === 'CARDS' && 'ARCHIVIO CARD'}
                         </h1>
@@ -273,7 +273,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                         {/* SECTION: ARENA & LEGHE */}
                         <div className="space-y-6 pb-20">
-                            <SectionHeader title="ARENA & COMPETIZIONI" subtitle="Survival & Campionati FB Lega" color="border-brand-orange/30" />
+                            <SectionHeader title="ARENA & COMPETIZIONI" subtitle="Survival & Fanta 1X2" color="border-brand-orange/30" />
                             
                             {/* Montepremi (Prize Pools) badges */}
                             <div className="grid grid-cols-4 gap-3 md:gap-8 mb-2">
@@ -289,10 +289,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                 </div>
                                 <div className="col-span-2">
                                     <div className="pot-badge-lega py-2 md:py-3 px-4 rounded-[1.25rem] flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 border bg-black/40 backdrop-blur-md transition-all duration-300">
-                                        <span className="text-[8px] sm:text-[10px] md:text-xs font-black text-[#5d8aa8] uppercase tracking-[0.2em] drop-shadow-[0_0_8px_rgba(93,138,168,0.4)]">
+                                        <span className="text-[8px] sm:text-[10px] md:text-xs font-black text-[#bfff00] uppercase tracking-[0.2em] drop-shadow-[0_0_8px_rgba(191,255,0,0.4)]">
                                             MONTEPREMI
                                         </span>
-                                        <span className="text-[11px] sm:text-sm md:text-base font-mono font-black text-white glow-sky">
+                                        <span className="text-[11px] sm:text-sm md:text-base font-mono font-black text-white glow-green">
                                             {fbLegaPrizePool !== null ? `${fbLegaPrizePool} TK` : '0 TK'}
                                         </span>
                                     </div>
@@ -336,13 +336,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                     {/* Background Image / integration */}
                                     <div 
                                         className="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-100 group-hover:scale-105 opacity-70 group-hover:opacity-90" 
-                                        style={{ backgroundImage: "url('/Lega.png')" }}
+                                        style={{ backgroundImage: "url('/Fanta.png')" }}
                                     />
                                     {/* Dark overlays to blend image perfectly into the dark dashboard look */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#020508] via-transparent to-[#020508]/20 z-0"></div>
                                     <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors duration-500 z-0"></div>
                                     
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#5d8aa8]/25 blur-[60px] rounded-full group-hover:opacity-100 transition-all duration-700 z-0"></div>
+                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#bfff00]/10 blur-[60px] rounded-full group-hover:bg-[#bfff00]/20 transition-all duration-700 z-0"></div>
                                     
                                     <div className="relative z-10 w-full px-4">
                                         <p className="text-gray-300 text-[6px] sm:text-[10px] md:text-sm uppercase tracking-[0.2em] font-black group-hover:text-acid-glow transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">

@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { gameService } from '../services/gameService';
 import { fbLegaService } from '../services/fbLegaService';
 
 import type { FBLeague, Matchday } from '../types';
 import { toast } from 'sonner';
-import { Trophy, Play, Gift, Loader2, Settings2 } from 'lucide-react';
+import { Trophy, Play, Gift, Loader2, Settings2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+
+const SERIE_A_TOTAL_ROUNDS = 38;
 
 const PRIZE_PRESETS: Record<string, { label: string; desc: string; dist: number[] }> = {
     top1: { label: '🥇 Solo 1°', desc: '100% al primo', dist: [1.0] },
@@ -19,21 +21,53 @@ export const FBLegaAdminPanel = () => {
     const [actionLoading, setActionLoading] = useState<number | null>(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
 
+    // Serie A round tracking
+    const [completedRounds, setCompletedRounds] = useState<number>(0);
+    const remainingRounds = SERIE_A_TOTAL_ROUNDS - completedRounds;
+
     // Create form states
     const [newName, setNewName] = useState('');
     const [newFee, setNewFee] = useState(1);
     const [newDuration, setNewDuration] = useState(5);
+    const [untilEndOfSeason, setUntilEndOfSeason] = useState(false);
     const [underdogEnabled, setUnderdogEnabled] = useState(false);
     const [comebackEnabled, setComebackEnabled] = useState(false);
     const [prizePreset, setPrizePreset] = useState<string>('top2');
+
+    // 4-tranche payment config
+    const [showTranches, setShowTranches] = useState(false);
+    const [tranches, setTranches] = useState<[number, number, number, number]>([0, 0, 0, 0]);
 
     // Edit prize dist state per league
     const [editingPrizeDist, setEditingPrizeDist] = useState<number | null>(null);
 
 
+    // Computes balanced default tranches for a given duration
+    const computeDefaultTranches = useCallback((duration: number): [number, number, number, number] => {
+        const base = Math.floor(duration / 4);
+        const remainder = duration % 4;
+        // Distribute remainder to first groups
+        return [
+            base + (remainder > 0 ? 1 : 0),
+            base + (remainder > 1 ? 1 : 0),
+            base + (remainder > 2 ? 1 : 0),
+            base
+        ];
+    }, []);
+
     useEffect(() => {
         loadLeagues();
+        fbLegaService.getCompletedMatchdaysCount()
+            .then(count => setCompletedRounds(count))
+            .catch(() => {/* silent */});
     }, []);
+
+    // Auto-recompute tranches when duration or tranche panel changes
+    useEffect(() => {
+        if (showTranches) {
+            setTranches(computeDefaultTranches(newDuration));
+        }
+    }, [newDuration, showTranches, computeDefaultTranches]);
 
     const loadLeagues = async () => {
         try {
@@ -57,8 +91,26 @@ export const FBLegaAdminPanel = () => {
             return;
         }
 
+        // Validate tranches if enabled
+        if (showTranches) {
+            const total = tranches.reduce((a, b) => a + b, 0);
+            if (total !== newDuration) {
+                toast.error(`La somma dei 4 gruppi (${total}) deve essere uguale alla durata (${newDuration} giornate)`);
+                return;
+            }
+            if (tranches.some(t => t <= 0)) {
+                toast.error('Ogni gruppo deve avere almeno 1 giornata');
+                return;
+            }
+        }
+
         try {
             setLoading(true);
+            const paymentConfig = showTranches ? {
+                payment_tranches: tranches,
+                payment_mode: 'installments'
+            } : { payment_mode: 'full' };
+
             const result = await gameService.createLeague({
                 name: newName,
                 entry_fee: newFee,
@@ -68,18 +120,24 @@ export const FBLegaAdminPanel = () => {
                     "X": 2,
                     "2": 1,
                     "underdog_enabled": underdogEnabled,
-                    "monthly_comeback_enabled": comebackEnabled
+                    "monthly_comeback_enabled": comebackEnabled,
+                    "until_end_of_season": untilEndOfSeason,
+                    "completed_rounds_at_creation": completedRounds,
+                    ...paymentConfig
                 },
                 prize_dist: PRIZE_PRESETS[prizePreset].dist
             });
 
             if (result.success) {
-                toast.success('Lega creata con successo!');
+                toast.success('Campionato creato con successo!');
                 setShowCreateForm(false);
                 setNewName('');
                 setUnderdogEnabled(false);
                 setComebackEnabled(false);
+                setUntilEndOfSeason(false);
+                setShowTranches(false);
                 setPrizePreset('top2');
+                setNewDuration(5);
                 loadLeagues();
             } else {
                 toast.error(result.message);
@@ -202,7 +260,7 @@ export const FBLegaAdminPanel = () => {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-black italic uppercase text-white">Gestione FB Lega</h3>
+                <h3 className="text-2xl font-black italic uppercase text-white">Gestione Fanta 1X2</h3>
                 <button
                     onClick={() => setShowCreateForm(!showCreateForm)}
                     className="px-6 py-2 bg-[#dfff00] text-black rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all"
@@ -235,14 +293,163 @@ export const FBLegaAdminPanel = () => {
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-gray-500">Durata (Giornate)</label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-black uppercase text-gray-500">Durata (Giornate)</label>
+                                {untilEndOfSeason && (
+                                    <span className="text-[8px] font-black text-[#dfff00] uppercase tracking-wider bg-[#dfff00]/10 px-2 py-0.5 rounded-full border border-[#dfff00]/20">
+                                        Fine Serie A
+                                    </span>
+                                )}
+                            </div>
                             <input
                                 type="number"
+                                min="1"
+                                max={remainingRounds}
                                 value={newDuration}
-                                onChange={(e) => setNewDuration(parseInt(e.target.value))}
+                                onChange={(e) => {
+                                    setNewDuration(parseInt(e.target.value) || 0);
+                                    setUntilEndOfSeason(false);
+                                }}
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-black"
                             />
                         </div>
+                    </div>
+
+                    {/* Info giornate campionato */}
+                    <div className="mt-3 px-3 py-2 bg-black/30 rounded-xl border border-white/5 flex items-center gap-3">
+                        <div className="text-[9px] font-black uppercase text-gray-500 tracking-wider">
+                            Serie A 26/27:
+                        </div>
+                        <div className="flex gap-4">
+                            <span className="text-[9px] font-bold text-gray-400">
+                                Completate: <span className="text-white">{completedRounds}</span>
+                            </span>
+                            <span className="text-[9px] font-bold text-gray-400">
+                                Rimanenti: <span className="text-[#dfff00]">{remainingRounds}</span>
+                            </span>
+                            <span className="text-[9px] font-bold text-gray-400">
+                                Totale: <span className="text-white">{SERIE_A_TOTAL_ROUNDS}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Presets Durata Rapidi */}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mr-1">Preset:</span>
+                        {[5, 10].map(d => (
+                            <button
+                                key={d}
+                                type="button"
+                                onClick={() => { setNewDuration(d); setUntilEndOfSeason(false); }}
+                                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${newDuration === d && !untilEndOfSeason ? 'bg-[#dfff00]/20 text-[#dfff00] border-[#dfff00]/40' : 'bg-white/5 text-gray-400 border-white/5 hover:border-white/10'}`}
+                            >
+                                {d} Turni
+                            </button>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setNewDuration(remainingRounds);
+                                setUntilEndOfSeason(true);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border flex items-center gap-1.5 ${
+                                untilEndOfSeason
+                                    ? 'bg-[#dfff00] text-black border-[#dfff00] shadow-[0_0_12px_rgba(223,255,0,0.4)]'
+                                    : 'bg-white/5 text-gray-300 border-white/10 hover:border-[#dfff00]/40 hover:text-[#dfff00]'
+                            }`}
+                        >
+                            <span>🏆 Fine Campionato ({remainingRounds} RD rimanenti)</span>
+                        </button>
+                    </div>
+
+                    {/* Pagamento a Rate */}
+                    <div className="mt-6">
+                        <button
+                            type="button"
+                            onClick={() => setShowTranches(!showTranches)}
+                            className={`w-full flex items-center justify-between px-5 py-3 rounded-xl border transition-all ${
+                                showTranches
+                                    ? 'bg-[#5d8aa8]/15 border-[#5d8aa8]/40 text-[#5d8aa8]'
+                                    : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
+                            }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm">💳</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest">
+                                    Pagamento a Rate (4 Gruppi)
+                                </span>
+                                {showTranches && (
+                                    <span className="text-[8px] bg-[#5d8aa8]/20 text-[#5d8aa8] px-2 py-0.5 rounded-full border border-[#5d8aa8]/30 font-black uppercase">Attivo</span>
+                                )}
+                            </div>
+                            {showTranches ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+
+                        {showTranches && (
+                            <div className="mt-3 p-5 bg-[#5d8aa8]/10 border border-[#5d8aa8]/20 rounded-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <p className="text-[9px] text-[#5d8aa8] font-black uppercase tracking-wider">
+                                    Dividi il campionato in 4 gruppi. All'inizio di ogni gruppo gli iscritti pagano <strong>{newFee} FTK</strong>.
+                                    La somma deve essere esattamente <strong>{newDuration}</strong> giornate.
+                                </p>
+
+                                <div className="grid grid-cols-4 gap-3">
+                                    {([0, 1, 2, 3] as const).map(i => {
+                                        const groupLabels = ['Fase 1', 'Fase 2', 'Fase 3', 'Fase 4'];
+                                        const startRound = completedRounds + tranches.slice(0, i).reduce((a, b) => a + b, 0) + 1;
+                                        const endRound = startRound + tranches[i] - 1;
+                                        return (
+                                            <div key={i} className="space-y-1">
+                                                <label className="text-[9px] font-black uppercase text-gray-500 tracking-wider block text-center">
+                                                    {groupLabels[i]}
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={tranches[i]}
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value) || 0;
+                                                        setTranches(prev => {
+                                                            const next = [...prev] as [number, number, number, number];
+                                                            next[i] = val;
+                                                            return next;
+                                                        });
+                                                    }}
+                                                    className="w-full bg-black/40 border border-[#5d8aa8]/30 rounded-xl px-3 py-3 text-white font-black text-center text-lg"
+                                                />
+                                                <div className="text-[8px] text-center font-bold text-gray-600">
+                                                    {tranches[i] > 0 ? `GN ${startRound}–${endRound}` : '—'}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Validation bar */}
+                                {(() => {
+                                    const total = tranches.reduce((a, b) => a + b, 0);
+                                    const ok = total === newDuration && tranches.every(t => t > 0);
+                                    const diff = total - newDuration;
+                                    return (
+                                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${
+                                            ok
+                                                ? 'bg-green-900/20 border-green-500/30 text-green-400'
+                                                : 'bg-red-900/20 border-red-500/30 text-red-400'
+                                        }`}>
+                                            {ok ? (
+                                                <span className="text-[9px] font-black uppercase tracking-wider">✅ Distribuzione valida — {newDuration} giornate totali</span>
+                                            ) : (
+                                                <>
+                                                    <AlertTriangle size={12} />
+                                                    <span className="text-[9px] font-black uppercase tracking-wider">
+                                                        Totale: {total} / {newDuration} — {diff > 0 ? `${diff} di troppo` : `mancano ${Math.abs(diff)}`}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
                     </div>
 
                     {/* Prize Distribution Selector */}

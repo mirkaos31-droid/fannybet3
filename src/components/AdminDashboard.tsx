@@ -195,7 +195,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                         <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/10 w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth">
                             {[
                                 { id: 'MATCHDAY', label: 'Giornate', icon: '📅' },
-                                { id: 'LEGA', label: 'FB Lega', icon: '🏆' },
+                                { id: 'LEGA', label: 'Fanta 1X2', icon: '🏆' },
                                 { id: 'SURVIVAL', label: 'Survival', icon: '☠️' },
                                 { id: 'USERS', label: 'Utenti', icon: '👥' },
                                 { id: 'SYSTEM', label: 'System', icon: '⚙️' }

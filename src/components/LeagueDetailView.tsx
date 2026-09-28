@@ -175,7 +175,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                     await supabase.from('notifications').insert([{
                         user_id: user.id,
                         title: '🏁 Pronostici Lega Inviati',
-                        message: `Hai salvato i tuoi 10 pronostici per la FB Lega. In bocca al lupo!`,
+                        message: `Hai salvato i tuoi 10 pronostici per il Fanta 1X2. In bocca al lupo!`,
                         type: 'success'
                     }]);
                 }
@@ -243,13 +243,13 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <div className="flex items-center justify-between mb-6">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 text-gray-500 hover:text-[#5d8aa8] transition-colors group"
+                    className="flex items-center gap-2 text-gray-500 hover:text-[#bfff00] transition-colors group"
                 >
                     <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                     <span className="font-black uppercase text-[10px] tracking-[0.2em] italic">Circuito Leghe</span>
                 </button>
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#5d8aa8]/10 border border-[#5d8aa8]/20 rounded-full">
-                    <span className="text-[#5d8aa8] text-[9px] font-black uppercase tracking-widest">
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#bfff00]/10 border border-[#bfff00]/20 rounded-full">
+                    <span className="text-[#bfff00] text-[9px] font-black uppercase tracking-widest">
                         Round {league.current_round + 1} / {league.duration_matchdays}
                     </span>
                 </div>
@@ -259,12 +259,12 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <div className="glass-card card-lega-alieno card-scudetto-active p-8 md:p-12 border-none overflow-hidden relative mb-8">
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-1 bg-[#5d8aa8] rounded-full"></div>
+                        <div className="w-10 h-1 bg-[#bfff00] rounded-full"></div>
                         <span className="text-gray-400 font-black uppercase text-[10px] tracking-[0.4em]">Campionato Ufficiale</span>
-                        <div className="w-10 h-1 bg-[#5d8aa8] rounded-full"></div>
+                        <div className="w-10 h-1 bg-[#bfff00] rounded-full"></div>
                     </div>
 
-                    <h2 className="text-6xl md:text-[6.5rem] font-black italic text-white uppercase tracking-tighter mb-8 leading-none border-b-[10px] border-[#5d8aa8] pb-6 px-6 drop-shadow-2xl">
+                    <h2 className="text-6xl md:text-[6.5rem] font-black italic text-white uppercase tracking-tighter mb-8 leading-none border-b-[10px] border-[#bfff00] pb-6 px-6 drop-shadow-2xl">
                         {league.name}
                     </h2>
 
@@ -291,10 +291,10 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             {/* 1. HORIZONTAL RULES BAR (Thin, under header) */}
             <button
                 onClick={() => updateModal('RULES')}
-                className="w-full mb-4 group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#1a2c38] border border-white/10 transition-all duration-300"
+                className="w-full mb-4 group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#152415] border border-white/10 transition-all duration-300"
             >
                 <div className="flex items-center gap-3">
-                    <Info size={16} className="text-[#5d8aa8]" />
+                    <Info size={16} className="text-[#bfff00]" />
                     <span className="text-white font-black italic uppercase text-xs tracking-wider">Regolamento della Lega</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -319,13 +319,12 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                     <div className="technical-corner corner-br"></div>
 
                     <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <ClipboardCheck size={160} className="text-[#5d8aa8]" />
+                        <ClipboardCheck size={160} className="text-[#bfff00]" />
                     </div>
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-lg transition-colors ${filledPicksCount === 10 ? 'bg-[#bfff00]/20' : 'bg-[#5d8aa8]/20'
-                                }`}>
-                                <ClipboardCheck size={20} className={filledPicksCount === 10 ? 'text-[#bfff00]' : 'text-[#5d8aa8]'} />
+                            <div className="p-2.5 rounded-lg transition-colors bg-[#bfff00]/15">
+                                <ClipboardCheck size={20} className="text-[#bfff00]" />
                             </div>
                             <div className="text-[10px] md:text-xs font-black text-white px-3 py-1 bg-black/60 rounded-full border border-white/10">
                                 {filledPicksCount}/10
@@ -378,7 +377,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                     <div className="technical-corner corner-br"></div>
 
                     <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Lock size={160} className="text-[#5d8aa8]" />
+                        <Lock size={160} className="text-[#bfff00]" />
                     </div>
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">

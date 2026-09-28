@@ -49,7 +49,7 @@ export const HomeCardsGrid: React.FC<HomeCardsGridProps> = ({ setView, survivalS
       />
 
       <HomeCard
-        title="FB LEGA"
+        title="FANTA 1X2"
         subtitle="scopri la novità"
         onClick={() => setView('FB_LEGA')}
         className="card-lega-alieno"

@@ -586,23 +586,22 @@
   }
 
   .card-lega-alieno {
-    border: 3px solid rgba(93, 138, 168, 0.95) !important;
-    background: linear-gradient(135deg, rgba(30, 60, 80, 0.2) 0%, rgba(5, 5, 8, 0.9) 100%) !important;
-    box-shadow: 0 0 25px rgba(93, 138, 168, 0.4), inset 0 0 12px rgba(93, 138, 168, 0.2), 0 0 50px rgba(93, 138, 168, 0.2) !important;
+    border: 3px solid rgba(191, 255, 0, 0.9) !important;
+    box-shadow: 0 0 25px rgba(191, 255, 0, 0.4), inset 0 0 12px rgba(191, 255, 0, 0.2), 0 0 50px rgba(191, 255, 0, 0.2) !important;
   }
 
   .card-lega-alieno::before {
-    background: #2c5a78 !important;
+    background: #bfff00 !important;
     opacity: 0.15 !important;
     filter: blur(40px);
   }
 
   .card-lega-alieno:hover {
-    border-color: rgba(93, 138, 168, 1) !important;
-    background: linear-gradient(135deg, rgba(44, 90, 120, 0.3) 0%, rgba(10, 10, 12, 0.9) 100%) !important;
+    border-color: rgba(191, 255, 0, 1) !important;
     box-shadow:
-      0 0 60px rgba(44, 90, 120, 0.4),
-      inset 0 0 30px rgba(44, 90, 120, 0.2);
+      0 0 40px rgba(191, 255, 0, 0.7),
+      inset 0 0 20px rgba(191, 255, 0, 0.4),
+      0 0 80px rgba(191, 255, 0, 0.3) !important;
   }
 
   .card-scudetto-active {
@@ -1309,13 +1308,16 @@
 }
 
 .pot-badge-lega {
-  border: 1px solid rgba(93, 138, 168, 0.3) !important;
-  box-shadow: 0 0 15px rgba(93, 138, 168, 0.1), inset 0 0 8px rgba(93, 138, 168, 0.03) !important;
+  border: 1px solid rgba(191, 255, 0, 0.3) !important;
+  box-shadow: 0 0 15px rgba(191, 255, 0, 0.08), inset 0 0 8px rgba(191, 255, 0, 0.03) !important;
 }
 .pot-badge-lega:hover {
-  border-color: rgba(93, 138, 168, 0.75) !important;
-  box-shadow: 0 0 25px rgba(93, 138, 168, 0.25), inset 0 0 12px rgba(93, 138, 168, 0.1) !important;
+  border-color: rgba(191, 255, 0, 0.75) !important;
+  box-shadow: 0 0 25px rgba(191, 255, 0, 0.2), inset 0 0 12px rgba(191, 255, 0, 0.08) !important;
 }
 .glow-sky {
-  text-shadow: 0 0 10px rgba(93, 138, 168, 0.9);
+  text-shadow: 0 0 10px rgba(191, 255, 0, 0.85);
+}
+.glow-green {
+  text-shadow: 0 0 10px rgba(191, 255, 0, 0.85);
 }

@@ -152,6 +152,19 @@ export const fbLegaService = {
         return data ? data.predictions : null;
     },
 
+    // Rileva quante giornate di Serie A 2026-27 sono già archiviate
+    // Filtra per deadline >= 2026-08-01 per escludere stagioni precedenti
+    async getCompletedMatchdaysCount(): Promise<number> {
+        const SEASON_START = '2026-08-01T00:00:00Z';
+        const { count, error } = await supabase
+            .from('matchdays')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'ARCHIVED')
+            .gte('deadline', SEASON_START);
+        if (error) throw error;
+        return count ?? 0;
+    },
+
     // Admin Methods
     async createLeague(config: {
         name: string;
