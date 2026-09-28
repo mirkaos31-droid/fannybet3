@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import type { FBLeague, FBLeagueParticipant, FBLeaguePick } from '../types';
+import type { FBLeague, FBLeagueParticipant, FBLeaguePick, ScoringRules } from '../types';
 
 export const fbLegaService = {
     async getLeagues(): Promise<FBLeague[]> {
@@ -170,7 +170,7 @@ export const fbLegaService = {
         name: string;
         entry_fee: number;
         duration: number;
-        scoring_rules: Record<string, number | boolean>;
+        scoring_rules: ScoringRules;
         prize_dist: number[];
     }) {
         const { data, error } = await supabase.rpc('create_fb_league', {

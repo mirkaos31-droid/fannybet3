@@ -99,6 +99,9 @@ export interface SurvivalSeason {
     };
 }
 
+export type ScoringRuleValue = string | number | boolean | number[] | undefined;
+export type ScoringRules = Record<string, ScoringRuleValue>;
+
 export interface FBLeague {
     id: number;
     name: string;
@@ -107,7 +110,7 @@ export interface FBLeague {
     duration_matchdays: number;
     current_round: number;
     start_matchday_id: number;
-    scoring_rules: Record<string, number | boolean>;
+    scoring_rules: ScoringRules;
     prize_distribution: number[];
     status: 'OPEN' | 'ACTIVE' | 'COMPLETED';
     prize_pool: number;
