@@ -542,6 +542,11 @@ export const FBLegaAdminPanel = () => {
                                             <span className="text-[9px] font-bold uppercase text-gray-500">Round: <span className="text-white">{league.current_round}/{league.duration_matchdays}</span></span>
                                             <span className="text-[9px] font-bold uppercase text-gray-500">Pool: <span className="text-white">{league.prize_pool} FTK</span></span>
                                             <span className="text-[9px] font-bold uppercase text-gray-500">Premi: <span className="text-[#dfff00]">{PRIZE_PRESETS[getPresetKeyFromDist(league.prize_distribution)]?.label || 'Custom'}</span></span>
+                                            {league.scoring_rules?.payment_mode === 'installments' && (
+                                                <span className="text-[9px] font-bold uppercase text-[#5d8aa8] border border-[#5d8aa8]/30 px-1.5 py-0.5 rounded-full bg-[#5d8aa8]/10">
+                                                    💳 4 Rate ({league.entry_fee} FTK)
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

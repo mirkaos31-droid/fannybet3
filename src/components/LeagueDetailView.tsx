@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight, Lock } from 'lucide-react';
+import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight, Lock, CreditCard } from 'lucide-react';
 import { gameService } from '../services/gameService';
 import type { FBLeague, FBLeagueParticipant, Matchday, User } from '../types';
 import { toast } from 'sonner';
@@ -76,11 +76,19 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             setMatchday(mdData);
             setUser(currentUser);
 
-            // Fetch LIVE leaderboard instead of static participants
+            // Fetch LIVE leaderboard and merge with participants installments_paid
             const liveParticipants = await gameService.getLeagueLeaderboardLive(leagueId);
+            const participantsWithInstallments = liveParticipants.map(lp => {
+                const raw = details.participants.find(p => p.user_id === lp.user_id);
+                return {
+                    ...lp,
+                    installments_paid: raw?.installments_paid ?? 1,
+                    avatar_url: raw?.avatar_url
+                };
+            });
             setData({
                 league: details.league,
-                participants: liveParticipants
+                participants: participantsWithInstallments
             });
 
             // Fetch all matchdays for this league to determine the correct active round matchday details
@@ -193,6 +201,28 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
         }
     };
 
+    const [payingInstallment, setPayingInstallment] = useState(false);
+
+    const handlePayInstallment = async () => {
+        if (!user || !data) return;
+        try {
+            setPayingInstallment(true);
+            const result = await gameService.payInstallment(leagueId);
+            if (result.success) {
+                toast.success(result.message);
+                await loadLeagueData();
+                window.dispatchEvent(new Event('tokens-updated'));
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Errore durante il pagamento della rata');
+        } finally {
+            setPayingInstallment(false);
+        }
+    };
+
     const handleShowHistory = async (mdId: number, roundNum: number) => {
         try {
             setLoading(true);
@@ -206,7 +236,14 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 return;
             }
 
-            setHistoricalParticipants(histParticipants);
+            const mergedHist = histParticipants.map(hp => {
+                const raw = data?.participants.find(p => p.user_id === hp.user_id);
+                return {
+                    ...hp,
+                    avatar_url: raw?.avatar_url
+                };
+            });
+            setHistoricalParticipants(mergedHist);
             setSelectedHistoryMd({ matchday: fullMatchday, round: roundNum });
             updateModal('HISTORICAL_LEADERBOARD');
         } catch (err) {
@@ -233,6 +270,25 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
     const isParticipant = participants.some(p => p.user_id === user?.id);
     const bonusX = (league.scoring_rules as Record<string, number>)?.X || 1;
+
+    // Installments mode helpers
+    const isInstallmentsMode = league.scoring_rules?.payment_mode === 'installments';
+    const tranches = ((league.scoring_rules?.payment_tranches as number[]) || [0, 0, 0, 0]);
+    const myParticipant = participants.find(p => p.user_id === user?.id);
+    const myInstallmentsPaid = myParticipant?.installments_paid ?? 1;
+    const currentRoundNum = league.current_round + 1;
+
+    const getPhaseForRound = (roundNum: number): number => {
+        if (!tranches || tranches.length !== 4) return 1;
+        const t1 = tranches[0] || 0;
+        const t2 = tranches[1] || 0;
+        const t3 = tranches[2] || 0;
+        if (roundNum <= t1) return 1;
+        if (roundNum <= t1 + t2) return 2;
+        if (roundNum <= t1 + t2 + t3) return 3;
+        return 4;
+    };
+    const currentPhase = getPhaseForRound(currentRoundNum);
 
     // Helper for pick count
     const filledPicksCount = myPicks.filter(p => p !== '').length;
@@ -287,6 +343,92 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                     </div>
                 </div>
             </div>
+
+            {/* Installments Plan Card (if enabled) */}
+            {isInstallmentsMode && isParticipant && (
+                <div className="mb-6 p-6 rounded-3xl bg-[#111115] border border-white/10 overflow-hidden relative">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-[#5d8aa8]/20 border border-[#5d8aa8]/40 flex items-center justify-center text-[#5d8aa8]">
+                                <CreditCard size={20} />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h4 className="text-white font-black italic uppercase text-sm tracking-wider">
+                                        Piano Rate Campionato
+                                    </h4>
+                                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#5d8aa8]/20 text-[#5d8aa8] border border-[#5d8aa8]/30">
+                                        4 Rate da {league.entry_fee} FTK
+                                    </span>
+                                </div>
+                                <p className="text-gray-400 text-[10px] font-bold">
+                                    Hai saldato <span className="text-white font-black">{myInstallmentsPaid} su 4</span> rate. Fase in corso: <span className="text-[#bfff00] font-black">Fase {currentPhase}</span>.
+                                </p>
+                            </div>
+                        </div>
+
+                        {myInstallmentsPaid < 4 && (
+                            <button
+                                onClick={handlePayInstallment}
+                                disabled={payingInstallment}
+                                className="px-5 py-2.5 bg-[#5d8aa8] hover:bg-[#6fa0c2] active:scale-95 text-white font-black uppercase text-[10px] tracking-wider rounded-xl transition-all shadow-[0_0_20px_rgba(93,138,168,0.3)] flex items-center gap-2 self-start md:self-auto disabled:opacity-50"
+                            >
+                                {payingInstallment ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                    <CreditCard size={14} />
+                                )}
+                                <span>Salda Rata {myInstallmentsPaid + 1} ({league.entry_fee} FTK)</span>
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 border-t border-white/5">
+                        {([1, 2, 3, 4] as const).map(phaseNum => {
+                            const isPaid = myInstallmentsPaid >= phaseNum;
+                            const isCurrent = currentPhase === phaseNum;
+                            let startR = 1;
+                            for (let i = 0; i < phaseNum - 1; i++) startR += (tranches[i] || 0);
+                            const endR = startR + (tranches[phaseNum - 1] || 0) - 1;
+
+                            return (
+                                <div
+                                    key={phaseNum}
+                                    className={`p-3 rounded-2xl border transition-all ${
+                                        isPaid
+                                            ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                                            : isCurrent
+                                            ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
+                                            : 'bg-white/[0.02] border-white/5 text-gray-500'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-[10px] font-black uppercase tracking-wider">
+                                            Fase {phaseNum}
+                                        </span>
+                                        {isPaid ? (
+                                            <span className="text-[8px] font-black uppercase bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full border border-green-500/30">
+                                                ✓ Saldata
+                                            </span>
+                                        ) : isCurrent ? (
+                                            <span className="text-[8px] font-black uppercase bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full border border-amber-500/30">
+                                                In Corso
+                                            </span>
+                                        ) : (
+                                            <span className="text-[8px] font-black uppercase opacity-60">
+                                                Rata {phaseNum}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="text-[9px] font-bold text-gray-400">
+                                        {tranches[phaseNum - 1] > 0 ? `GN ${startR}–${endR}` : '—'}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* 1. HORIZONTAL RULES BAR (Thin, under header) */}
             <button
@@ -444,6 +586,13 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 onSecretMatchChange={(idx) => setMySecretMatch(idx)}
                 onSave={handleSavePicks}
                 saving={saving}
+                installmentWarning={isInstallmentsMode && isParticipant ? {
+                    requiredInstallment: currentPhase,
+                    fee: league.entry_fee,
+                    isPaid: myInstallmentsPaid >= currentPhase,
+                    onPay: handlePayInstallment,
+                    isPaying: payingInstallment
+                } : undefined}
             />
 
             {/* 3. RULES MODAL */}

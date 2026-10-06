@@ -128,6 +128,9 @@ export interface FBLeagueParticipant {
     live_points?: number;
     active_bonuses?: string[];
     accumulated_points?: number;
+    installments_paid?: number;
+    avatar_url?: string;
+    avatarUrl?: string;
 }
 
 export interface FBLeaguePick {

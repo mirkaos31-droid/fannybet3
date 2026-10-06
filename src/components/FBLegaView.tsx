@@ -128,6 +128,7 @@ export const FBLegaView: React.FC = () => {
             if (result.success) {
                 toast.success(result.message);
                 loadData();
+                window.dispatchEvent(new Event('tokens-updated'));
             } else {
                 toast.error(result.message);
             }
@@ -423,11 +424,18 @@ export const FBLegaView: React.FC = () => {
                                         <Shield size={24} className="text-[#bfff00]" />
                                     </div>
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">Entry</span>
+                                        <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
+                                            {league.scoring_rules?.payment_mode === 'installments' ? 'Rata' : 'Entry'}
+                                        </span>
                                         <div className="flex items-center gap-1 text-[#bfff00] font-black italic">
                                             <Coins size={14} />
                                             <span>{league.entry_fee} FTK</span>
                                         </div>
+                                        {league.scoring_rules?.payment_mode === 'installments' && (
+                                            <span className="text-[8px] font-black text-[#5d8aa8] uppercase tracking-wider">
+                                                4 Rate
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 

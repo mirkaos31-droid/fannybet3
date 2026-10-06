@@ -12,6 +12,13 @@ interface PredictionsModalProps {
     onSecretMatchChange?: (index: number | null) => void;
     onSave: () => void;
     saving: boolean;
+    installmentWarning?: {
+        requiredInstallment: number;
+        fee: number;
+        isPaid: boolean;
+        onPay: () => void;
+        isPaying: boolean;
+    };
 }
 
 export const PredictionsModal: React.FC<PredictionsModalProps> = ({
@@ -24,6 +31,7 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
     onSecretMatchChange,
     onSave,
     saving,
+    installmentWarning,
 }) => {
     useEffect(() => {
         const handleVoice = (e: any) => {
@@ -164,9 +172,31 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
 
                 {/* Fixed Footer for Save Button (Mobile Friendly) */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/95 to-transparent pt-10 md:relative md:p-0 md:bg-none md:mt-8">
+                    {installmentWarning && !installmentWarning.isPaid && (
+                        <div className="mb-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in">
+                            <div className="flex items-center gap-2 text-amber-400">
+                                <span className="text-base">⚠️</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider">
+                                    Rata {installmentWarning.requiredInstallment} richiesta ({installmentWarning.fee} FTK)
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={installmentWarning.onPay}
+                                disabled={installmentWarning.isPaying}
+                                className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-black uppercase text-[10px] tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center justify-center gap-2 active:scale-95"
+                            >
+                                {installmentWarning.isPaying ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                ) : null}
+                                <span>Salda Rata {installmentWarning.requiredInstallment}</span>
+                            </button>
+                        </div>
+                    )}
+
                     <button
                         onClick={onSave}
-                        disabled={saving}
+                        disabled={saving || (installmentWarning ? !installmentWarning.isPaid : false)}
                         className="w-full py-5 bg-[#5d8aa8] hover:bg-[#6c9cb9] disabled:opacity-50 text-white font-black uppercase tracking-[0.2em] rounded-[1.5rem] shadow-[0_0_30px_rgba(93,138,168,0.3)] transition-all flex items-center justify-center gap-2 group transform active:scale-[0.98]"
                     >
                         {saving ? (
@@ -174,7 +204,7 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                         ) : (
                             <Save size={20} className="group-hover:translate-y-[-2px] transition-transform" />
                         )}
-                        <span>{saving ? 'Registrazione...' : 'Conferma Schedina'}</span>
+                        <span>{saving ? 'Registrazione...' : (installmentWarning && !installmentWarning.isPaid ? 'Salda Rata per Confermare' : 'Conferma Schedina')}</span>
                     </button>
                     {/* Progress Indicator */}
                     <div className="mt-4 flex justify-between gap-1 h-1 px-4">

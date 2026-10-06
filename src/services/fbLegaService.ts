@@ -51,7 +51,7 @@ export const fbLegaService = {
             .from('fb_league_participants')
             .select(`
                 *,
-                profiles:user_id (username)
+                profiles:user_id (username, avatar_url)
             `)
             .eq('league_id', leagueId)
             .order('total_points', { ascending: false });
@@ -60,10 +60,14 @@ export const fbLegaService = {
 
         return {
             league,
-            participants: participants.map(p => ({
-                ...p,
-                username: (p.profiles as unknown as { username: string })?.username
-            })) as FBLeagueParticipant[]
+            participants: participants.map(p => {
+                const prof = p.profiles as unknown as { username?: string; avatar_url?: string };
+                return {
+                    ...p,
+                    username: prof?.username,
+                    avatar_url: prof?.avatar_url
+                };
+            }) as FBLeagueParticipant[]
         };
     },
 
@@ -137,6 +141,14 @@ export const fbLegaService = {
 
         if (error) throw error;
         return data || [];
+    },
+
+    async payInstallment(leagueId: number): Promise<{ success: boolean; message: string; installments_paid?: number; next_installment?: number }> {
+        const { data, error } = await supabase.rpc('pay_fb_league_installment', {
+            p_league_id: leagueId
+        });
+        if (error) throw error;
+        return data as { success: boolean; message: string; installments_paid?: number; next_installment?: number };
     },
 
     async getUserPicks(leagueId: number, matchdayId: number, targetUserId: string): Promise<string[] | null> {
