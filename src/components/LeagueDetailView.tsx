@@ -450,7 +450,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 {/* LA SCHEDINA */}
                 <button
                     onClick={() => updateModal('PREDICTIONS')}
-                    className={`card-interstellar-action group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left ${filledPicksCount === 10
+                    className={`card-interstellar-action corners-acid group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left ${filledPicksCount === 10
                         ? 'border-[#bfff00]/30'
                         : 'border-white/5'
                         }`}
@@ -460,9 +460,12 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                     <div className="technical-corner corner-bl"></div>
                     <div className="technical-corner corner-br"></div>
 
-                    <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <ClipboardCheck size={160} className="text-[#bfff00]" />
-                    </div>
+                    {/* Background image */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-45 transition-opacity duration-300"
+                        style={{ backgroundImage: `url('/Schedina.png')` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">
                             <div className="p-2.5 rounded-lg transition-colors bg-[#bfff00]/15">
@@ -484,16 +487,19 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 {/* CLASSIFICA */}
                 <button
                     onClick={() => updateModal('LEADERBOARD')}
-                    className="card-interstellar-action group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left"
+                    className="card-interstellar-action corners-acid group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left"
                 >
                     <div className="technical-corner corner-tl"></div>
                     <div className="technical-corner corner-tr"></div>
                     <div className="technical-corner corner-bl"></div>
                     <div className="technical-corner corner-br"></div>
 
-                    <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Trophy size={160} className="text-[#bfff00]" />
-                    </div>
+                    {/* Background image */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-45 transition-opacity duration-300"
+                        style={{ backgroundImage: `url('/Classifica.png')` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">
                             <div className="p-2.5 bg-[#bfff00]/10 rounded-lg group-hover:bg-[#bfff00]/20 transition-colors">
@@ -511,16 +517,19 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 {/* ARCHIVIO */}
                 <button
                     onClick={() => updateModal('ARCHIVE_LIST')}
-                    className="card-interstellar-action group relative h-48 md:h-60 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left col-span-2 lg:col-span-1"
+                    className="card-interstellar-action corners-acid group relative h-48 md:h-60 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left col-span-2 lg:col-span-1"
                 >
                     <div className="technical-corner corner-tl"></div>
                     <div className="technical-corner corner-tr"></div>
                     <div className="technical-corner corner-bl"></div>
                     <div className="technical-corner corner-br"></div>
 
-                    <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Lock size={160} className="text-[#bfff00]" />
-                    </div>
+                    {/* Background image */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-45 transition-opacity duration-300"
+                        style={{ backgroundImage: `url('/Archivio.png')` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="flex items-center justify-between">
                             <div className="p-2.5 bg-[#bfff00]/10 rounded-lg group-hover:bg-[#bfff00]/20 transition-colors border border-[#bfff00]/30 shadow-[0_0_15px_rgba(191,255,0,0.2)]">
