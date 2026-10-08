@@ -142,4 +142,5 @@ export interface FBLeaguePick {
     secret_match_index?: number | null;
     points_earned: number | null;
     created_at: string;
+    updated_at?: string;
 }

@@ -242,7 +242,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                 {/* Header Action / Close */}
                 <button
                     onClick={onClose}
-                    className="absolute top-5 right-5 sm:top-6 sm:right-6 p-2 bg-[#00d4ff]/10 hover:bg-[#00d4ff]/25 border border-[#00d4ff]/40 transition-colors group"
+                    aria-label={showBackButton ? 'Torna indietro' : 'Chiudi'}
+                    className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2.5 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-[#00d4ff]/10 hover:bg-[#00d4ff]/25 active:bg-[#00d4ff]/40 border border-[#00d4ff]/40 transition-all rounded-xl group active:scale-95 z-20"
                 >
                     {showBackButton ? (
                         <ArrowLeft size={20} className="text-[#00f0ff] group-hover:-translate-x-1 transition-transform" />

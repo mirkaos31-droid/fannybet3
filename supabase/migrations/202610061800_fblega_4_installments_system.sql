@@ -9,6 +9,9 @@
 ALTER TABLE public.fb_league_participants 
 ADD COLUMN IF NOT EXISTS installments_paid INTEGER DEFAULT 1;
 
+ALTER TABLE public.fb_league_picks 
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+
 -- Backfill existing participants
 UPDATE public.fb_league_participants p
 SET installments_paid = CASE 

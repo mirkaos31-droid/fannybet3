@@ -1,4 +1,4 @@
-import { X, Save, Loader2, Star } from 'lucide-react';
+import { X, Save, Loader2, Star, ArrowLeft } from 'lucide-react';
 import type { Matchday } from '../types';
 import { useEffect } from 'react';
 
@@ -61,31 +61,43 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4">
             <div className="absolute inset-0 bg-black/95 md:bg-black/90 backdrop-blur-xl" onClick={onClose}></div>
-            <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0c] md:border border-white/10 md:rounded-[2.5rem] h-full md:h-auto md:max-h-[90vh] flex flex-col p-6 md:p-10 animate-in slide-in-from-bottom duration-500">
+            <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0c] md:border border-white/10 md:rounded-[2.5rem] h-full md:h-auto md:max-h-[90vh] flex flex-col p-4 sm:p-6 md:p-10 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-500">
 
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="w-2 h-2 bg-[#5d8aa8] rounded-full animate-pulse"></span>
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#5d8aa8]">Input Pronostici</span>
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-black italic uppercase text-white tracking-tighter">
-                            Round {matchday.id} <span className="text-gray-600 block md:inline text-sm md:text-2xl">— 10 Match</span>
-                        </h3>
-                    </div>
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8 shrink-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        {/* Mobile & Desktop Back Arrow */}
                         <button
                             onClick={onClose}
-                            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-colors"
+                            aria-label="Torna indietro"
+                            className="p-2.5 sm:p-3 bg-white/5 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl transition-all flex items-center gap-1.5 group text-gray-300 hover:text-white shrink-0 min-w-[44px] min-h-[44px] justify-center active:scale-95"
                         >
-                            <X size={24} className="text-gray-400" />
+                            <ArrowLeft size={20} className="text-[#5d8aa8] group-hover:-translate-x-1 transition-transform" />
+                            <span className="text-[11px] font-black uppercase tracking-wider hidden sm:inline">Indietro</span>
+                        </button>
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+                                <span className="w-2 h-2 bg-[#5d8aa8] rounded-full animate-pulse"></span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#5d8aa8]">Input Pronostici</span>
+                            </div>
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-black italic uppercase text-white tracking-tighter truncate leading-tight">
+                                Round {matchday.id} <span className="text-gray-600 hidden sm:inline text-sm md:text-2xl">— 10 Match</span>
+                            </h3>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={onClose}
+                            aria-label="Chiudi"
+                            className="p-2.5 sm:p-3 bg-white/5 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95"
+                        >
+                            <X size={22} className="text-gray-400 hover:text-white" />
                         </button>
                     </div>
                 </div>
 
                 {/* Match List */}
-                <div className="overflow-y-auto pr-2 space-y-4 custom-scrollbar flex-1 pb-24 md:pb-4">
+                <div className="overflow-y-auto pr-2 space-y-4 custom-scrollbar flex-1 pb-32 sm:pb-36 md:pb-4">
                     {matchday.matches.slice(0, 10).map((match, idx) => (
                         <div
                             key={match.id}
@@ -170,8 +182,8 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                     ))}
                 </div>
 
-                {/* Fixed Footer for Save Button (Mobile Friendly) */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/95 to-transparent pt-10 md:relative md:p-0 md:bg-none md:mt-8">
+                {/* Fixed Footer for Save Button (Mobile Friendly & Thumb Accessible) */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black via-black/95 to-transparent pt-8 sm:pt-10 pb-[max(1rem,env(safe-area-inset-bottom))] md:relative md:p-0 md:bg-none md:mt-8 shrink-0">
                     {installmentWarning && !installmentWarning.isPaid && (
                         <div className="mb-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in">
                             <div className="flex items-center gap-2 text-amber-400">
@@ -194,20 +206,34 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                         </div>
                     )}
 
-                    <button
-                        onClick={onSave}
-                        disabled={saving || (installmentWarning ? !installmentWarning.isPaid : false)}
-                        className="w-full py-5 bg-[#5d8aa8] hover:bg-[#6c9cb9] disabled:opacity-50 text-white font-black uppercase tracking-[0.2em] rounded-[1.5rem] shadow-[0_0_30px_rgba(93,138,168,0.3)] transition-all flex items-center justify-center gap-2 group transform active:scale-[0.98]"
-                    >
-                        {saving ? (
-                            <Loader2 className="animate-spin" size={20} />
-                        ) : (
-                            <Save size={20} className="group-hover:translate-y-[-2px] transition-transform" />
-                        )}
-                        <span>{saving ? 'Registrazione...' : (installmentWarning && !installmentWarning.isPaid ? 'Salda Rata per Confermare' : 'Conferma Schedina')}</span>
-                    </button>
+                    <div className="flex items-center gap-2.5 sm:gap-3 w-full">
+                        {/* Highly accessible thumb-reachable Back Button on mobile */}
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            aria-label="Torna indietro"
+                            className="h-14 sm:h-[60px] px-4 sm:px-5 bg-white/10 hover:bg-white/15 active:bg-white/25 border border-white/15 rounded-[1.25rem] sm:rounded-[1.5rem] flex items-center justify-center gap-2 text-white font-black uppercase text-xs sm:text-sm tracking-wider transition-all active:scale-95 shrink-0 shadow-lg group"
+                        >
+                            <ArrowLeft size={20} className="text-[#5d8aa8] group-hover:-translate-x-1 transition-transform" />
+                            <span className="hidden xs:inline">Indietro</span>
+                        </button>
+
+                        <button
+                            onClick={onSave}
+                            disabled={saving || (installmentWarning ? !installmentWarning.isPaid : false)}
+                            className="flex-1 h-14 sm:h-[60px] bg-[#5d8aa8] hover:bg-[#6c9cb9] disabled:opacity-50 text-white font-black uppercase tracking-[0.2em] rounded-[1.25rem] sm:rounded-[1.5rem] shadow-[0_0_30px_rgba(93,138,168,0.3)] transition-all flex items-center justify-center gap-2 group transform active:scale-[0.98] text-xs sm:text-base px-3"
+                        >
+                            {saving ? (
+                                <Loader2 className="animate-spin" size={20} />
+                            ) : (
+                                <Save size={20} className="group-hover:translate-y-[-2px] transition-transform" />
+                            )}
+                            <span className="truncate">{saving ? 'Registrazione...' : (installmentWarning && !installmentWarning.isPaid ? 'Salda Rata per Confermare' : 'Conferma Schedina')}</span>
+                        </button>
+                    </div>
+
                     {/* Progress Indicator */}
-                    <div className="mt-4 flex justify-between gap-1 h-1 px-4">
+                    <div className="mt-3 sm:mt-4 flex justify-between gap-1 h-1 px-2 sm:px-4">
                         {myPicks.map((p, i) => (
                             <div
                                 key={i}
