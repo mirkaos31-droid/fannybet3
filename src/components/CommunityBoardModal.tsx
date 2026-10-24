@@ -454,12 +454,15 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
     });
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-            {/* Modal Container */}
-            <div className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-3xl border border-white/15 bg-[#040810]/98 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+            {/* Modal Container — full-screen on mobile for reachable header */}
+            <div className="relative w-full max-w-3xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col rounded-none sm:rounded-3xl border-0 sm:border border-white/15 bg-[#040810] sm:bg-[#040810]/98 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden">
 
-                {/* Header */}
-                <div className="relative flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-gradient-to-r from-brand-teal/15 via-[#040810] to-brand-purple-vibrant/15">
+                {/* Header — sticky with safe-area padding for mobile notch/status bar */}
+                <div
+                    className="sticky top-0 z-10 relative flex items-center justify-between px-4 sm:px-6 pb-4 sm:pb-6 border-b border-white/10 bg-gradient-to-r from-brand-teal/15 via-[#040810] to-brand-purple-vibrant/15"
+                    style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}
+                >
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-teal to-brand-purple-vibrant shadow-[0_0_20px_rgba(0,243,255,0.3)]">
                             <Flame className="h-6 w-6 text-white" />
@@ -479,21 +482,21 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 sm:gap-2">
                         <button
                             type="button"
                             onClick={() => loadPosts(false)}
                             title="Aggiorna bacheca"
-                            className="rounded-xl border border-white/10 bg-white/5 p-2 text-gray-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
+                            className="rounded-xl border border-white/10 bg-white/5 p-3 sm:p-2 text-gray-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
                         >
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-5 h-5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="rounded-xl border border-white/10 bg-white/5 p-2 text-gray-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
+                            className="rounded-xl border border-white/10 bg-white/5 p-3 sm:p-2 text-gray-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
                         >
-                            <X className="w-5 h-5" />
+                            <X className="w-6 h-6 sm:w-5 sm:h-5" />
                         </button>
                     </div>
                 </div>
