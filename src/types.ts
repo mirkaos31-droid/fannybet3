@@ -144,3 +144,46 @@ export interface FBLeaguePick {
     created_at: string;
     updated_at?: string;
 }
+
+export type CommunityPostType = 
+    | 'BOT_RESULT' 
+    | 'BOT_LEADERBOARD' 
+    | 'BOT_DEADLINE' 
+    | 'BOT_ALERT' 
+    | 'USER_POST' 
+    | 'H2H_CHALLENGE';
+
+export interface CommunityComment {
+    id: string;
+    post_id: string;
+    user_id: string;
+    username: string;
+    avatar_url?: string;
+    content: string;
+    created_at: string;
+}
+
+export interface CommunityReaction {
+    id: string;
+    post_id: string;
+    user_id: string;
+    emoji: string;
+    created_at: string;
+}
+
+export interface CommunityPost {
+    id: string;
+    user_id?: string | null;
+    author_name: string;
+    author_avatar?: string;
+    is_bot: boolean;
+    type: CommunityPostType;
+    title?: string;
+    content: string;
+    metadata?: Record<string, any>;
+    pinned?: boolean;
+    created_at: string;
+    comments_count?: number;
+    reactions?: Record<string, number>; // emoji -> count, e.g. { '🔥': 3, '🤡': 1 }
+    user_reactions?: string[]; // emojis selected by current user
+}

@@ -4,13 +4,15 @@ import type { Matchday } from '../types';
 import { SurvivalAdminPanel } from './SurvivalAdminPanel';
 import { UserManagementPanel } from './UserManagementPanel';
 import { FBLegaAdminPanel } from './FBLegaAdminPanel';
-import { Star, Calendar } from 'lucide-react';
+import { Star, Calendar, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { SERIE_A_SCHEDULE_2026_2027 } from '../data/serieA2026_2027';
+import { communityFeedService } from '../services/communityFeedService';
+import type { CommunityPostType } from '../types';
 
 interface AdminDashboardProps {
     onToggleView?: () => void;
-    initialTab?: 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'LEGA';
+    initialTab?: 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'LEGA' | 'BOT';
 }
 
 const getArchivedRoundNumbers = (archivedMatchdays: Matchday[]): number[] => {
@@ -38,11 +40,17 @@ const getArchivedRoundNumbers = (archivedMatchdays: Matchday[]): number[] => {
 };
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, initialTab = 'MATCHDAY' }) => {
-    const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA' | 'BOT'>(initialTab);
     const [matchday, setMatchday] = useState<Matchday | null>(null);
     const [loading, setLoading] = useState(false);
     const [selectedRound, setSelectedRound] = useState<number>(1);
     const [archivedRounds, setArchivedRounds] = useState<number[]>([]);
+
+    // Bot broadcast state
+    const [botTitle, setBotTitle] = useState('');
+    const [botContent, setBotContent] = useState('');
+    const [botType, setBotType] = useState<CommunityPostType>('BOT_ALERT');
+    const [isPostingBot, setIsPostingBot] = useState(false);
 
     const loadArchivedRounds = React.useCallback(async () => {
         try {
@@ -196,16 +204,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             {[
                                 { id: 'MATCHDAY', label: 'Giornate', icon: '📅' },
                                 { id: 'LEGA', label: 'Fanta 1X2', icon: '🏆' },
+                                { id: 'BOT', label: 'FannyBot', icon: '🤖' },
                                 { id: 'SURVIVAL', label: 'Survival', icon: '☠️' },
                                 { id: 'USERS', label: 'Utenti', icon: '👥' },
                                 { id: 'SYSTEM', label: 'System', icon: '⚙️' }
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA')}
+                                    onClick={() => setActiveTab(tab.id as 'MATCHDAY' | 'SURVIVAL' | 'USERS' | 'SYSTEM' | 'LEGA' | 'BOT')}
                                     className={`flex-1 md:flex-none whitespace-nowrap px-3 md:px-5 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all
                                         ${activeTab === tab.id
-                                            ? tab.id === 'SYSTEM' ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-[#dfff00] text-black shadow-[0_0_15px_rgba(223,255,0,0.3)]'
+                                            ? tab.id === 'SYSTEM' ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' : tab.id === 'BOT' ? 'bg-cyan-400 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-[#dfff00] text-black shadow-[0_0_15px_rgba(223,255,0,0.3)]'
                                             : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                                 >
                                     <span className="mr-1.5">{tab.icon}</span> {tab.label}
@@ -514,6 +523,114 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'BOT' ? (
+                    <div className="bg-transparent rounded-[30px] p-6 md:p-10 border-2 border-cyan-400/30 relative overflow-hidden space-y-6">
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-300">Curva Control Room</span>
+                            <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter mt-1">Fai Parlare il FannyBot</h3>
+                            <p className="text-gray-400 text-xs">Invia un bollettino, uno sfottò o un annuncio ufficiale direttamente nella Curva a nome del Bot.</p>
+                        </div>
+
+                        {/* Quick Presets */}
+                        <div>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 block mb-2">Preset Rapidi:</span>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBotTitle('⏰ SCADENZA SCHEDINE VICINA!');
+                                        setBotContent('Attenzione Fannies: mancano poche ore al fischio d\'inizio! Chi non consegna la schedina si becca il Cucchiaio di Legno d\'ufficio. Correte a piazzare i pronostici! ⏳');
+                                        setBotType('BOT_DEADLINE');
+                                    }}
+                                    className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-gray-300 hover:text-cyan-300 hover:bg-white/10 transition"
+                                >
+                                    ⏳ Scadenza Schedine
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBotTitle('🚨 SORPASSO IN VETTA ALLA LEGA!');
+                                        setBotContent('Clamoroso ribaltone in classifica: il capolista perde la vetta! La tensione è alle stelle, chi resisterà fino alla fine? 🔥👑');
+                                        setBotType('BOT_LEADERBOARD');
+                                    }}
+                                    className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-gray-300 hover:text-cyan-300 hover:bg-white/10 transition"
+                                >
+                                    🚨 Annuncio Sorpasso
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBotTitle('💀 STRAGE NEL SURVIVAL!');
+                                        setBotContent('Le partite di questo weekend hanno fatto una strage: pioggia di eliminati nel Survival! Rimangono solo i veri veterani in gara. RIP per i caduti 🪦');
+                                        setBotType('BOT_ALERT');
+                                    }}
+                                    className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-gray-300 hover:text-cyan-300 hover:bg-white/10 transition"
+                                >
+                                    💀 Strage Survival
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBotTitle('🤡 CUCCHIAIO DI LEGNO DELLA SETTIMANA');
+                                        setBotContent('Abbiamo il vincitore del prestigioso premio "Gufata Suprema": punteggio minimo storico questa giornata! Un applauso per il coraggio 👏🍿');
+                                        setBotType('BOT_ALERT');
+                                    }}
+                                    className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-gray-300 hover:text-cyan-300 hover:bg-white/10 transition"
+                                >
+                                    🤡 Cucchiaio di Legno
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Input fields */}
+                        <div className="space-y-4 max-w-2xl">
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Titolo del Bollettino</label>
+                                <input
+                                    type="text"
+                                    value={botTitle}
+                                    onChange={(e) => setBotTitle(e.target.value)}
+                                    placeholder="Es: ATTACCO DEI GUFI SULLA SERIE A!"
+                                    className="w-full mt-1 bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white font-black text-sm outline-none focus:border-cyan-400"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Testo del Messaggio</label>
+                                <textarea
+                                    rows={4}
+                                    value={botContent}
+                                    onChange={(e) => setBotContent(e.target.value)}
+                                    placeholder="Scrivi qui il commento a caldo, la presa in giro o l'annuncio del Bot..."
+                                    className="w-full mt-1 bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-cyan-400"
+                                />
+                            </div>
+
+                            <button
+                                type="button"
+                                disabled={isPostingBot || !botContent.trim()}
+                                onClick={async () => {
+                                    setIsPostingBot(true);
+                                    try {
+                                        const res = await communityFeedService.createBotPost(botTitle, botContent, botType);
+                                        if (res.success) {
+                                            toast.success('Messaggio FannyBot pubblicato in Curva! 🤖🔥');
+                                            setBotTitle('');
+                                            setBotContent('');
+                                        } else {
+                                            toast.error('Errore durante la pubblicazione');
+                                        }
+                                    } finally {
+                                        setIsPostingBot(false);
+                                    }
+                                }}
+                                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-yellow-400 text-black font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] disabled:opacity-50 flex items-center gap-2"
+                            >
+                                <Sparkles size={16} />
+                                {isPostingBot ? 'Pubblicazione in corso...' : 'Lancia come FannyBot in Curva'}
+                            </button>
                         </div>
                     </div>
                 ) : activeTab === 'LEGA' ? (

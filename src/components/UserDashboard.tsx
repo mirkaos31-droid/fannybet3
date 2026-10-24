@@ -12,6 +12,8 @@ import { CardGallery } from './CardGallery';
 import { WorldCupView } from './WorldCupView';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 import { ErrorBoundary } from './ErrorBoundary';
+import { CommunityTicker } from './CommunityTicker';
+import { CommunityBoardModal } from './CommunityBoardModal';
 
 const SectionHeader: React.FC<{ title: string; subtitle?: string; color?: string }> = ({ title, subtitle, color = "border-white/10" }) => (
     <div className={`flex flex-col mb-4 md:mb-8 border-l-4 ${color} pl-4 md:pl-6 py-1 md:py-2`}>
@@ -46,6 +48,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
     const [showRegulations, setShowRegulations] = useState(false);
     const [showRequestTokens, setShowRequestTokens] = useState(false);
     const [showWorldCupRules, setShowWorldCupRules] = useState(false);
+    const [showCommunityBoard, setShowCommunityBoard] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isExploding, setIsExploding] = useState(false);
 
@@ -139,6 +142,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
             <RegulationsModal isOpen={showRegulations} onClose={() => setShowRegulations(false)} />
             <RequestTokensModal isOpen={showRequestTokens} onClose={() => setShowRequestTokens(false)} currentTokens={user?.tokens || 0} />
+            <CommunityBoardModal isOpen={showCommunityBoard} onClose={() => setShowCommunityBoard(false)} user={user} />
             {showWorldCupRules && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setShowWorldCupRules(false)}></div>
@@ -230,6 +234,12 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
                 {view === 'HOME' && (
                     <div className="max-w-5xl mx-auto w-full px-2 space-y-8 md:space-y-16">
+                        {/* WIDGET LA CURVA / BREAKING NEWS */}
+                        <CommunityTicker
+                            user={user}
+                            onOpenBoard={() => setShowCommunityBoard(true)}
+                        />
+
                         {/* SECTION 1: EVENTI SPECIALI - visible to all users */}
                         {showWorldCup && (
                             <div className="space-y-6">

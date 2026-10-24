@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight, Lock, CreditCard } from 'lucide-react';
+import { Trophy, ArrowLeft, Loader2, Info, ClipboardCheck, ChevronRight, Lock, CreditCard, Flame } from 'lucide-react';
 import { gameService } from '../services/gameService';
 import type { FBLeague, FBLeagueParticipant, Matchday, User } from '../types';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ import { LeaderboardModal } from './LeaderboardModal';
 import { PredictionsModal } from './PredictionsModal';
 import { LeagueRulesModal } from './LeagueRulesModal';
 import { LeagueArchiveModal } from './LeagueArchiveModal';
+import { CommunityBoardModal } from './CommunityBoardModal';
 import { supabase } from '../supabaseClient';
 import { useBonusNotifications } from '../hooks/useBonusNotifications';
 
@@ -33,6 +34,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
     const [selectedHistoryMd, setSelectedHistoryMd] = useState<{ matchday: Matchday; round: number } | null>(null);
 
     const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES' | 'HISTORICAL_LEADERBOARD' | 'ARCHIVE_LIST'>('NONE');
+    const [showCommunityBoard, setShowCommunityBoard] = useState(false);
 
     // [NEW] History Management for Modals
     useEffect(() => {
@@ -431,19 +433,37 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             )}
 
             {/* 1. HORIZONTAL RULES BAR (Thin, under header) */}
-            <button
-                onClick={() => updateModal('RULES')}
-                className="w-full mb-4 group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#152415] border border-white/10 transition-all duration-300"
-            >
-                <div className="flex items-center gap-3">
-                    <Info size={16} className="text-[#bfff00]" />
-                    <span className="text-white font-black italic uppercase text-xs tracking-wider">Regolamento della Lega</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-gray-600 text-[8px] font-black uppercase tracking-widest group-hover:text-gray-400 transition-colors">Vedi Dettagli</span>
-                    <ChevronRight size={14} className="text-gray-600 group-hover:text-white transition-colors" />
-                </div>
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
+                <button
+                    onClick={() => updateModal('RULES')}
+                    className="w-full group flex items-center justify-between px-6 py-3 bg-[#111113] hover:bg-[#152415] border border-white/10 rounded-2xl transition-all duration-300"
+                >
+                    <div className="flex items-center gap-3">
+                        <Info size={16} className="text-[#bfff00]" />
+                        <span className="text-white font-black italic uppercase text-xs tracking-wider">Regolamento della Lega</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-gray-600 text-[8px] font-black uppercase tracking-widest group-hover:text-gray-400 transition-colors">Dettagli</span>
+                        <ChevronRight size={14} className="text-gray-600 group-hover:text-white transition-colors" />
+                    </div>
+                </button>
+
+                <button
+                    onClick={() => setShowCommunityBoard(true)}
+                    className="w-full group flex items-center justify-between px-6 py-3 bg-gradient-to-r from-brand-teal/20 to-brand-purple-vibrant/20 hover:from-brand-teal/30 hover:to-brand-purple-vibrant/30 border border-brand-teal/40 rounded-2xl shadow-[0_0_20px_rgba(0,243,255,0.12)] transition-all duration-300"
+                >
+                    <div className="flex items-center gap-3">
+                        <Flame size={16} className="text-cyan-300 animate-pulse" />
+                        <span className="text-white font-black italic uppercase text-xs tracking-wider">
+                            La Curva <span className="text-cyan-300 font-mono text-[10px]">· Trash Talk Live</span>
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-cyan-300 text-[8px] font-black uppercase tracking-widest">Apri Chat</span>
+                        <ChevronRight size={14} className="text-cyan-300 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                </button>
+            </div>
 
             {/* 2. MAIN ACTIONS GRID (3 Columns on Desktop) */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
@@ -617,6 +637,13 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 onClose={() => window.history.back()}
                 matchdays={archiveMatchdays}
                 onSelectMatchday={handleShowHistory}
+            />
+
+            {/* 5. COMMUNITY BOARD MODAL (LA CURVA) */}
+            <CommunityBoardModal
+                isOpen={showCommunityBoard}
+                onClose={() => setShowCommunityBoard(false)}
+                user={user}
             />
 
             {/* Footer Notice if not joined */}
