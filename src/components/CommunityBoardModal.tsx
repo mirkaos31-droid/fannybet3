@@ -454,7 +454,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
     });
 
     return (
-        <div className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[200] flex items-stretch sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
             {/* Modal Container — full-screen on mobile, safe-area aware */}
             <div
                 className="relative w-full max-w-3xl sm:max-h-[92vh] flex flex-col rounded-none sm:rounded-3xl border-0 sm:border border-white/15 bg-[#040810] sm:bg-[#040810]/98 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden"
