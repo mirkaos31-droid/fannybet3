@@ -454,14 +454,16 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
     });
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-            {/* Modal Container — full-screen on mobile for reachable header */}
-            <div className="relative w-full max-w-3xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col rounded-none sm:rounded-3xl border-0 sm:border border-white/15 bg-[#040810] sm:bg-[#040810]/98 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+            {/* Modal Container — full-screen on mobile, safe-area aware */}
+            <div
+                className="relative w-full max-w-3xl sm:max-h-[92vh] flex flex-col rounded-none sm:rounded-3xl border-0 sm:border border-white/15 bg-[#040810] sm:bg-[#040810]/98 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden"
+                style={{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            >
 
-                {/* Header — sticky with safe-area padding for mobile notch/status bar */}
+                {/* Header — flex item, always visible at top */}
                 <div
-                    className="sticky top-0 z-10 relative flex items-center justify-between px-4 sm:px-6 pb-4 sm:pb-6 border-b border-white/10 bg-gradient-to-r from-brand-teal/15 via-[#040810] to-brand-purple-vibrant/15"
-                    style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}
+                    className="shrink-0 relative flex items-center justify-between px-4 sm:px-6 pt-3 sm:pt-6 pb-3 sm:pb-6 border-b border-white/10 bg-gradient-to-r from-brand-teal/15 via-[#040810] to-brand-purple-vibrant/15"
                 >
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-teal to-brand-purple-vibrant shadow-[0_0_20px_rgba(0,243,255,0.3)]">
@@ -502,7 +504,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-black/50 border-b border-white/5 text-xs sm:text-sm font-black uppercase tracking-wider">
+                <div className="shrink-0 flex items-center gap-2 px-4 sm:px-6 py-3 bg-black/50 border-b border-white/5 text-xs sm:text-sm font-black uppercase tracking-wider">
                     <button
                         type="button"
                         onClick={() => setFilter('ALL')}
@@ -570,7 +572,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                 )}
 
                 {/* Posts Feed */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 no-scrollbar">
+                <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {loading && posts.length === 0 ? (
                         <div className="py-20 text-center text-gray-400 font-mono text-sm animate-pulse flex flex-col items-center gap-3">
                             <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
