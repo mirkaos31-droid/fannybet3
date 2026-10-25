@@ -42,6 +42,11 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
 
     const commentsContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+    const expandedCommentsRef = useRef(expandedComments);
+    useEffect(() => {
+        expandedCommentsRef.current = expandedComments;
+    }, [expandedComments]);
+
     // Fast, silent post loader: only shows full-page spinner on very first load if empty
     const loadPosts = async (silent = false) => {
         if (!silent && posts.length === 0) {
@@ -49,7 +54,21 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
         }
         try {
             const data = await communityFeedService.getPosts(40);
-            setPosts(data);
+            setPosts(prev => {
+                // Keep any pending optimistic posts (tempId)
+                const pendingTemps = prev.filter(p => p.id.startsWith('temp-'));
+                if (pendingTemps.length === 0) return data;
+                return [...pendingTemps, ...data.filter(d => !pendingTemps.some(t => t.content === d.content))];
+            });
+
+            // Also silently update comments for any open posts
+            const openIds = Object.keys(expandedCommentsRef.current).filter(id => expandedCommentsRef.current[id]);
+            if (openIds.length > 0) {
+                await Promise.all(openIds.map(async (pid) => {
+                    const c = await communityFeedService.getComments(pid);
+                    setCommentsMap(prev => ({ ...prev, [pid]: c }));
+                }));
+            }
         } catch (err) {
             console.error('Error in loadPosts:', err);
         } finally {
@@ -59,11 +78,37 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
 
     useEffect(() => {
         if (!isOpen) return;
+
+        // 1. Initial load
         loadPosts(false);
 
-        // Realtime subscription for posts, comments, reactions
+        // 2. High-reliability Polling fallback: every 12 seconds while modal is open
+        // Ensures that even if mobile browser pauses WebSocket in background, new messages load automatically
+        const pollInterval = setInterval(() => {
+            loadPosts(true);
+        }, 12000);
+
+        // 3. Tab/App focus & visibility listeners: immediately refresh when coming back from background
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                loadPosts(true);
+            }
+        };
+        const handleFocus = () => {
+            loadPosts(true);
+        };
+        const handleOnline = () => {
+            loadPosts(true);
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+        window.addEventListener('online', handleOnline);
+
+        // 4. Realtime subscription for posts, comments, reactions
+        const channelName = `community-board-${Date.now()}`;
         const channel = supabase
-            .channel('community-board-realtime-room')
+            .channel(channelName)
             .on(
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'community_posts' },
@@ -71,6 +116,13 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                     const newPost = payload.new as CommunityPost;
                     if (newPost && newPost.id) {
                         setPosts(prev => {
+                            // Check if matching optimistic post exists
+                            const tempIdx = prev.findIndex(p => p.id.startsWith('temp-') && p.content === newPost.content);
+                            if (tempIdx >= 0) {
+                                const copy = [...prev];
+                                copy[tempIdx] = { ...newPost, comments_count: 0, reactions: {}, user_reactions: [] };
+                                return copy;
+                            }
                             if (prev.some(p => p.id === newPost.id)) return prev;
                             return [{ ...newPost, comments_count: 0, reactions: {}, user_reactions: [] }, ...prev];
                         });
@@ -106,6 +158,13 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                         setCommentsMap(prev => {
                             const existing = prev[newComment.post_id] || [];
                             if (existing.some(c => c.id === newComment.id)) return prev;
+                            // Replace temp comment if present
+                            const tempIdx = existing.findIndex(c => c.id.startsWith('temp-') && c.content === newComment.content);
+                            if (tempIdx >= 0) {
+                                const copy = [...existing];
+                                copy[tempIdx] = newComment;
+                                return { ...prev, [newComment.post_id]: copy };
+                            }
                             return {
                                 ...prev,
                                 [newComment.post_id]: [...existing, newComment]
@@ -152,12 +211,22 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'community_reactions' },
                 () => {
+                    // Silent refresh reactions
                     loadPosts(true);
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    // Catch up on any missed messages during connection handshake
+                    loadPosts(true);
+                }
+            });
 
         return () => {
+            clearInterval(pollInterval);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('online', handleOnline);
             supabase.removeChannel(channel);
         };
     }, [isOpen]);

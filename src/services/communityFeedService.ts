@@ -76,7 +76,7 @@ export const communityFeedService = {
      * Get the latest post for the Dashboard Ticker
      */
     async getLatestPost(): Promise<CommunityPost | null> {
-        const posts = await this.getPosts(5);
+        const posts = await this.getPosts(1);
         return posts.length > 0 ? posts[0] : null;
     },
 

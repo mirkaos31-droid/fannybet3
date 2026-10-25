@@ -28,9 +28,28 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
     useEffect(() => {
         loadLatest();
 
+        // Periodic check every 20s while on dashboard
+        const interval = setInterval(() => {
+            loadLatest();
+        }, 20000);
+
+        // Visibility & focus listeners: re-fetch when returning from background
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                loadLatest();
+            }
+        };
+        const handleFocus = () => loadLatest();
+        const handleOnline = () => loadLatest();
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+        window.addEventListener('online', handleOnline);
+
         // Listen for real-time posts or reactions
+        const channelName = `community-ticker-${Date.now()}`;
         const channel = supabase
-            .channel('community-ticker-updates')
+            .channel(channelName)
             .on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'community_posts' },
@@ -41,9 +60,17 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
                 { event: '*', schema: 'public', table: 'community_reactions' },
                 () => { loadLatest(); }
             )
-            .subscribe();
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    loadLatest();
+                }
+            });
 
         return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('online', handleOnline);
             supabase.removeChannel(channel);
         };
     }, []);
