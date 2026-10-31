@@ -121,14 +121,14 @@ export const bettingService = {
         // 3. Post Automatic FannyBot recap in La Curva
         try {
             const { communityFeedService } = await import('./communityFeedService');
-            let recapContent = `🏁 Giornata #${md.id} archiviata con successo! Punteggi e classifiche aggiornati.`;
+            let recapContent = `🏁 Giornata archiviata con successo! Punteggi e classifiche aggiornati.`;
             if (survivalStats && survivalStats.eliminated > 0) {
                 recapContent += `\n💀 Il Survival ha eliminato ${survivalStats.eliminated} giocatori questa settimana!`;
             }
             recapContent += `\n👉 Entrate in classifica a controllare i distacchi e commentate qui sotto! 🍿🔥`;
 
             await communityFeedService.createBotPost(
-                `RISULTATI UFFICIALI GIORNATA #${md.id} 🏁`,
+                `RISULTATI UFFICIALI GIORNATA 🏁`,
                 recapContent,
                 'BOT_RESULT',
                 { matchdayId: md.id, survivalStats }

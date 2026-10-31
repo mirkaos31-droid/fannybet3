@@ -136,14 +136,26 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
                                 </>
                             ) : (
                                 <>
-                                    <MessageSquare className="w-3 h-3 text-cyan-300" />
+                                    {latestPost.author_avatar ? (
+                                        <img
+                                            src={latestPost.author_avatar}
+                                            alt={latestPost.author_name}
+                                            className="w-3.5 h-3.5 rounded-full object-cover border border-cyan-400/40"
+                                            onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                                        />
+                                    ) : (
+                                        <MessageSquare className="w-3 h-3 text-cyan-300" />
+                                    )}
                                     <span>{latestPost.author_name}</span>
                                 </>
                             )}
                         </span>
 
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 border border-red-500/20 px-2 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-red-400">
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping"></span>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/30 px-2.5 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                            <span className="relative flex h-1.5 w-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                            </span>
                             LIVE CURVA
                         </span>
                     </div>
@@ -155,22 +167,35 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
                 </div>
 
                 {/* Content teaser */}
-                <div className="relative z-10 my-2.5">
-                    {latestPost.title && (
-                        <h4 className="text-base md:text-lg font-black italic tracking-tight text-white mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                            {latestPost.title}
-                        </h4>
-                    )}
-                    <p className="text-sm md:text-base text-gray-200 font-normal line-clamp-2 leading-relaxed">
-                        {latestPost.content}
-                    </p>
-                </div>
+                {!latestPost.is_bot ? (
+                    <div className="relative z-10 my-3 rounded-2xl bg-gradient-to-r from-cyan-950/50 via-cyan-900/20 to-transparent border-l-4 border-cyan-400 px-4 py-3.5 sm:px-5 sm:py-4 backdrop-blur-sm shadow-inner">
+                        {latestPost.title && (
+                            <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-cyan-300 mb-1.5">
+                                {latestPost.title}
+                            </h4>
+                        )}
+                        <p className="text-[21px] sm:text-2xl md:text-3xl font-black text-white leading-snug tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)] line-clamp-3 sm:line-clamp-4">
+                            "{latestPost.content}"
+                        </p>
+                    </div>
+                ) : (
+                    <div className="relative z-10 my-3">
+                        {latestPost.title && (
+                            <h4 className="text-lg sm:text-xl md:text-2xl font-black italic tracking-tight text-white mb-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                                {latestPost.title}
+                            </h4>
+                        )}
+                        <p className="text-base sm:text-lg md:text-xl text-white/95 font-medium line-clamp-3 leading-relaxed">
+                            {latestPost.content}
+                        </p>
+                    </div>
+                )}
 
                 {/* Footer: Quick emoji reactions + Comments count */}
                 <div className="relative z-10 mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2.5">
                     {/* Quick Reactions */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs uppercase font-black text-gray-400 mr-1 hidden sm:inline tracking-wider">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] md:text-xs uppercase font-black text-gray-400 mr-1 hidden sm:inline tracking-wider">
                             Reagisci:
                         </span>
                         {QUICK_EMOJIS.map(emoji => {
@@ -182,15 +207,15 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
                                     key={emoji}
                                     type="button"
                                     onClick={(e) => handleQuickReaction(e, emoji)}
-                                    className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm transition-all duration-200 ${
+                                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs transition-all duration-200 ${
                                         isSelected
-                                            ? 'bg-cyan-500/25 border border-cyan-400/60 scale-105 shadow-[0_0_12px_rgba(6,182,212,0.35)]'
+                                            ? 'bg-cyan-500/25 border border-cyan-400/60 scale-[1.03] shadow-[0_0_12px_rgba(6,182,212,0.35)]'
                                             : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
                                     }`}
                                 >
-                                    <span className="text-base">{emoji}</span>
+                                    <span className="text-xs sm:text-sm leading-none">{emoji}</span>
                                     {count > 0 && (
-                                        <span className={`text-xs font-mono font-bold ${isSelected ? 'text-cyan-300' : 'text-gray-300'}`}>
+                                        <span className={`text-[10px] sm:text-[11px] font-mono font-bold ${isSelected ? 'text-cyan-300' : 'text-gray-300'}`}>
                                             {count}
                                         </span>
                                     )}
@@ -200,8 +225,8 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
                     </div>
 
                     {/* Comments Count Indicator */}
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-300 font-bold bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
-                        <MessageSquare className="w-4 h-4 text-brand-teal" />
+                    <div className="flex items-center gap-1.5 text-xs text-gray-300 font-bold bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 transition-colors">
+                        <MessageSquare className="w-3.5 h-3.5 text-brand-teal" />
                         <span>{latestPost.comments_count || 0} commenti</span>
                     </div>
                 </div>

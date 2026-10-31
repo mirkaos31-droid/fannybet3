@@ -769,7 +769,9 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-[15px] sm:text-[17px] md:text-lg text-white/95 leading-relaxed whitespace-pre-wrap font-normal">
+                                        <p className={`text-lg sm:text-xl md:text-2xl leading-relaxed whitespace-pre-wrap ${
+                                            isBot ? 'text-white/90 font-medium' : 'text-white font-semibold drop-shadow-sm'
+                                        }`}>
                                             {post.content}
                                         </p>
                                     )}
@@ -777,7 +779,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                     {/* Action Bar: Reactions & Comment Toggle */}
                                     <div className="mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
                                         {/* Reactions */}
-                                        <div className="flex flex-wrap items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-1.5">
                                             {AVAILABLE_EMOJIS.map(emoji => {
                                                 const count = post.reactions?.[emoji] || 0;
                                                 const isSelected = post.user_reactions?.includes(emoji);
@@ -787,15 +789,15 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                                         key={emoji}
                                                         type="button"
                                                         onClick={() => handleToggleReaction(post.id, emoji)}
-                                                        className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm transition-all active:scale-90 ${
+                                                        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs sm:text-sm transition-all active:scale-95 ${
                                                             isSelected
                                                                 ? 'bg-cyan-500/30 border border-cyan-400/70 scale-105 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
                                                                 : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
                                                         }`}
                                                     >
-                                                        <span className="text-base sm:text-lg">{emoji}</span>
+                                                        <span className="text-xs sm:text-sm leading-none">{emoji}</span>
                                                         {count > 0 && (
-                                                            <span className={`text-xs sm:text-sm font-mono font-bold ${isSelected ? 'text-cyan-300' : 'text-gray-300'}`}>
+                                                            <span className={`text-xs font-mono font-bold ${isSelected ? 'text-cyan-300' : 'text-gray-300'}`}>
                                                                 {count}
                                                             </span>
                                                         )}
