@@ -9,7 +9,7 @@ interface BottomNavBarProps {
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({ onRegulations, onCards, onProfile }) => {
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-xl border-t border-white/5 md:hidden pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/10 backdrop-blur-lg border-t border-white/5 md:hidden pb-safe">
             <div className="flex justify-around items-center max-w-md mx-auto h-20 px-6 relative">
                 {/* Regolamenti */}
                 <button
