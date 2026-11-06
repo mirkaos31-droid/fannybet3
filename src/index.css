@@ -227,19 +227,13 @@
     pointer-events: none;
   }
 
-  /* Minimal Neon Blue Ambient Background */
+  /* Minimal Neon Blue Ambient Background (custom image) */
   body::before {
     content: '';
     position: fixed;
     inset: -10%;
     z-index: -2;
-    background:
-      /* Soft neon blue lights and deep navy base */
-      radial-gradient(circle at 80% 20%, rgba(0, 102, 255, 0.12) 0%, transparent 60%),
-      radial-gradient(circle at 10% 80%, rgba(0, 243, 255, 0.08) 0%, transparent 65%),
-      radial-gradient(circle at 50% 50%, rgba(0, 68, 255, 0.05) 0%, transparent 80%),
-      #020612;
-    filter: blur(120px);
+    background: url('/main_bg.png') center/cover no-repeat;
     pointer-events: none;
   }
 
