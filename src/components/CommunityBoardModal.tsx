@@ -665,7 +665,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                     className={`relative rounded-3xl p-5 sm:p-6 border transition-all ${
                                         isBot
                                             ? 'bg-gradient-to-br from-[#0c182c]/95 via-[#07111e]/95 to-[#050b14]/95 border-cyan-400/40 shadow-[0_0_30px_rgba(6,182,212,0.15)]'
-                                            : 'bg-white/[0.04] border-white/15 hover:border-white/25 shadow-md'
+                                            : 'bg-gradient-to-br from-[#091526]/90 via-[#050b14]/95 to-[#110a1f]/90 border-cyan-500/25 hover:border-cyan-400/50 shadow-lg shadow-cyan-950/20'
                                     }`}
                                 >
                                     {/* Author row */}
@@ -678,14 +678,14 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="h-10 w-10 rounded-full bg-purple-500/25 border border-purple-500/40 flex items-center justify-center font-black text-sm text-purple-300">
+                                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-600/30 border border-cyan-400/40 flex items-center justify-center font-display font-black text-sm text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]">
                                                     {post.author_name[0]?.toUpperCase()}
                                                 </div>
                                             )}
 
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-base sm:text-lg font-black tracking-tight ${isBot ? 'text-cyan-300' : 'text-white'}`}>
+                                                    <span className={`text-base sm:text-lg font-display font-black tracking-tight ${isBot ? 'text-cyan-300' : 'text-white'}`}>
                                                         {post.author_name}
                                                     </span>
                                                     {isBot && (
@@ -769,8 +769,10 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className={`text-lg sm:text-xl md:text-2xl leading-relaxed whitespace-pre-wrap ${
-                                            isBot ? 'text-white/90 font-medium' : 'text-white font-semibold drop-shadow-sm'
+                                        <p className={`leading-relaxed whitespace-pre-wrap ${
+                                            isBot
+                                                ? 'font-sans text-lg sm:text-xl md:text-2xl text-white/90 font-medium'
+                                                : 'font-display font-black italic text-xl sm:text-2xl md:text-3xl text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]'
                                         }`}>
                                             {post.content}
                                         </p>
@@ -835,7 +837,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                                         return (
                                                             <div
                                                                 key={c.id}
-                                                                className="flex items-start gap-3 bg-[#0d1624] p-3.5 sm:p-4 rounded-2xl border border-cyan-500/25 shadow-md"
+                                                                className="flex items-start gap-3 bg-[#0d1624] p-4 sm:p-5 rounded-2xl border border-cyan-500/25 shadow-md"
                                                             >
                                                                 <div className="h-8 w-8 rounded-full bg-cyan-400/25 border border-cyan-400/40 flex items-center justify-center font-black text-xs text-cyan-300 shrink-0">
                                                                     {c.username[0]?.toUpperCase()}
@@ -843,7 +845,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center justify-between gap-2 mb-1">
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className="text-sm sm:text-base font-black text-white truncate">
+                                                                            <span className="text-sm sm:text-base font-display font-black text-white truncate">
                                                                                 {c.username}
                                                                             </span>
                                                                             <span className="text-xs text-gray-400 font-mono">
@@ -911,7 +913,7 @@ export const CommunityBoardModal: React.FC<CommunityBoardModalProps> = ({
                                                                             </div>
                                                                         </div>
                                                                     ) : (
-                                                                        <p className="text-[15px] sm:text-base md:text-[17px] text-white/95 leading-relaxed font-normal">
+                                                                        <p className="text-[18px] sm:text-lg md:text-xl text-white leading-relaxed font-medium">
                                                                             {c.content}
                                                                         </p>
                                                                     )}

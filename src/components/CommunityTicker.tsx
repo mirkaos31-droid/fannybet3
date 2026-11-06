@@ -119,7 +119,7 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
         <div className="w-full max-w-5xl mx-auto mb-6 px-2">
             <div
                 onClick={onOpenBoard}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl md:rounded-3xl border border-brand-teal/30 bg-gradient-to-r from-[#04131e]/90 via-[#030914]/90 to-[#0e0618]/90 p-3.5 md:p-5 backdrop-blur-xl shadow-[0_0_30px_rgba(0,243,255,0.08)] transition-all duration-300 hover:border-brand-teal/60 hover:shadow-[0_0_40px_rgba(0,243,255,0.2)]"
+                className="group relative cursor-pointer overflow-hidden rounded-2xl md:rounded-3xl border border-brand-teal/30 bg-gradient-to-r from-[#04131e]/90 via-[#030914]/90 to-[#0e0618]/90 p-4 sm:p-6 md:p-7 backdrop-blur-xl shadow-[0_0_30px_rgba(0,243,255,0.08)] transition-all duration-300 hover:border-brand-teal/60 hover:shadow-[0_0_40px_rgba(0,243,255,0.2)]"
             >
                 {/* Glow effects */}
                 <div className="absolute -left-10 -top-10 h-28 w-28 rounded-full bg-brand-teal/10 blur-2xl group-hover:bg-brand-teal/20 transition-all"></div>
@@ -168,24 +168,24 @@ export const CommunityTicker: React.FC<CommunityTickerProps> = ({ user, onOpenBo
 
                 {/* Content teaser */}
                 {!latestPost.is_bot ? (
-                    <div className="relative z-10 my-3 rounded-2xl bg-gradient-to-r from-cyan-950/50 via-cyan-900/20 to-transparent border-l-4 border-cyan-400 px-4 py-3.5 sm:px-5 sm:py-4 backdrop-blur-sm shadow-inner">
+                    <div className="relative z-10 my-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-cyan-950/80 via-cyan-900/30 to-transparent border-l-[6px] border-cyan-400 pl-5 sm:pl-7 pr-4 py-4 sm:py-6 backdrop-blur-md shadow-[inset_24px_0_40px_-10px_rgba(0,243,255,0.45)] transition-all">
                         {latestPost.title && (
-                            <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-cyan-300 mb-1.5">
+                            <h4 className="text-sm sm:text-base font-display font-black uppercase tracking-wider text-cyan-300 mb-2">
                                 {latestPost.title}
                             </h4>
                         )}
-                        <p className="text-[21px] sm:text-2xl md:text-3xl font-black text-white leading-snug tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)] line-clamp-3 sm:line-clamp-4">
-                            "{latestPost.content}"
+                        <p className="font-display font-black italic text-[28px] sm:text-[34px] md:text-[42px] text-white leading-[1.15] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.95)] line-clamp-5 sm:line-clamp-6">
+                            {latestPost.content}
                         </p>
                     </div>
                 ) : (
-                    <div className="relative z-10 my-3">
+                    <div className="relative z-10 my-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-yellow-950/50 via-[#0c182c]/85 to-transparent border-l-[6px] border-yellow-400 pl-5 sm:pl-7 pr-4 py-4 sm:py-6 backdrop-blur-md shadow-[inset_24px_0_40px_-10px_rgba(234,179,8,0.35)]">
                         {latestPost.title && (
-                            <h4 className="text-lg sm:text-xl md:text-2xl font-black italic tracking-tight text-white mb-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                            <h4 className="text-lg sm:text-2xl md:text-3xl font-display font-black italic tracking-tight text-yellow-300 mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                                 {latestPost.title}
                             </h4>
                         )}
-                        <p className="text-base sm:text-lg md:text-xl text-white/95 font-medium line-clamp-3 leading-relaxed">
+                        <p className="font-display font-medium text-lg sm:text-xl md:text-2xl text-white/95 line-clamp-4 leading-relaxed">
                             {latestPost.content}
                         </p>
                     </div>
