@@ -272,7 +272,7 @@
     background-position: 0 0, 0 0, 1px 1px, 1px 1px, 0 0;
     mask-image: radial-gradient(circle at 50% 50%, black 65%, transparent 100%);
     pointer-events: none;
-    opacity: 0.85;
+    opacity: 0.5;
     transition: background-image 0.5s ease-in-out, opacity 0.5s ease-in-out;
   }
 

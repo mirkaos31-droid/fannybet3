@@ -122,7 +122,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
             {/* Header / Avatar Section */}
             <div className="flex flex-col items-center mb-10">
                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <div className="w-24 h-24 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-brand-purple shadow-[0_0_40px_rgba(157,0,255,0.3)] bg-black/40 flex items-center justify-center">
+                        <div className="w-48 h-48 md:w-64 md:h-64 rounded-lg overflow-hidden border-4 border-brand-purple shadow-[0_0_40px_rgba(157,0,255,0.4)] bg-black/40 flex items-center justify-center">
                         {user?.avatarUrl ? (
                             <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
@@ -180,9 +180,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
             </div>
 
             {/* Stats Grid - Reduced Size & More Color */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 mb-10">
+            <div className="flex flex-wrap justify-center gap-4 mb-10">
                 {stats.map((stat, idx) => (
-                    <div key={idx} className={`${stat.color} p-5 md:p-8 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
+                    <div key={idx} className={`${stat.color} w-28 h-28 md:w-32 md:h-32 p-2 md:p-3 rounded-xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div className="mb-3 md:mb-4 p-3 md:p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-inner group-hover:rotate-12 transition-transform">
                             {stat.icon}
