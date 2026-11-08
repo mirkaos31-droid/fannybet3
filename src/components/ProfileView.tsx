@@ -266,26 +266,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                     </div>
 
                     {nextMilestone && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                                <p className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">Bet Necessarie</p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-white">{user?.betsPlaced || 0} / {nextMilestone.requirements.bets}</span>
-                                    <span className="text-[9px] text-gray-600 font-mono">{((user?.betsPlaced || 0) / nextMilestone.requirements.bets * 100).toFixed(0)}%</span>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            <div className="bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/5">
+                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-1">Bet Necessarie</p>
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
+                                    <span className="text-[10px] sm:text-xs font-bold text-white truncate">{user?.betsPlaced || 0} / {nextMilestone.requirements.bets}</span>
+                                    <span className="text-[8px] sm:text-[9px] text-brand-teal font-mono font-bold">{((user?.betsPlaced || 0) / nextMilestone.requirements.bets * 100).toFixed(0)}%</span>
                                 </div>
                             </div>
-                            <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                                <p className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">Vittorie Target</p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-white">{(user?.wins1x2 || 0) + (user?.winsSurvival || 0)} / {nextMilestone.requirements.wins}</span>
-                                    <span className="text-[9px] text-gray-600 font-mono">{(((user?.wins1x2 || 0) + (user?.winsSurvival || 0)) / nextMilestone.requirements.wins * 100).toFixed(0)}%</span>
+                            <div className="bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/5">
+                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-1">Vittorie Target</p>
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
+                                    <span className="text-[10px] sm:text-xs font-bold text-white truncate">{(user?.wins1x2 || 0) + (user?.winsSurvival || 0)} / {nextMilestone.requirements.wins}</span>
+                                    <span className="text-[8px] sm:text-[9px] text-brand-teal font-mono font-bold">{(((user?.wins1x2 || 0) + (user?.winsSurvival || 0)) / nextMilestone.requirements.wins * 100).toFixed(0)}%</span>
                                 </div>
                             </div>
-                            <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                                <p className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">Token Vinti</p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-white">{user?.totalTokensWon || 0} / {nextMilestone.requirements.tokens}</span>
-                                    <span className="text-[9px] text-gray-600 font-mono">{((user?.totalTokensWon || 0) / nextMilestone.requirements.tokens * 100).toFixed(0)}%</span>
+                            <div className="bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/5">
+                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-1">Token Vinti</p>
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
+                                    <span className="text-[10px] sm:text-xs font-bold text-white truncate">{user?.totalTokensWon || 0} / {nextMilestone.requirements.tokens}</span>
+                                    <span className="text-[8px] sm:text-[9px] text-brand-teal font-mono font-bold">{((user?.totalTokensWon || 0) / nextMilestone.requirements.tokens * 100).toFixed(0)}%</span>
                                 </div>
                             </div>
                         </div>

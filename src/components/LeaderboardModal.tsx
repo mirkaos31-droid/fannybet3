@@ -150,6 +150,7 @@ const ParticipantRow: React.FC<ParticipantRowProps> = React.memo(({
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
                             {expandedPicks.map((pick, i) => {
+                                const match = matchday?.matches?.[i];
                                 const result = matchday?.results?.[i];
                                 const hasResult = result !== null && result !== undefined && result !== '';
                                 const isCorrect = hasResult && pick === result;
@@ -161,27 +162,36 @@ const ParticipantRow: React.FC<ParticipantRowProps> = React.memo(({
                                         ? 'bg-[#475569] text-white'
                                         : pick === '2'
                                         ? 'bg-[#00f0ff] text-black font-black shadow-[0_0_10px_rgba(0,240,255,0.6)]'
-                                        : 'bg-gray-800 text-transparent';
+                                        : 'bg-gray-800 text-gray-500';
 
-                                let resultStyles = '';
+                                let cardStyles = 'bg-[#0b1424] border border-[#00d4ff]/20';
                                 if (hasResult) {
-                                    resultStyles = isCorrect
-                                        ? 'border-2 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]'
-                                        : 'border-2 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.7)]';
-                                } else {
-                                    resultStyles = 'border border-[#00d4ff]/30';
+                                    cardStyles = isCorrect
+                                        ? 'bg-emerald-950/30 border border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
+                                        : 'bg-red-950/30 border border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.3)]';
                                 }
 
                                 return (
                                     <div
                                         key={i}
-                                        className="bg-[#0b1424] p-2.5 flex flex-col items-center justify-center border border-[#00d4ff]/20"
+                                        className={`p-2 sm:p-2.5 flex flex-col items-center justify-between gap-1.5 transition-all duration-300 ${cardStyles}`}
                                     >
-                                        <span className="text-[8px] uppercase font-black text-gray-400 mb-1.5 truncate w-full text-center tracking-tighter">
-                                            {matchday?.matches[i]?.home || `Match ${i + 1}`}
-                                        </span>
+                                        {/* Match Teams: Home - Away on single line */}
+                                        <div className="flex items-center justify-center gap-1 w-full text-center px-0.5 min-w-0">
+                                            <span className="text-[10px] font-black uppercase tracking-tight truncate text-white max-w-[45%]">
+                                                {match?.home || `M${i + 1}`}
+                                            </span>
+                                            <span className="text-[8px] font-bold text-gray-500 shrink-0">
+                                                -
+                                            </span>
+                                            <span className="text-[10px] font-black uppercase tracking-tight truncate text-gray-300 max-w-[45%]">
+                                                {match?.away || '—'}
+                                            </span>
+                                        </div>
+
+                                        {/* Segno 1, X, 2 */}
                                         <div
-                                            className={`w-9 h-9 flex items-center justify-center font-black transition-all duration-300 ${baseStyles} ${resultStyles}`}
+                                            className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-black transition-all duration-300 ${baseStyles}`}
                                         >
                                             {pick || '-'}
                                         </div>

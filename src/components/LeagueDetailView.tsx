@@ -8,6 +8,7 @@ import { PredictionsModal } from './PredictionsModal';
 import { LeagueRulesModal } from './LeagueRulesModal';
 import { LeagueArchiveModal } from './LeagueArchiveModal';
 import { CommunityBoardModal } from './CommunityBoardModal';
+import { SchedinaErrorModal, type SchedinaErrorDetails } from './SchedinaErrorModal';
 import { supabase } from '../supabaseClient';
 import { useBonusNotifications } from '../hooks/useBonusNotifications';
 
@@ -35,6 +36,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
 
     const [activeModal, setActiveModal] = useState<'NONE' | 'LEADERBOARD' | 'PREDICTIONS' | 'RULES' | 'HISTORICAL_LEADERBOARD' | 'ARCHIVE_LIST'>('NONE');
     const [showCommunityBoard, setShowCommunityBoard] = useState(false);
+    const [schedinaError, setSchedinaError] = useState<SchedinaErrorDetails | null>(null);
 
     // [NEW] History Management for Modals
     useEffect(() => {
@@ -169,10 +171,88 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
         };
     }, [leagueId]);
 
+    const handleOpenPredictions = () => {
+        // Controllo se il matchday esiste
+        if (!matchday) {
+            setSchedinaError({
+                title: 'Nessuna Giornata Attiva',
+                message: 'Non è stata trovata alcuna giornata attiva al momento per compilare la schedina. Attendi che l\'admin apra il prossimo round.',
+                type: 'warning'
+            });
+            return;
+        }
+
+        // Controllo se le scommesse sono bloccate dall'admin
+        if (matchday.betsLocked) {
+            setSchedinaError({
+                title: 'Pronostici Bloccati',
+                message: 'Le giocate per questo round sono state chiuse o bloccate temporaneamente. Non è consentito inserire o modificare i pronostici.',
+                type: 'deadline'
+            });
+            return;
+        }
+
+        // Controllo se la deadline è già scaduta
+        if (matchday.deadline && new Date(matchday.deadline).getTime() < Date.now()) {
+            setSchedinaError({
+                title: 'Deadline Superata',
+                message: `Il tempo limite per inserire la schedina è scaduto (${new Date(matchday.deadline).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}). I pronostici per questo round sono chiusi.`,
+                type: 'deadline'
+            });
+            return;
+        }
+
+        // Controllo se la rata deve essere ancora saldata
+        if (isInstallmentsMode && isParticipant && myInstallmentsPaid < currentPhase) {
+            setSchedinaError({
+                title: `Rata ${currentPhase} Obbligatoria`,
+                message: `Per inserire la schedina della Fase ${currentPhase} (Round ${currentRoundNum}) devi prima saldare la relativa rata di iscrizione (${league.entry_fee} FTK).`,
+                type: 'installment',
+                actionText: `Salda Rata ${currentPhase} (${league.entry_fee} FTK)`,
+                onAction: handlePayInstallment
+            });
+            return;
+        }
+
+        // Se tutto è ok, apre il modal della schedina
+        updateModal('PREDICTIONS');
+    };
+
     const handleSavePicks = async () => {
-        if (!matchday) return;
-        if (myPicks.some(p => p === '')) {
-            toast.error('Compila tutti i 10 pronostici!');
+        if (!matchday) {
+            setSchedinaError({
+                title: 'Errore Giornata',
+                message: 'Impossibile salvare la schedina: i dati della giornata non sono disponibili.',
+                type: 'warning'
+            });
+            return;
+        }
+
+        const missingCount = myPicks.filter(p => p === '').length;
+        if (missingCount > 0) {
+            setSchedinaError({
+                title: 'Schedina Incompleta',
+                message: `Mancano ancora ${missingCount} pronostic${missingCount === 1 ? 'o' : 'i'} su 10!\nCompila tutti i segni (1, X o 2) prima di poter confermare e registrare la giocata.`,
+                type: 'incomplete'
+            });
+            return;
+        }
+
+        if (matchday.betsLocked) {
+            setSchedinaError({
+                title: 'Pronostici Bloccati',
+                message: 'Non è stato possibile registrare la giocata: le scommesse per questa giornata sono state bloccate.',
+                type: 'deadline'
+            });
+            return;
+        }
+
+        if (matchday.deadline && new Date(matchday.deadline).getTime() < Date.now()) {
+            setSchedinaError({
+                title: 'Tempo Scaduto',
+                message: 'Non è stato possibile salvare la schedina perché la data di scadenza (fischio d\'inizio) è stata superata.',
+                type: 'deadline'
+            });
             return;
         }
 
@@ -193,11 +273,22 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 updateModal('NONE');
                 loadLeagueData(); // Refresh to see updated status
             } else {
-                toast.error(result.message);
+                setSchedinaError({
+                    title: 'Invio Schedina Non Riuscito',
+                    message: result.message || 'Si è verificato un errore durante la registrazione della schedina. Riprova più tardi.',
+                    type: (result as any).required_installment ? 'installment' : 'error',
+                    actionText: (result as any).required_installment ? `Salda Rata ${(result as any).required_installment}` : undefined,
+                    onAction: (result as any).required_installment ? handlePayInstallment : undefined
+                });
             }
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Errore durante il salvataggio');
+            const errMsg = err.message || 'Errore di connessione o del server durante il salvataggio.';
+            setSchedinaError({
+                title: 'Errore Salvataggio Schedina',
+                message: `Non è stato possibile salvare i pronostici:\n"${errMsg}"\n\nVerifica la tua connessione internet o che la rata sia in regola e riprova.`,
+                type: 'error'
+            });
         } finally {
             setSaving(false);
         }
@@ -469,7 +560,7 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {/* LA SCHEDINA */}
                 <button
-                    onClick={() => updateModal('PREDICTIONS')}
+                    onClick={handleOpenPredictions}
                     className={`card-interstellar-action corners-acid group relative h-56 md:h-72 p-5 md:p-8 transition-all duration-300 overflow-hidden text-left ${filledPicksCount === 10
                         ? 'border-[#bfff00]/30'
                         : 'border-white/5'
@@ -644,6 +735,13 @@ export const LeagueDetailView: React.FC<LeagueDetailViewProps> = ({ leagueId, on
                 isOpen={showCommunityBoard}
                 onClose={() => setShowCommunityBoard(false)}
                 user={user}
+            />
+
+            {/* 6. POPUP ALERT ERRORE SCHEDINA */}
+            <SchedinaErrorModal
+                isOpen={!!schedinaError}
+                onClose={() => setSchedinaError(null)}
+                error={schedinaError}
             />
 
             {/* Footer Notice if not joined */}
