@@ -119,13 +119,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Token Display (Enhanced & Tighter) */}
-                    <div className="flex flex-col items-end bg-white/5 px-2.5 py-1 rounded-lg border border-brand-gold/40 shadow-[0_0_12px_rgba(255,204,0,0.15)] shadow-inner">
-                        <span className="text-[6px] text-gray-500 font-black uppercase tracking-widest leading-none mb-0.5">Balance</span>
-                        <div className="flex items-baseline gap-0.5">
-                            <span className="text-base font-mono font-black text-brand-gold drop-shadow-[0_0_10px_rgba(255,204,0,0.3)]">{user?.tokens || 0}</span>
-                            <span className="text-[7px] font-black text-brand-gold/60">FTK</span>
-                        </div>
+                    {/* Token Display (No card, centered, gold glow) */}
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-lg font-mono font-black text-brand-gold drop-shadow-[0_0_14px_rgba(255,204,0,0.6)] drop-shadow-[0_0_6px_rgba(255,204,0,0.4)]">{user?.tokens || 0}</span>
+                        <span className="text-[9px] font-black text-brand-gold/70 drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]">FTK</span>
                     </div>
 
                     <div className="flex items-center gap-1">

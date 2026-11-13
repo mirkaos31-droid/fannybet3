@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, User, Library } from 'lucide-react';
+import { FileText, User, SprayCan } from 'lucide-react';
 
 interface BottomNavBarProps {
     onRegulations: () => void;
@@ -22,17 +22,18 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ onRegulations, onCar
                     <span className="text-[9px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">Regole</span>
                 </button>
 
-                {/* Central Card Gallery Button (+10% size) */}
+                {/* Central Murales Button */}
                 <div className="relative -top-8">
                     <button
                         onClick={onCards}
+                        aria-label="Apri Murales"
                         className="w-[4.8rem] h-[4.8rem] bg-gradient-to-b from-[#ff8800] via-[#ffaa00] to-[#cc6600] rounded-full flex items-center justify-center shadow-[0_0_35px_rgba(255,136,0,0.5)] border-4 border-black group active:scale-95 transition-all duration-300"
                     >
                         <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <Library size={32} className="text-black drop-shadow-md" />
+                        <SprayCan size={32} className="text-black drop-shadow-md group-hover:rotate-12 transition-transform" />
                     </button>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff8800] animate-pulse">Le Tue Cards</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff8800] animate-pulse">Murales</span>
                     </div>
                 </div>
 

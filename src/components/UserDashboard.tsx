@@ -8,7 +8,7 @@ import { ProfileView } from './ProfileView';
 import { RegulationsModal } from './RegulationsModal';
 import { RequestTokensModal } from './RequestTokensModal';
 import { FBLegaView } from './FBLegaView';
-import { CardGallery } from './CardGallery';
+import { MuralesView } from './MuralesView';
 import { WorldCupView } from './WorldCupView';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -206,18 +206,17 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                     </div>
                 )}
 
-                {view !== 'HOME' && (
+                {view !== 'HOME' && view !== 'CARDS' && (
                     <div className="py-4 md:py-12 text-center animate-fade-in px-2">
                         <h1 className="text-2xl sm:text-4xl md:text-8xl font-display font-black italic tracking-tighter uppercase text-white/90 drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                             {view === 'SURVIVAL' && 'SURVIVAL MODE'}
                             {view === 'FB_LEGA' && 'FANTA 1X2'}
                             {view === 'WORLD_CUP' && 'WORLD CUP'}
-                            {view === 'CARDS' && 'ARCHIVIO CARD'}
                         </h1>
                     </div>
                 )}
 
-                {view !== 'HOME' && (
+                {view !== 'HOME' && view !== 'CARDS' && (
                     <div className="flex justify-center sticky top-10 md:top-6 z-20 px-2 md:px-4">
                         <div className="liquid-glass !p-0.5 md:!p-1.5 !rounded-full inline-block backdrop-blur-[40px] border-white/10 shadow-3xl">
                             <NavigationBar
@@ -385,7 +384,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 )}
                 {view === 'CARDS' && (
                     <div className="relative animate-fade-in">
-                        <CardGallery onBack={() => setView('HOME')} />
+                        <MuralesView onBack={() => setView('HOME')} user={user} />
                     </div>
                 )}
             </div>
