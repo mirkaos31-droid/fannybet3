@@ -27,7 +27,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
             .eq('is_read', false);
-        
+
         if (!error && count !== null) {
             setUnreadCount(count);
         }
@@ -42,10 +42,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id)
                 .eq('is_read', false);
-            
+
             if (!error && count !== null) {
                 setUnreadCount(count);
-                
+
                 if (count > 0 && !hasCheckedInitialRef.current) {
                     hasCheckedInitialRef.current = true;
                     // Show a welcome back toast without sound once on initial check
@@ -59,7 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         };
 
         checkInitialNotifications();
-        
+
         const channel = supabase
             .channel(`global-notifications-${user.id}`)
             .on(
@@ -68,9 +68,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 (payload) => {
                     console.log('New notification received!', payload);
                     setUnreadCount(prev => prev + 1);
-                    
+
                     const newNotif = payload.new as { title?: string; message?: string, type?: string };
-                    
+
                     // Display visual toast
                     toast(newNotif.title || "Notifica", {
                         description: newNotif.message || "Nuovo aggiornamento disponibile.",
@@ -102,29 +102,28 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
 
             {/* Mobile Header (Brand Infused & Functional - Shortened for space) */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,20px)] h-[calc(4.2rem+env(safe-area-inset-top,20px))] shadow-2xl">
-                <div className="flex items-center gap-2">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
+            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,20px)] h-[calc(5rem+env(safe-area-inset-top,20px))] shadow-2xl">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
                         {user?.avatarUrl ? (
                             <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-xl" />
                         ) : (
-                            <span className="text-xl">✨</span>
+                            <span className="text-2xl">✨</span>
                         )}
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xs font-display font-black text-white italic truncate max-w-[100px] uppercase">
                             {user?.username || 'GUEST'}
                         </span>
+                        {/* Token Display - subito dopo il nickname */}
+                        <div className="flex items-baseline gap-1 mt-0.5">
+                            <span className="text-xl font-mono font-black text-brand-gold drop-shadow-[0_0_16px_rgba(255,204,0,0.7)] drop-shadow-[0_0_6px_rgba(255,204,0,0.5)]">{user?.tokens || 0}</span>
+                            <span className="text-[10px] font-black text-brand-gold/70 drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]">FTK</span>
+                        </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Token Display (No card, centered, gold glow) */}
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-mono font-black text-brand-gold drop-shadow-[0_0_14px_rgba(255,204,0,0.6)] drop-shadow-[0_0_6px_rgba(255,204,0,0.4)]">{user?.tokens || 0}</span>
-                        <span className="text-[9px] font-black text-brand-gold/70 drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]">FTK</span>
-                    </div>
-
                     <div className="flex items-center gap-1">
                         {/* Notification Bell (Mobile) */}
                         <button
@@ -265,11 +264,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
 
                         <div className="h-10 md:h-12 w-[1px] bg-white/10"></div>
 
-                        <button 
+                        <button
                             onClick={() => {
                                 setIsNotificationsOpen(true);
                                 setUnreadCount(0);
-                            }} 
+                            }}
                             className="bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 group relative touch-target active:scale-95"
                             title="Protocol News"
                         >
@@ -292,10 +291,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
                 </div>
             </div>
 
-            <NotificationDrawer 
-                user={user} 
-                isOpen={isNotificationsOpen} 
-                onClose={() => setIsNotificationsOpen(false)} 
+            <NotificationDrawer
+                user={user}
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
                 onNotificationsRead={fetchUnreadCount}
             />
         </div>

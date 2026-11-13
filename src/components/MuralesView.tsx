@@ -208,7 +208,7 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-30 murales-wall-bg text-white flex flex-col overflow-hidden select-none animate-fade-in touch-pan-x touch-pan-y pt-[calc(4.2rem+env(safe-area-inset-top,20px))] md:pt-28">
+        <div className="fixed inset-0 z-30 murales-wall-bg text-white flex flex-col overflow-hidden select-none animate-fade-in touch-pan-x touch-pan-y pt-[calc(5rem+env(safe-area-inset-top,20px))] md:pt-28">
             {/* Header Superiore Esclusivo del Murales */}
             <header className="shrink-0 z-40 bg-black/90 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 py-3">
                 <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
