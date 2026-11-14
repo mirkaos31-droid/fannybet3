@@ -194,13 +194,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
 
 
                 {view === 'HOME' && (
-                    <div className="relative pt-[6.4rem] pb-6 md:pt-[7.2rem] md:pb-16 text-center animate-fade-in px-2">
-                        <p className="text-white font-mono text-[8px] md:text-base uppercase tracking-[0.6em] mb-1 md:mb-3 opacity-60">benvenuto su</p>
-                        <h1 className="!text-[4.94rem] sm:!text-[8.65rem] md:!text-[18.5rem] font-display font-black italic tracking-tighter leading-[0.72] bg-gradient-to-br from-brand-teal via-brand-purple-vibrant to-brand-purple-vibrant bg-clip-text text-transparent drop-shadow-[0_0_120px_rgba(157,0,255,0.5)] transform-gpu scale-[1.02] md:scale-[1.05] relative">
-                            FANNY<br className="md:hidden" /> BET
+                    <div className="relative pt-[4.8rem] pb-2 sm:pt-[5.5rem] sm:pb-4 md:pt-[6.5rem] md:pb-8 text-center animate-fade-in px-2 overflow-visible">
+                        <p className="text-white font-mono text-[7px] md:text-sm uppercase tracking-[0.5em] mb-0.5 md:mb-2 opacity-60">benvenuto su</p>
+                        <h1 className="text-[3.1rem] xs:text-[3.8rem] sm:text-[6.4rem] md:text-[13rem] font-display font-black italic tracking-tighter leading-none transform-gpu relative inline-flex items-baseline justify-center whitespace-nowrap pr-3 sm:pr-6">
+                            <span className="steel-chrome-text">FANNY</span>
+                            <span className="neon-illuminated-bet ml-0.5 sm:ml-1 font-bold">BET</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] translate-x-[-200%] animate-shimmer pointer-events-none opacity-30"></div>
                         </h1>
-                        <div className="mt-1 md:mt-8 flex justify-center gap-2">
+                        <div className="mt-1 md:mt-4 flex justify-center gap-2">
                             <div className="h-[1px] w-6 md:w-20 bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent"></div>
                             <div className="h-[1px] w-6 md:w-20 bg-gradient-to-r from-transparent via-brand-purple-vibrant/50 to-transparent"></div>
                         </div>
@@ -238,12 +239,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                         <CommunityTicker
                             user={user}
                             onOpenBoard={() => setShowCommunityBoard(true)}
-                        />
-
-                        {/* FRASE SCOLPITA DAL MURALES (SCELTA DALL'ADMIN) */}
-                        <FeaturedMuralesTag
-                            user={user}
-                            onOpenMurales={() => setView('CARDS')}
                         />
 
                         {/* SECTION 1: EVENTI SPECIALI - visible to all users */}
@@ -366,6 +361,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                                         </p>
                                     </div>
                                 </button>
+                            </div>
+
+                            {/* MURALES DELLA SETTIMANA - posizionato sotto le due card di gioco (Survival & Fanta 1x2) */}
+                            <div className="pt-2 sm:pt-4">
+                                <FeaturedMuralesTag
+                                    user={user}
+                                    onOpenMurales={() => setView('CARDS')}
+                                />
                             </div>
                         </div>
                     </div>

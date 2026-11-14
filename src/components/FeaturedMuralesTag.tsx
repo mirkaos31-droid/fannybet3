@@ -9,6 +9,15 @@ interface FeaturedMuralesTagProps {
     onOpenMurales: () => void;
 }
 
+const COLOR_MAP: Record<string, string> = {
+    'neon-cyan': '#00f3ff',
+    'acid-green': '#bfff00',
+    'hot-pink': '#ff007f',
+    'electric-purple': '#c084fc',
+    'sun-orange': '#ff7700',
+    'pure-white': '#f8fafc',
+};
+
 export const FeaturedMuralesTag: React.FC<FeaturedMuralesTagProps> = ({ onOpenMurales }) => {
     const [featuredTag, setFeaturedTag] = useState<MuralesTag | null>(null);
     const [loading, setLoading] = useState(true);
@@ -75,7 +84,7 @@ export const FeaturedMuralesTag: React.FC<FeaturedMuralesTagProps> = ({ onOpenMu
                             <span className="text-[9px] font-mono font-black text-amber-400 tracking-[0.25em] uppercase">Murales Spotlight</span>
                         </div>
                         <p className="text-xs sm:text-sm font-semibold text-gray-300 group-hover:text-white transition-colors">
-                            Spruzza la tua frase sul muro: la più simpatica sarà scolpita qui!
+                            Spruzza la tua frase sul muro: la più simpatica diventerà il Murales della Settimana!
                         </p>
                     </div>
                 </div>
@@ -84,67 +93,75 @@ export const FeaturedMuralesTag: React.FC<FeaturedMuralesTagProps> = ({ onOpenMu
         );
     }
 
-    const colorClass = `tag-${featuredTag.color || 'neon-cyan'}`;
-    const fontClass = `font-graffiti-${featuredTag.font_style || 'spray'}`;
+    const textColor = COLOR_MAP[featuredTag.color] || '#ff7700';
+
+    // Font size proporzionato (-25%), d'impatto ma calibrato
+    const getDynamicFontSize = (text: string) => {
+        const len = text.trim().length;
+        if (len <= 16) {
+            return 'clamp(2.15rem, 9.5vw, 4.1rem)';
+        }
+        if (len <= 30) {
+            return 'clamp(1.7rem, 7.5vw, 3.3rem)';
+        }
+        if (len <= 60) {
+            return 'clamp(1.3rem, 5.6vw, 2.5rem)';
+        }
+        if (len <= 100) {
+            return 'clamp(1.05rem, 4.2vw, 1.9rem)';
+        }
+        return 'clamp(0.9rem, 3.5vw, 1.45rem)';
+    };
 
     return (
         <div
             onClick={onOpenMurales}
-            className="sculpted-slab-bg rounded-2xl sm:rounded-3xl border border-white/10 hover:border-amber-400/40 transition-all duration-300 cursor-pointer p-4 sm:p-6 relative overflow-hidden group shadow-2xl"
+            className="sculpted-slab-bg rounded-2xl sm:rounded-3xl border border-white/10 hover:border-amber-400/40 transition-all duration-300 cursor-pointer px-3 py-2.5 sm:px-5 sm:py-3.5 relative overflow-hidden group shadow-2xl bg-cover bg-center flex flex-col justify-between"
         >
+            {/* Real Wall Background Texture Image */}
+            <div
+                className="absolute inset-0 bg-cover bg-center pointer-events-none transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: "url('/murales_home_bg.jpg')" }}
+            />
+            {/* Dark vignette overlay for optimal neon readability & depth */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/80 pointer-events-none" />
+
             {/* Ambient neon backdrop blur */}
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-400/15 transition-all" />
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-400/15 transition-all" />
 
-            {/* Header / Badge bar */}
-            <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400/15 border border-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.25)]">
-                        <Crown size={12} className="text-amber-300 fill-amber-300 animate-pulse" />
-                        <span className="text-[9px] sm:text-[10px] font-mono font-black text-amber-300 uppercase tracking-widest">
-                            Scolpito nel Cemento
-                        </span>
-                    </div>
-                    <span className="hidden xs:inline text-[8px] sm:text-[9px] font-mono text-gray-400 tracking-wider uppercase">
-                        Scelto dall'Admin
-                    </span>
+            {/* Header: Titolo discreto centrato in alto */}
+            <div className="relative z-10 flex items-center justify-between mb-0.5">
+                <div className="flex items-center gap-1 mx-auto text-[8px] sm:text-[9px] font-mono text-amber-300/80 tracking-widest uppercase">
+                    <Crown size={10} className="text-amber-300 fill-amber-300" />
+                    <span>Murales della Settimana</span>
                 </div>
-
-                <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-gray-400 group-hover:text-amber-300 transition-colors">
-                    <SprayCan size={13} className="text-amber-400 group-hover:rotate-12 transition-transform" />
-                    <span className="hidden sm:inline uppercase tracking-wider">Murales</span>
-                    <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                <div className="absolute right-0 top-0 flex items-center gap-0.5 text-[8px] sm:text-[9px] font-mono text-white/30 group-hover:text-amber-300 transition-colors">
+                    <SprayCan size={11} className="text-amber-400/70" />
                 </div>
             </div>
 
-            {/* Scolpita Neon Phrase */}
-            <div className="relative z-10 py-1 sm:py-2">
+            {/* UNICO VERO PROTAGONISTA: Frase in Tilt Neon con glow controllato e ombra proiettata sul muro */}
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center py-2 sm:py-3.5 px-1 w-full my-auto">
                 <p
-                    className={`text-lg sm:text-2xl md:text-3xl leading-snug tracking-wide italic whitespace-pre-wrap sculpted-engraved-text ${colorClass} ${fontClass}`}
+                    style={{
+                        fontSize: getDynamicFontSize(featuredTag.message),
+                        color: textColor,
+                    }}
+                    className="leading-[1.08] tracking-tight break-words whitespace-pre-wrap home-neon-text transition-transform duration-300 group-hover:scale-[1.01]"
                 >
-                    "{featuredTag.message}"
+                    {featuredTag.message}
                 </p>
             </div>
 
-            {/* Author info & Reactions */}
-            <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-white/5 flex items-center justify-between gap-2 relative z-10 select-none">
-                <div className="flex items-center gap-2">
-                    {featuredTag.avatar_url ? (
-                        <img
-                            src={featuredTag.avatar_url}
-                            alt="Avatar"
-                            className="w-5 h-5 rounded-md object-cover border border-white/10"
-                        />
-                    ) : (
-                        <span className="text-xs">✨</span>
-                    )}
-                    <span className="text-[11px] sm:text-xs font-mono font-bold text-gray-300 tracking-tight">
-                        ~ {featuredTag.username}
-                    </span>
-                </div>
+            {/* Footer minimale e leggero */}
+            <div className="relative z-10 flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-white/40 select-none pt-0.5">
+                <span className="truncate max-w-[180px] hover:text-white/70 transition-colors">
+                    ~ {featuredTag.username}
+                </span>
 
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-mono font-bold text-amber-400">
-                    <Flame size={12} className="text-amber-400 fill-amber-400" />
+                <div className="flex items-center gap-1 text-amber-400/60 font-semibold">
+                    <Flame size={11} className="fill-amber-400/40 text-amber-400/70" />
                     <span>{featuredTag.likes_count || 0}</span>
                 </div>
             </div>
