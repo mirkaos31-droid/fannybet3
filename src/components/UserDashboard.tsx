@@ -14,6 +14,7 @@ import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 import { ErrorBoundary } from './ErrorBoundary';
 import { CommunityTicker } from './CommunityTicker';
 import { CommunityBoardModal } from './CommunityBoardModal';
+import { FeaturedMuralesTag } from './FeaturedMuralesTag';
 
 const SectionHeader: React.FC<{ title: string; subtitle?: string; color?: string }> = ({ title, subtitle, color = "border-white/10" }) => (
     <div className={`flex flex-col mb-4 md:mb-8 border-l-4 ${color} pl-4 md:pl-6 py-1 md:py-2`}>
@@ -237,6 +238,12 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                         <CommunityTicker
                             user={user}
                             onOpenBoard={() => setShowCommunityBoard(true)}
+                        />
+
+                        {/* FRASE SCOLPITA DAL MURALES (SCELTA DALL'ADMIN) */}
+                        <FeaturedMuralesTag
+                            user={user}
+                            onOpenMurales={() => setView('CARDS')}
                         />
 
                         {/* SECTION 1: EVENTI SPECIALI - visible to all users */}

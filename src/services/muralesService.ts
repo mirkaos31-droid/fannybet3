@@ -23,6 +23,7 @@ export interface MuralesTag {
     pos_y: number;
     scale: number;
     likes_count: number;
+    is_featured?: boolean;
     created_at: string;
     user_has_liked?: boolean;
 }
@@ -180,6 +181,36 @@ export const muralesService = {
         const { error } = await supabase
             .from('murales_tags')
             .delete()
+            .eq('id', tagId);
+
+        return !error;
+    },
+
+    async getFeaturedTag(): Promise<MuralesTag | null> {
+        const { data, error } = await supabase
+            .from('murales_tags')
+            .select('*')
+            .eq('is_featured', true)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error || !data) return null;
+        return data as MuralesTag;
+    },
+
+    async setFeaturedTag(tagId: string, featured: boolean): Promise<boolean> {
+        if (featured) {
+            // Rimuovi lo status featured da eventuali altri tag
+            await supabase
+                .from('murales_tags')
+                .update({ is_featured: false })
+                .eq('is_featured', true);
+        }
+
+        const { error } = await supabase
+            .from('murales_tags')
+            .update({ is_featured: featured })
             .eq('id', tagId);
 
         return !error;

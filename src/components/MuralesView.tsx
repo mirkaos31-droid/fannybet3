@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, SprayCan, Flame, Loader2, RefreshCw, Trash2, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ArrowLeft, SprayCan, Flame, Loader2, RefreshCw, Trash2, ZoomIn, ZoomOut, Maximize2, Crown } from 'lucide-react';
 import { muralesService, type MuralesTag } from '../services/muralesService';
 import { CreateTagModal } from './murales/CreateTagModal';
 import { supabase } from '../supabaseClient';
@@ -168,6 +168,23 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
             );
         } catch (err) {
             console.error('Reaction toggle error:', err);
+        }
+    };
+
+    const isAdmin = user?.role === 'ADMIN';
+
+    const handleToggleFeatured = async (tagId: string, currentFeatured?: boolean) => {
+        const nextFeatured = !currentFeatured;
+        setTags((prev) =>
+            prev.map((t) => ({
+                ...t,
+                is_featured: t.id === tagId ? nextFeatured : nextFeatured ? false : t.is_featured,
+            }))
+        );
+        try {
+            await muralesService.setFeaturedTag(tagId, nextFeatured);
+        } catch (err) {
+            console.error('Error toggling featured tag:', err);
         }
     };
 
@@ -395,8 +412,25 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
                                         <span>{tag.likes_count || 0}</span>
                                     </button>
 
+                                    {/* Corona Frase in Vetrina / Featured Tag */}
+                                    {(tag.is_featured || isAdmin) && (
+                                        <button
+                                            onClick={() => isAdmin && handleToggleFeatured(tag.id, tag.is_featured)}
+                                            disabled={!isAdmin}
+                                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+                                                tag.is_featured
+                                                    ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 shadow-[0_0_10px_rgba(251,191,36,0.3)] animate-pulse'
+                                                    : 'text-gray-500 hover:text-amber-300 hover:bg-white/5'
+                                            } ${isAdmin ? 'cursor-pointer active:scale-90' : 'cursor-default'}`}
+                                            title={isAdmin ? (tag.is_featured ? 'Rimuovi dalla Vetrina Home' : 'Metti in Vetrina sulla Home') : 'Frase in Vetrina'}
+                                        >
+                                            <Crown size={12} className={tag.is_featured ? 'fill-amber-300 text-amber-300' : ''} />
+                                            {tag.is_featured && <span className="text-[9px] uppercase tracking-wider">Vetrina</span>}
+                                        </button>
+                                    )}
+
                                     {/* Cestino per cancellare subito accanto */}
-                                    {isMine && (
+                                    {(isMine || isAdmin) && (
                                         <button
                                             onClick={() => handleDelete(tag.id)}
                                             className="p-0.5 text-gray-500 hover:text-rose-400 transition-colors cursor-pointer"

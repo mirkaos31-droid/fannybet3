@@ -15,8 +15,12 @@ CREATE TABLE IF NOT EXISTS public.murales_tags (
     pos_y NUMERIC NOT NULL DEFAULT 50, -- 0 to 100 percentage
     scale NUMERIC NOT NULL DEFAULT 1.0,
     likes_count INTEGER NOT NULL DEFAULT 0,
+    is_featured BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Ensure column exists if table was already created
+ALTER TABLE public.murales_tags ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS public.murales_reactions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -29,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.murales_reactions (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_murales_tags_created_at ON public.murales_tags(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_murales_tags_featured ON public.murales_tags(is_featured) WHERE is_featured = true;
 CREATE INDEX IF NOT EXISTS idx_murales_reactions_tag_id ON public.murales_reactions(tag_id);
 
 -- Enable RLS
@@ -49,6 +54,12 @@ DROP POLICY IF EXISTS "Users can delete their own murales tags" ON public.murale
 CREATE POLICY "Users can delete their own murales tags" ON public.murales_tags
     FOR DELETE TO authenticated
     USING (auth.uid() = user_id OR public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can update murales tags" ON public.murales_tags;
+CREATE POLICY "Admins can update murales tags" ON public.murales_tags
+    FOR UPDATE TO authenticated
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 -- Policies for murales_reactions
 DROP POLICY IF EXISTS "Murales reactions viewable by everyone" ON public.murales_reactions;

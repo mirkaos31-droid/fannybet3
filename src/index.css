@@ -1457,3 +1457,24 @@
   font-weight: 900;
   letter-spacing: 0.1em;
 }
+
+/* SCOLPITO NEL CEMENTO & NEON SLAB (Home Featured Tag) */
+.sculpted-slab-bg {
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 80% 100%, rgba(255, 136, 0, 0.06) 0%, transparent 50%),
+    #0b0c12;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -2px 4px 0 rgba(0, 0, 0, 0.8),
+    0 12px 32px -4px rgba(0, 0, 0, 0.7);
+}
+
+.sculpted-engraved-text {
+  text-shadow: 
+    0 -1px 2px rgba(0, 0, 0, 0.9),
+    0 1px 2px rgba(255, 255, 255, 0.15),
+    0 0 20px currentColor,
+    0 0 35px currentColor;
+}
