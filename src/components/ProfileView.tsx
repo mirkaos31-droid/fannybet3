@@ -74,31 +74,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
         {
             label: 'Vittorie 1X2',
             value: user?.wins1x2 || 0,
-            icon: <Trophy className="text-black" size={24} />,
+            icon: <Trophy className="text-black w-4 h-4 sm:w-6 sm:h-6" />,
             color: 'bg-gradient-to-br from-brand-gold to-yellow-600 shadow-brand-gold/20'
         },
         {
             label: 'Survival',
             value: user?.winsSurvival || 0,
-            icon: <Skull className="text-white" size={24} />,
+            icon: <Skull className="text-white w-4 h-4 sm:w-6 sm:h-6" />,
             color: 'bg-gradient-to-br from-red-600 to-red-900 shadow-red-600/20'
         },
         {
             label: 'Token Vinti',
             value: user?.totalTokensWon || 0,
-            icon: <Gem className="text-white" size={24} />,
+            icon: <Gem className="text-white w-4 h-4 sm:w-6 sm:h-6" />,
             color: 'bg-gradient-to-br from-cyan-400 to-blue-600 shadow-cyan-400/20'
         },
         {
             label: 'Livello',
             value: currentLevel,
-            icon: <Activity className="text-black" size={24} />,
+            icon: <Activity className="text-black w-4 h-4 sm:w-6 sm:h-6" />,
             color: 'bg-gradient-to-br from-brand-purple to-purple-900 shadow-brand-purple/20'
         },
         {
             label: 'Precisione',
             value: `${user?.predictionAccuracy || 0}%`,
-            icon: <Target className="text-black" size={24} />,
+            icon: <Target className="text-black w-4 h-4 sm:w-6 sm:h-6" />,
             color: 'bg-gradient-to-br from-brand-teal to-teal-800 shadow-brand-teal/20'
         },
     ];
@@ -180,63 +180,63 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
             </div>
 
             {/* Stats Grid - Reduced Size & More Color */}
-            <div className="flex flex-wrap justify-center gap-4 mb-10">
+            <div className="flex justify-center gap-1.5 sm:gap-3 mb-10">
                 {stats.map((stat, idx) => (
-                    <div key={idx} className={`${stat.color} w-28 h-28 md:w-32 md:h-32 p-2 md:p-3 rounded-xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
+                    <div key={idx} className={`${stat.color} w-[62px] sm:w-28 h-[88px] sm:h-28 md:w-32 md:h-32 p-1 sm:p-2 md:p-3 rounded-xl flex flex-col items-center justify-center text-center shadow-lg transform hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group`}>
                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="mb-3 md:mb-4 p-3 md:p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-inner group-hover:rotate-12 transition-transform">
+                        <div className="mb-1.5 sm:mb-3 md:mb-4 p-1.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-white/20 backdrop-blur-sm shadow-inner group-hover:rotate-12 transition-transform">
                             {stat.icon}
                         </div>
-                        <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-black/60 mb-1">{stat.label}</span>
-                        <span className="text-2xl md:text-4xl font-mono font-black text-white drop-shadow-sm">{stat.value}</span>
+                        <span className="text-[7px] sm:text-[10px] md:text-sm font-black uppercase tracking-wider sm:tracking-widest text-black/60 mb-0.5 sm:mb-1 leading-tight">{stat.label}</span>
+                        <span className="text-base sm:text-2xl md:text-4xl font-mono font-black text-white drop-shadow-sm">{stat.value}</span>
                     </div>
                 ))}
             </div>
 
-            {/* Detailed Level Progress */}
-            <div className="glass-card border-white/5 bg-black/40 !p-6 md:!p-8 mb-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5">
-                    <Activity size={120} className="text-brand-purple" />
+            {/* Detailed Level Progress - Compacted */}
+            <div className="glass-card border-white/5 bg-black/40 !p-4 sm:!p-6 mb-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none">
+                    <Activity size={90} className="text-brand-purple" />
                 </div>
 
-                <h3 className="text-lg font-black italic uppercase tracking-widest text-white mb-6">PROGRESSO STAGIONALE</h3>
+                <h3 className="text-sm sm:text-base font-black italic uppercase tracking-widest text-white mb-3 sm:mb-4">PROGRESSO STAGIONALE</h3>
 
-                <div className="space-y-12 relative z-10">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-0">
+                <div className="space-y-4 sm:space-y-6 relative z-10">
+                    <div className="flex flex-row justify-between items-center gap-2">
                         {/* Current Level Badge */}
-                        <div className="flex flex-col items-center md:items-start group transition-all duration-500">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1 px-2 rounded bg-brand-purple/20 border border-brand-purple/40">
-                                    <span className="text-[8px] font-black text-brand-purple uppercase tracking-[0.2em] animate-pulse">Status Attuale</span>
+                        <div className="flex flex-col items-start group transition-all duration-500">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <div className="p-0.5 px-1.5 rounded bg-brand-purple/20 border border-brand-purple/40">
+                                    <span className="text-[7px] sm:text-[8px] font-black text-brand-purple uppercase tracking-[0.2em] animate-pulse">Status Attuale</span>
                                 </div>
                             </div>
                             <div className="relative">
-                                <h4 className="text-4xl md:text-6xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-brand-purple via-purple-400 to-indigo-400 uppercase drop-shadow-[0_10px_20px_rgba(157,0,255,0.4)]">
+                                <h4 className="text-2xl sm:text-4xl md:text-5xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-brand-purple via-purple-400 to-indigo-400 uppercase drop-shadow-[0_6px_15px_rgba(157,0,255,0.4)]">
                                     {milestones[currentLevel - 1]?.label}
                                 </h4>
-                                <div className="absolute -bottom-2 md:-bottom-4 left-0 w-full h-1.5 bg-brand-purple/30 rounded-full blur-[2px]"></div>
-                                <div className="absolute -bottom-2 md:-bottom-4 left-0 w-1/3 h-1.5 bg-brand-purple rounded-full shadow-[0_0_15px_brand-purple]"></div>
+                                <div className="absolute -bottom-1 left-0 w-full h-1 bg-brand-purple/30 rounded-full blur-[1px]"></div>
+                                <div className="absolute -bottom-1 left-0 w-1/3 h-1 bg-brand-purple rounded-full shadow-[0_0_10px_brand-purple]"></div>
                             </div>
                         </div>
 
                         {/* Connection Line & Icon */}
-                        <div className="hidden md:flex flex-col items-center justify-center opacity-30 px-6">
-                            <div className="p-2 rounded-full border border-white/10 bg-white/5 animate-float">
-                                <Target size={24} className="text-brand-teal" />
+                        <div className="hidden sm:flex flex-col items-center justify-center opacity-30 px-3">
+                            <div className="p-1.5 rounded-full border border-white/10 bg-white/5 animate-float">
+                                <Target size={18} className="text-brand-teal" />
                             </div>
-                            <div className="h-px w-32 bg-gradient-to-r from-brand-purple via-brand-teal to-brand-diamond mt-4 shadow-[0_0_10px_rgba(185,242,255,0.3)]"></div>
+                            <div className="h-px w-20 bg-gradient-to-r from-brand-purple via-brand-teal to-brand-diamond mt-2 shadow-[0_0_10px_rgba(185,242,255,0.3)]"></div>
                         </div>
 
                         {/* Next Level Badge */}
-                        <div className="flex flex-col items-center md:items-end group transition-all duration-500 opacity-60 hover:opacity-100">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">Destinazione</span>
-                                <div className="p-1 px-2 rounded bg-white/5 border border-white/10">
-                                    <Trophy size={10} className="text-gray-400" />
+                        <div className="flex flex-col items-end group transition-all duration-500 opacity-70 hover:opacity-100">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-[7px] sm:text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">Destinazione</span>
+                                <div className="p-0.5 px-1.5 rounded bg-white/5 border border-white/10">
+                                    <Trophy size={9} className="text-gray-400" />
                                 </div>
                             </div>
-                            <div className="text-center md:text-right">
-                                <h4 className="text-2xl md:text-4xl font-black italic tracking-tighter text-white uppercase tracking-tight group-hover:text-brand-diamond transition-colors">
+                            <div className="text-right">
+                                <h4 className="text-lg sm:text-2xl md:text-3xl font-black italic tracking-tighter text-white uppercase tracking-tight group-hover:text-brand-diamond transition-colors">
                                     {nextMilestone?.label || 'MASSIMO'}
                                 </h4>
                             </div>
@@ -245,18 +245,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
 
                     {/* Modern Progress Bar */}
                     <div className="relative">
-                        <div className="flex justify-between items-center mb-4 px-1">
-                            <div className="flex items-center gap-2">
+                        <div className="flex justify-between items-center mb-1.5 px-0.5">
+                            <div className="flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-ping"></span>
-                                <span className="text-[9px] font-mono text-gray-500 tracking-[0.3em] uppercase">Efficienza Sincronizzata</span>
+                                <span className="text-[8px] sm:text-[9px] font-mono text-gray-500 tracking-[0.25em] uppercase">Efficienza</span>
                             </div>
-                            <span className="text-xs font-black italic text-brand-teal tracking-tighter drop-shadow-[0_0_10px_rgba(0,255,255,0.3)]">
-                                {calculateProgress().toFixed(0)}% DEL PERCORSO COMPLETATO
+                            <span className="text-[10px] sm:text-xs font-black italic text-brand-teal tracking-tighter drop-shadow-[0_0_10px_rgba(0,255,255,0.3)]">
+                                {calculateProgress().toFixed(0)}% COMPLETATO
                             </span>
                         </div>
-                        <div className="h-5 w-full bg-white/[0.03] rounded-2xl overflow-hidden border border-white/10 p-1.5 backdrop-blur-md shadow-inner">
+                        <div className="h-3.5 sm:h-4 w-full bg-white/[0.03] rounded-xl overflow-hidden border border-white/10 p-1 backdrop-blur-md shadow-inner">
                             <div
-                                className="h-full bg-gradient-to-r from-brand-purple via-brand-teal to-brand-diamond rounded-xl shadow-[0_0_30px_rgba(157,0,255,0.6)] relative overflow-hidden group/bar"
+                                className="h-full bg-gradient-to-r from-brand-purple via-brand-teal to-brand-diamond rounded-lg shadow-[0_0_20px_rgba(157,0,255,0.6)] relative overflow-hidden group/bar"
                                 style={{ width: `${calculateProgress()}%`, transition: 'width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
                             >
                                 <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_100%] animate-shimmer"></div>
@@ -266,25 +266,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onClose, onLogou
                     </div>
 
                     {nextMilestone && (
-                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                            <div className="bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/5">
-                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-1">Bet Necessarie</p>
+                        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+                            <div className="bg-white/5 p-2 sm:p-2.5 rounded-xl border border-white/5">
+                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-0.5">Bet Necessarie</p>
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
-                                    <span className="text-[10px] sm:text-xs font-bold text-white truncate">{user?.betsPlaced || 0} / {nextMilestone.requirements.bets}</span>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white truncate">{user?.betsPlaced || 0} / {nextMilestone.requirements.bets}</span>
                                     <span className="text-[8px] sm:text-[9px] text-brand-teal font-mono font-bold">{((user?.betsPlaced || 0) / nextMilestone.requirements.bets * 100).toFixed(0)}%</span>
                                 </div>
                             </div>
-                            <div className="bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/5">
-                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-1">Vittorie Target</p>
+                            <div className="bg-white/5 p-2 sm:p-2.5 rounded-xl border border-white/5">
+                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-0.5">Vittorie Target</p>
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
-                                    <span className="text-[10px] sm:text-xs font-bold text-white truncate">{(user?.wins1x2 || 0) + (user?.winsSurvival || 0)} / {nextMilestone.requirements.wins}</span>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white truncate">{(user?.wins1x2 || 0) + (user?.winsSurvival || 0)} / {nextMilestone.requirements.wins}</span>
                                     <span className="text-[8px] sm:text-[9px] text-brand-teal font-mono font-bold">{(((user?.wins1x2 || 0) + (user?.winsSurvival || 0)) / nextMilestone.requirements.wins * 100).toFixed(0)}%</span>
                                 </div>
                             </div>
-                            <div className="bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/5">
-                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-1">Token Vinti</p>
+                            <div className="bg-white/5 p-2 sm:p-2.5 rounded-xl border border-white/5">
+                                <p className="text-[7px] sm:text-[8px] text-gray-500 uppercase tracking-wider truncate mb-0.5">Token Vinti</p>
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
-                                    <span className="text-[10px] sm:text-xs font-bold text-white truncate">{user?.totalTokensWon || 0} / {nextMilestone.requirements.tokens}</span>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white truncate">{user?.totalTokensWon || 0} / {nextMilestone.requirements.tokens}</span>
                                     <span className="text-[8px] sm:text-[9px] text-brand-teal font-mono font-bold">{((user?.totalTokensWon || 0) / nextMilestone.requirements.tokens * 100).toFixed(0)}%</span>
                                 </div>
                             </div>

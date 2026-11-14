@@ -102,28 +102,33 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, onTogg
         <div className="flex min-h-screen font-sans relative overflow-x-hidden">
 
             {/* Mobile Header (Brand Infused & Functional - Shortened for space) */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,20px)] h-[calc(5rem+env(safe-area-inset-top,20px))] shadow-2xl">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner">
+            <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-black border-b border-white/10 flex items-center justify-between px-3.5 pt-[env(safe-area-inset-top,20px)] h-[calc(4.5rem+env(safe-area-inset-top,20px))] shadow-2xl">
+                <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-brand-orange/20 to-brand-purple/20 flex items-center justify-center border border-white/10 shadow-inner shrink-0">
                         {user?.avatarUrl ? (
                             <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-xl" />
                         ) : (
-                            <span className="text-2xl">✨</span>
+                            <span className="text-xl sm:text-2xl">✨</span>
                         )}
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-display font-black text-white italic truncate max-w-[100px] uppercase">
-                            {user?.username || 'GUEST'}
-                        </span>
-                        {/* Token Display - subito dopo il nickname */}
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-xl font-mono font-black text-brand-gold drop-shadow-[0_0_16px_rgba(255,204,0,0.7)] drop-shadow-[0_0_6px_rgba(255,204,0,0.5)]">{user?.tokens || 0}</span>
-                            <span className="text-[10px] font-black text-brand-gold/70 drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]">FTK</span>
+                    <span className="text-xs sm:text-sm font-display font-black text-white italic truncate max-w-[170px] xs:max-w-[210px] uppercase pr-1.5 tracking-tight shrink-0">
+                        {user?.username || 'GUEST'}
+                    </span>
+                    {/* Token Display - dopo il nickname, verso il centro con glow dorato attorno al numero */}
+                    <div className="relative flex items-center shrink-0 ml-0.5">
+                        <div className="absolute -inset-1.5 bg-[#ffcc00]/25 blur-md rounded-full pointer-events-none" />
+                        <div className="relative flex items-baseline gap-1 px-1">
+                            <span className="text-xl sm:text-2xl font-mono font-black text-brand-gold drop-shadow-[0_0_12px_#ffcc00] drop-shadow-[0_0_24px_rgba(255,204,0,0.85)] filter">
+                                {user?.tokens || 0}
+                            </span>
+                            <span className="text-[10px] font-black text-brand-gold/80 drop-shadow-[0_0_8px_rgba(255,204,0,0.5)] tracking-wider">
+                                FTK
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     <div className="flex items-center gap-1">
                         {/* Notification Bell (Mobile) */}
                         <button

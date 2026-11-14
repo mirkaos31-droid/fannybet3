@@ -187,8 +187,8 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
         const clientY = e.clientY - rect.top;
 
         // Coordinate percentuali esatte (0 - 100%) tenendo conto dello zoom
-        const pctX = Math.round(Math.min(92, Math.max(8, (clientX / rect.width) * 100)));
-        const pctY = Math.round(Math.min(92, Math.max(8, (clientY / rect.height) * 100)));
+        const pctX = Math.round(Math.min(85, Math.max(2, (clientX / rect.width) * 100)));
+        const pctY = Math.round(Math.min(92, Math.max(4, (clientY / rect.height) * 100)));
 
         setClickCoords({ x: pctX, y: pctY });
         setIsCreateOpen(true);
@@ -208,7 +208,7 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-30 murales-wall-bg text-white flex flex-col overflow-hidden select-none animate-fade-in touch-pan-x touch-pan-y pt-[calc(5rem+env(safe-area-inset-top,20px))] md:pt-28">
+        <div className="fixed inset-0 z-30 murales-wall-bg text-white flex flex-col overflow-hidden select-none animate-fade-in touch-pan-x touch-pan-y pt-[calc(4.5rem+env(safe-area-inset-top,20px))] md:pt-28">
             {/* Header Superiore Esclusivo del Murales */}
             <header className="shrink-0 z-40 bg-black/90 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 py-3">
                 <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
@@ -297,12 +297,12 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
                         width: '2600px',
                         height: '2200px',
                     }}
-                    className="relative cursor-crosshair select-none overflow-hidden"
+                    className="relative cursor-crosshair select-none"
                 >
                     {/* Indicatore/Guida visiva discreta del punto toccato */}
                     {clickCoords && (
                         <div
-                            className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center animate-ping"
+                            className="absolute pointer-events-none -translate-y-1/2 z-20 flex items-center justify-center animate-ping"
                             style={{
                                 left: `${clickCoords.x}%`,
                                 top: `${clickCoords.y}%`,
@@ -348,11 +348,11 @@ export const MuralesView: React.FC<MuralesViewProps> = ({ onBack, user }) => {
                         return (
                             <div
                                 key={tag.id}
-                                className="absolute -translate-x-1/2 -translate-y-1/2 group transition-transform duration-300 hover:scale-[1.04] cursor-default z-10 max-w-lg p-2"
+                                className="absolute group transition-transform duration-300 hover:scale-[1.04] cursor-default z-10 max-w-lg p-2"
                                 style={{
                                     left: `${posX}%`,
                                     top: `${posY}%`,
-                                    transform: `translate(-50%, -50%) rotate(${tag.rotation || 0}deg)`,
+                                    transform: `translateY(-50%) rotate(${tag.rotation || 0}deg)`,
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                             >
