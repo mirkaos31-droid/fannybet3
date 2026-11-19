@@ -225,7 +225,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                             }`}>1</div>
                                     </div>
                                     {/* Pedestal - HIGHER */}
-                                    <div className="w-full h-32 md:h-44 bg-gradient-to-b from-brand-gold/20 to-transparent border-t-2 border-brand-gold/40 rounded-t-3xl backdrop-blur-md -mt-6 pt-10 flex flex-col items-center">
+                                    <div className="w-full h-32 md:h-44 bg-gradient-to-b from-brand-gold/20 to-transparent border-t-2 border-brand-gold/40 rounded-t-3xl backdrop-blur-sm -mt-6 pt-10 flex flex-col items-center">
                                         <div className="px-2 text-center">
                                             <div className={`text-xs md:text-sm font-black uppercase tracking-widest truncate w-full mb-1 
                                                 ${viewType === 'MATCHDAY' && displayMatchday?.status === 'ARCHIVED' && displayMatchday?.winners?.includes(podium[0].username)
@@ -284,8 +284,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ matchday }) =>
                                 return (
                                     <div
                                         key={`${user.username}-${idx}`}
-                                        style={{ animationDelay: `${delay}ms` }}
-                                        className="group flex items-center px-6 py-4 bg-white/[0.02] hover:bg-white/[0.05] backdrop-blur-xl rounded-2xl border border-white/5 hover:border-brand-purple/30 transition-all duration-500 transform hover:-translate-y-1 animate-in fade-in slide-in-from-right-4 fill-mode-both"
+                                        style={{ animationDelay: `${delay}ms`, isolation: 'isolate' }}
+                                        className="group flex items-center px-6 py-4 bg-white/[0.02] hover:bg-white/[0.05] rounded-2xl border border-white/5 hover:border-brand-purple/30 transition-all duration-300 transform hover:-translate-y-1 animate-in fade-in slide-in-from-right-4 fill-mode-both"
                                     >
                                         {/* Rank Info */}
                                         <div className="w-12 flex flex-col items-center justify-center mr-4 border-r border-white/10 pr-4">

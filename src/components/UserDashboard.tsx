@@ -196,9 +196,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                 {view === 'HOME' && (
                     <div className="relative pt-[4.8rem] pb-2 sm:pt-[5.5rem] sm:pb-4 md:pt-[6.5rem] md:pb-8 text-center animate-fade-in px-2 overflow-visible">
                         <p className="text-white font-mono text-[7px] md:text-sm uppercase tracking-[0.5em] mb-0.5 md:mb-2 opacity-60">benvenuto su</p>
-                        <h1 className="text-[3.1rem] xs:text-[3.8rem] sm:text-[6.4rem] md:text-[13rem] font-display font-black italic tracking-tighter leading-none transform-gpu relative inline-flex items-baseline justify-center whitespace-nowrap pr-3 sm:pr-6">
+                        <h1 className="text-[3.4rem] xs:text-[4.2rem] sm:text-[7rem] md:text-[14.3rem] font-display font-black italic tracking-tight leading-none transform-gpu relative inline-flex items-baseline justify-center whitespace-nowrap pr-4 sm:pr-8">
                             <span className="steel-chrome-text">FANNY</span>
-                            <span className="neon-illuminated-bet ml-0.5 sm:ml-1 font-bold">BET</span>
+                            <span className="neon-illuminated-bet ml-1 sm:ml-2 font-bold">BET</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] translate-x-[-200%] animate-shimmer pointer-events-none opacity-30"></div>
                         </h1>
                         <div className="mt-1 md:mt-4 flex justify-center gap-2">

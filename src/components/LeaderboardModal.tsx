@@ -42,24 +42,22 @@ const ParticipantRow: React.FC<ParticipantRowProps> = React.memo(({
     const fallbackAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p.username || 'User')}`;
     const avatarSrc = imgError ? fallbackAvatar : (p.avatar_url || p.avatarUrl || fallbackAvatar);
 
-    // Polygon for squarer cards with slanted lateral edges (parallelogram cut)
-    const slantedClip = 'polygon(16px 0%, 100% 0%, calc(100% - 16px) 100%, 0% 100%)';
-
     return (
-        <div className="flex flex-col group/row">
+        <div className="flex flex-col group/row" style={{ isolation: 'isolate' }}>
             {/* Outer wrapper provides the continuous electric-blue slanted border */}
+            {/* FIX ANDROID: replaced clip-path:polygon with skewX transform — avoids GPU layer thrashing on Android Chrome */}
             <div
                 onClick={() => onExpand(p.user_id)}
-                style={{ clipPath: slantedClip }}
-                className={`p-[2px] transition-all duration-300 cursor-pointer select-none ${
+                style={{ transform: 'skewX(-2deg)', willChange: 'transform' }}
+                className={`p-[2px] transition-all duration-300 cursor-pointer select-none overflow-hidden ${
                     isMe
                         ? 'bg-gradient-to-r from-[#00f0ff] via-[#38bdf8] to-[#00f0ff] shadow-[0_0_25px_rgba(0,240,255,0.7)] scale-[1.01]'
                         : 'bg-gradient-to-r from-[#00f0ff] via-[#0066ff] to-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.35)] hover:shadow-[0_0_25px_rgba(0,240,255,0.65)] hover:scale-[1.008]'
                 }`}
             >
-                {/* Inner Card Content */}
+                {/* Inner Card Content — counter-skew so text stays straight */}
                 <div
-                    style={{ clipPath: slantedClip }}
+                    style={{ transform: 'skewX(2deg)' }}
                     className={`w-full bg-gradient-to-r px-5 sm:px-8 py-3.5 flex items-center justify-between gap-4 transition-colors ${
                         isMe
                             ? 'from-[#0b162c] via-[#0e2246] to-[#0b162c]'
@@ -247,7 +245,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
-            <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
+            {/* FIX ANDROID: backdrop-blur-xl → backdrop-blur-sm — heavy blur causes layer promotion flicker on Android WebView */}
+            <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={onClose}></div>
             <div className="relative z-10 w-full max-w-4xl bg-[#060a14] border-2 border-[#00d4ff]/40 shadow-[0_0_60px_rgba(0,102,255,0.35),0_0_25px_rgba(0,240,255,0.2)] p-5 sm:p-8 md:p-10 animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col [will-change:transform] rounded-none sm:rounded-lg">
                 {/* Header Action / Close */}
                 <button
@@ -280,7 +279,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                 </div>
 
                 {/* Participants List */}
-                <div className="overflow-y-auto pr-1 sm:pr-2 space-y-3 custom-scrollbar">
+                {/* FIX ANDROID: isolation:isolate + will-change:transform to prevent layer thrashing on scroll */}
+                <div className="overflow-y-auto pr-1 sm:pr-2 space-y-3 custom-scrollbar" style={{ isolation: 'isolate', willChange: 'transform' }}>
                     {participants.map((p, idx) => (
                         <ParticipantRow
                             key={p.user_id}

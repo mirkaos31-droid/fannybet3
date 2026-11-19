@@ -60,7 +60,8 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4">
-            <div className="absolute inset-0 bg-black/95 md:bg-black/90 backdrop-blur-xl" onClick={onClose}></div>
+            {/* FIX ANDROID: backdrop-blur-xl → backdrop-blur-sm to prevent composite loop/flicker on mobile GPUs */}
+            <div className="absolute inset-0 bg-black/95 md:bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
             <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0c] md:border border-white/10 md:rounded-[2.5rem] h-full md:h-auto md:max-h-[90vh] flex flex-col p-4 sm:p-6 md:p-10 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-500">
 
                 {/* Header */}
@@ -97,7 +98,11 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                 </div>
 
                 {/* Match List */}
-                <div className="overflow-y-auto pr-2 space-y-4 custom-scrollbar flex-1 pb-32 sm:pb-36 md:pb-4">
+                {/* FIX ANDROID: isolation:isolate + will-change:transform to prevent layer thrashing during scroll/re-renders */}
+                <div
+                    className="overflow-y-auto pr-2 space-y-4 custom-scrollbar flex-1 pb-32 sm:pb-36 md:pb-4"
+                    style={{ isolation: 'isolate', willChange: 'transform' }}
+                >
                     {matchday.matches.slice(0, 10).map((match, idx) => (
                         <div
                             key={match.id}
@@ -161,11 +166,10 @@ export const PredictionsModal: React.FC<PredictionsModalProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => onSecretMatchChange(secretMatchIndex === idx ? null : idx)}
-                                            className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-1.5 border ${
-                                                secretMatchIndex === idx
+                                            className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-1.5 border ${secretMatchIndex === idx
                                                     ? 'bg-amber-400 text-black border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.6)] scale-105'
                                                     : 'bg-white/5 text-gray-400 border-white/10 hover:text-white hover:border-amber-400/50'
-                                            }`}
+                                                }`}
                                         >
                                             <span>🎯 MATCH SEGRETO (2X)</span>
                                             {secretMatchIndex === idx && <span className="text-black font-extrabold">✓ ATTIVO</span>}

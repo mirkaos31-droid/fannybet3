@@ -1511,6 +1511,8 @@
 
 /* STEEL CHROME HEADER EFFECT FOR 'FANNY' */
 .steel-chrome-text {
+  display: inline-block;
+  padding-right: 0.08em;
   background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 25%, #94a3b8 48%, #e2e8f0 52%, #64748b 80%, #334155 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1519,6 +1521,8 @@
 
 /* ILLUMINATED NEON GLOW FOR 'BET' */
 .neon-illuminated-bet {
+  display: inline-block;
+  padding-right: 0.18em;
   font-family: 'Orbitron', 'Space Grotesk', sans-serif;
   background: linear-gradient(135deg, #00ffcc 0%, #00f3ff 45%, #c084fc 100%);
   -webkit-background-clip: text;
