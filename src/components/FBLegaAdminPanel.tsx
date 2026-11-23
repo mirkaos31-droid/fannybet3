@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { gameService } from '../services/gameService';
 import { fbLegaService } from '../services/fbLegaService';
+import { fannyBotService } from '../services/fannyBotService';
 
 import type { FBLeague, Matchday } from '../types';
 import { toast } from 'sonner';
@@ -174,6 +175,13 @@ export const FBLegaAdminPanel = () => {
             if (result.success) {
                 toast.success(`${result.message} (${result.resolved_count} pronostici processati)`);
                 loadLeagues();
+
+                // Autonomous FannyBot announcement in Curva
+                fannyBotService.postFBLegaRoundRecap(leagueId, targetMD.matchday_id).then(res => {
+                    if (res.success) {
+                        toast.info("🤖 FannyBot ha pubblicato il report del round in Curva!");
+                    }
+                }).catch(e => console.error("FannyBot recap error:", e));
             } else {
                 toast.error(result.message);
             }
@@ -193,6 +201,13 @@ export const FBLegaAdminPanel = () => {
             if (result.success) {
                 toast.success(result.message);
                 loadLeagues();
+
+                // Autonomous FannyBot announcement of final podium
+                fannyBotService.postLeagueWinnersAnnouncement(leagueId).then(res => {
+                    if (res.success) {
+                        toast.info("👑 FannyBot ha proclamato i vincitori della Lega in Curva!");
+                    }
+                }).catch(e => console.error("FannyBot podium error:", e));
             } else {
                 toast.error(result.message);
             }

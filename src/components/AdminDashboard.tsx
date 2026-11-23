@@ -8,6 +8,7 @@ import { Star, Calendar, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { SERIE_A_SCHEDULE_2026_2027 } from '../data/serieA2026_2027';
 import { communityFeedService } from '../services/communityFeedService';
+import { fannyBotService } from '../services/fannyBotService';
 import type { CommunityPostType } from '../types';
 
 interface AdminDashboardProps {
@@ -531,6 +532,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onToggleView, in
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-300">Curva Control Room</span>
                             <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter mt-1">Fai Parlare il FannyBot</h3>
                             <p className="text-gray-400 text-xs">Invia un bollettino, uno sfottò o un annuncio ufficiale direttamente nella Curva a nome del Bot.</p>
+                        </div>
+
+                        {/* Smart Autonomous Generator Banner */}
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-purple-950/40 to-black/60 border border-cyan-400/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                            <div>
+                                <h4 className="text-sm font-black italic uppercase text-cyan-300 flex items-center gap-2">
+                                    <Sparkles size={16} className="text-yellow-400 animate-pulse" />
+                                    Ispirazione FannyBot (Generatore Rapido)
+                                </h4>
+                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                    Lascia che il Bot scelga da solo l'argomento migliore in base ai dati della settimana!
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    const smart = await fannyBotService.generateSmartBulletin();
+                                    setBotTitle(smart.title);
+                                    setBotContent(smart.content);
+                                    setBotType(smart.type);
+                                    toast.success('Bozza generata dal FannyBot! Puoi modificarla o lanciarla.');
+                                }}
+                                className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-yellow-400 text-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] shrink-0"
+                            >
+                                ⚡ Genera Bollettino
+                            </button>
                         </div>
 
                         {/* Quick Presets */}
