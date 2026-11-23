@@ -15,6 +15,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { CommunityTicker } from './CommunityTicker';
 import { CommunityBoardModal } from './CommunityBoardModal';
 import { FeaturedMuralesTag } from './FeaturedMuralesTag';
+import { MatchdayCountdown } from './MatchdayCountdown';
 
 const SectionHeader: React.FC<{ title: string; subtitle?: string; color?: string }> = ({ title, subtitle, color = "border-white/10" }) => (
     <div className={`flex flex-col mb-4 md:mb-8 border-l-4 ${color} pl-4 md:pl-6 py-1 md:py-2`}>
@@ -205,6 +206,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onBalanceUpd
                             <div className="h-[1px] w-6 md:w-20 bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent"></div>
                             <div className="h-[1px] w-6 md:w-20 bg-gradient-to-r from-transparent via-brand-purple-vibrant/50 to-transparent"></div>
                         </div>
+
+                        {/* Matchday Deadline Countdown */}
+                        {matchday?.deadline && (
+                            <div className="mt-4 sm:mt-6 px-1">
+                                <MatchdayCountdown matchday={matchday} />
+                            </div>
+                        )}
                     </div>
                 )}
 
